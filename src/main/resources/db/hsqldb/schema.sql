@@ -47,11 +47,7 @@ CREATE TABLE pets (
   name       VARCHAR(30),
   birth_date DATE,
   type_id    INTEGER NOT NULL,
-<<<<<<< HEAD
-  owner_id   INTEGER
-=======
   album_id   INTEGER NOT NULL
->>>>>>> ebe21b1 (First version of port from homePIX)
 );
 ALTER TABLE pets ADD CONSTRAINT fk_pets_albums_id) REFERENCES albums (id);
 ALTER TABLE pets ADD CONSTRAINT fk_pets_types FOREIGN KEY (type_id) REFERENCES types (id);

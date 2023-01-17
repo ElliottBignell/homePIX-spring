@@ -39,11 +39,7 @@ CREATE TABLE IF NOT EXISTS picture_file (
   name VARCHAR(30),
   birth_date DATE,
   type_id INT(4) UNSIGNED NOT NULL,
-<<<<<<< HEAD
-  owner_id INT(4) UNSIGNED,
-=======
   album_id INT(4) UNSIGNED NOT NULL,
->>>>>>> ebe21b1 (First version of port from homePIX)
   INDEX(name),
   FOREIGN KEY (album_id) REFERENCES album(id),
   FOREIGN KEY (type_id) REFERENCES types(id)

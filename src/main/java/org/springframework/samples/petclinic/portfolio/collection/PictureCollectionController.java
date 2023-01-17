@@ -16,15 +16,10 @@
 package org.springframework.samples.petclinic.portfolio.collection;
 
 import org.springframework.samples.petclinic.portfolio.PaginationController;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -37,12 +32,8 @@ class PictureCollectionController extends PaginationController {
 
 	private final PictureCollectionRepository collections;
 
-	private VisitRepository visits;
-
-	public PictureCollectionController(PictureCollectionRepository collectionService, VisitRepository visits) {
-
+	public PictureCollectionController(PictureCollectionRepository collectionService ) {
 		this.collections = collectionService;
-		this.visits = visits;
 	}
 
 	@InitBinder

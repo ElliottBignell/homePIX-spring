@@ -15,11 +15,10 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
-import java.util.Set;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
 

@@ -16,10 +16,7 @@
 package org.springframework.samples.petclinic.portfolio;
 
 import java.util.Collection;
-import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -64,12 +61,4 @@ public interface FolderRepository extends Repository<Folder, Integer> {
 	 * @param folder the {@link Folder} to save
 	 */
 	void save(Folder folder);
-
-	/**
-	 * Returnes all the owners from data store
-	 **/
-	@Query("SELECT owner FROM Owner owner")
-	@Transactional(readOnly = true)
-	Page<Owner> findAll(Pageable pageable);
-
 }

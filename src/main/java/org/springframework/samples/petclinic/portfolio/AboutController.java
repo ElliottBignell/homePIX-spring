@@ -16,14 +16,9 @@
 package org.springframework.samples.petclinic.portfolio;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.Collection;
 import java.util.Map;
 
 /**

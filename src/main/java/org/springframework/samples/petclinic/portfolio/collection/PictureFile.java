@@ -16,27 +16,11 @@
 package org.springframework.samples.petclinic.portfolio.collection;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotEmpty;
-
-import org.springframework.beans.support.MutableSortDefinition;
-import org.springframework.beans.support.PropertyComparator;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.petclinic.model.BaseEntity;
-import org.springframework.samples.petclinic.owner.Visit;
 import org.springframework.samples.petclinic.portfolio.Album;
 import org.springframework.samples.petclinic.portfolio.Keywords;
 
@@ -100,9 +84,6 @@ public class PictureFile extends BaseEntity {
 
 	@Column(name = "hits")
 	private int hits;
-
-	@Transient
-	private Set<Visit> visits = new LinkedHashSet<>();
 
 	public void setLast_modified(LocalDate last_modified) {
 		this.last_modified = last_modified;
@@ -186,12 +167,5 @@ public class PictureFile extends BaseEntity {
 
 	public void setOwner(Album album) {
 		this.album = album;
-	}
-
-	protected Set<Visit> getVisitsInternal() {
-		if (this.visits == null) {
-			this.visits = new HashSet<>();
-		}
-		return this.visits;
 	}
 }

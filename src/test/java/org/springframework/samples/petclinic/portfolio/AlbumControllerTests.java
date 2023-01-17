@@ -42,16 +42,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-=======
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileType;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -70,10 +64,6 @@ class AlbumControllerTests {
 	@MockBean
 	private AlbumRepository albums;
 
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-	private Owner george() {
-		Owner george = new Owner();
-=======
 	@MockBean
 	private VisitRepository visits;
 
@@ -82,7 +72,6 @@ class AlbumControllerTests {
 	@BeforeEach
 	void setup() {
 		george = new Album();
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 		george.setId(TEST_OWNER_ID);
 		george.setName("George");
 		george.setCount(0);
@@ -90,35 +79,11 @@ class AlbumControllerTests {
 		PictureFileType dog = new PictureFileType();
 		dog.setName("dog");
 		max.setType(dog);
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-		max.setName("Max");
-		max.setBirthDate(LocalDate.now());
-		george.addPet(max);
-		max.setId(1);
-		return george;
-	};
-
-	@BeforeEach
-	void setup() {
-
-		Owner george = george();
-		given(this.owners.findByLastName(eq("Franklin"), any(Pageable.class)))
-				.willReturn(new PageImpl<Owner>(Lists.newArrayList(george)));
-
-		given(this.owners.findAll(any(Pageable.class))).willReturn(new PageImpl<Owner>(Lists.newArrayList(george)));
-
-		given(this.owners.findById(TEST_OWNER_ID)).willReturn(george);
-		Visit visit = new Visit();
-		visit.setDate(LocalDate.now());
-		george.getPet("Max").getVisits().add(visit);
-
-=======
 		george.setPictureFilesInternal(Collections.singleton(max));
 		given(this.albums.findById(TEST_OWNER_ID)).willReturn(george);
 		Visit visit = new Visit();
 		visit.setDate(LocalDate.now());
 		given(this.visits.findByPictureFileId(max.getId())).willReturn(Collections.singletonList(visit));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 	}
 
 	@Test
@@ -152,46 +117,23 @@ class AlbumControllerTests {
 
 	@Test
 	void testProcessFindFormSuccess() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-		Page<Owner> tasks = new PageImpl<Owner>(Lists.newArrayList(george(), new Owner()));
-		Mockito.when(this.owners.findByLastName(anyString(), any(Pageable.class))).thenReturn(tasks);
-		mockMvc.perform(get("/owners?page=1")).andExpect(status().isOk()).andExpect(view().name("owners/ownersList"));
-=======
 		given(this.albums.findByName("")).willReturn(Lists.newArrayList(george, new Album()));
 		mockMvc.perform(get("/albums")).andExpect(status().isOk()).andExpect(view().name("albums/albumList"));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 	}
 
 	@Test
 	void testProcessFindFormByLastName() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-		Page<Owner> tasks = new PageImpl<Owner>(Lists.newArrayList(george()));
-		Mockito.when(this.owners.findByLastName(eq("Franklin"), any(Pageable.class))).thenReturn(tasks);
-		mockMvc.perform(get("/owners?page=1").param("lastName", "Franklin")).andExpect(status().is3xxRedirection())
-				.andExpect(view().name("redirect:/owners/" + TEST_OWNER_ID));
-=======
 		given(this.albums.findByName(george.getName())).willReturn(Lists.newArrayList(george));
 		mockMvc.perform(get("/albums").param("name", "Franklin")).andExpect(status().is3xxRedirection())
 				.andExpect(view().name("redirect:/albums/" + TEST_OWNER_ID));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 	}
 
 	@Test
 	void testProcessFindFormNoOwnersFound() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-		Page<Owner> tasks = new PageImpl<Owner>(Lists.newArrayList());
-		Mockito.when(this.owners.findByLastName(eq("Unknown Surname"), any(Pageable.class))).thenReturn(tasks);
-		mockMvc.perform(get("/owners?page=1").param("lastName", "Unknown Surname")).andExpect(status().isOk())
-				.andExpect(model().attributeHasFieldErrors("owner", "lastName"))
-				.andExpect(model().attributeHasFieldErrorCode("owner", "lastName", "notFound"))
-				.andExpect(view().name("owners/findOwners"));
-
-=======
 		mockMvc.perform(get("/albums").param("lastName", "Unknown Surname")).andExpect(status().isOk())
 				.andExpect(model().attributeHasFieldErrors("owner", "lastName"))
 				.andExpect(model().attributeHasFieldErrorCode("owner", "lastName", "notFound"))
 				.andExpect(view().name("albums/findAlbums"));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 	}
 
 	@Test
@@ -222,13 +164,8 @@ class AlbumControllerTests {
 
 	@Test
 	void testProcessUpdateOwnerFormHasErrors() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java
-		mockMvc.perform(post("/owners/{ownerId}/edit", TEST_OWNER_ID).param("firstName", "Joe")
-				.param("lastName", "Bloggs").param("address", "").param("telephone", "")).andExpect(status().isOk())
-=======
 		mockMvc.perform(post("/albums/{ownerId}/edit", TEST_OWNER_ID).param("firstName", "Joe")
 				.param("lastName", "Bloggs").param("city", "London")).andExpect(status().isOk())
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/AlbumControllerTests.java
 				.andExpect(model().attributeHasErrors("owner"))
 				.andExpect(model().attributeHasFieldErrors("owner", "address"))
 				.andExpect(model().attributeHasFieldErrors("owner", "telephone"))

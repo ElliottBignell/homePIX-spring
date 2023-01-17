@@ -13,11 +13,7 @@
       <div class="form-group">
         <label class="col-sm-2 control-label">Albums</label>
         <div class="col-sm-10">
-<<<<<<< HEAD
-          <span th:text="${owner?.firstName + ' ' + owner?.lastName}" />
-=======
           <span th:text="${pictureFile.album?.name}" />
->>>>>>> ebe21b1 (First version of port from homePIX)
         </div>
       </div>
       <input
@@ -30,15 +26,9 @@
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
         <button
-<<<<<<< HEAD
-          th:with="text=${pet['new']} ? 'Add Pet' : 'Update Pet'"
-          class="btn btn-primary" type="submit" th:text="${text}">Add
-          Pet</button>
-=======
           th:with="text=${pictureFile['new']} ? 'Add Picture' : 'Update Picture'"
           class="btn btn-default" type="submit" th:text="${text}">Add
           Picture</button>
->>>>>>> ebe21b1 (First version of port from homePIX)
       </div>
     </div>
   </form>

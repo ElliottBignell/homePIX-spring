@@ -18,9 +18,7 @@ package org.springframework.samples.petclinic.portfolio.collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-
+import jakarta.persistence.*;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
 

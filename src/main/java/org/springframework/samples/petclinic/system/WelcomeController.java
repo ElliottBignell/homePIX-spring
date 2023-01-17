@@ -18,7 +18,6 @@ package org.springframework.samples.petclinic.system;
 
 import org.springframework.samples.petclinic.portfolio.Album;
 import org.springframework.samples.petclinic.portfolio.AlbumRepository;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;

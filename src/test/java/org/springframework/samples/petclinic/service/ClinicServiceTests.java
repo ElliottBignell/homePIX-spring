@@ -27,21 +27,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
-<<<<<<< HEAD
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.samples.petclinic.owner.Owner;
-import org.springframework.samples.petclinic.owner.OwnerRepository;
-import org.springframework.samples.petclinic.owner.Pet;
-import org.springframework.samples.petclinic.owner.PetType;
-import org.springframework.samples.petclinic.owner.Visit;
-=======
 import org.springframework.samples.petclinic.portfolio.*;
 import org.springframework.samples.petclinic.portfolio.Album;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileType;
->>>>>>> ebe21b1 (First version of port from homePIX)
 import org.springframework.samples.petclinic.vet.Vet;
 import org.springframework.samples.petclinic.vet.VetRepository;
 import org.springframework.stereotype.Service;
@@ -85,34 +75,23 @@ class ClinicServiceTests {
 	protected AlbumRepository albums;
 
 	@Autowired
-<<<<<<< HEAD
-=======
 	protected PictureFileRepository pictureFiles;
 
 	@Autowired
 	protected VisitRepository visits;
 
 	@Autowired
->>>>>>> ebe21b1 (First version of port from homePIX)
 	protected VetRepository vets;
 
 	Pageable pageable;
 
 	@Test
 	void shouldFindOwnersByLastName() {
-<<<<<<< HEAD
-		Page<Owner> owners = this.owners.findByLastName("Davis", pageable);
-		assertThat(owners).hasSize(2);
-
-		owners = this.owners.findByLastName("Daviss", pageable);
-		assertThat(owners).isEmpty();
-=======
 		Collection<Album> albums = this.albums.findByName("Davis");
 		assertThat(albums).hasSize(2);
 
 		albums = this.albums.findByName("Daviss");
 		assertThat(albums).isEmpty();
->>>>>>> ebe21b1 (First version of port from homePIX)
 	}
 
 	@Test
@@ -126,13 +105,8 @@ class ClinicServiceTests {
 	@Test
 	@Transactional
 	void shouldInsertOwner() {
-<<<<<<< HEAD
-		Page<Owner> owners = this.owners.findByLastName("Schultz", pageable);
-		int found = (int) owners.getTotalElements();
-=======
 		Collection<Album> albums = this.albums.findByName("Schultz");
 		int found = albums.size();
->>>>>>> ebe21b1 (First version of port from homePIX)
 
 		Album album = new Album();
 		album.setName("Sam");
@@ -140,13 +114,8 @@ class ClinicServiceTests {
 		this.albums.save(album);
 		assertThat(album.getId().longValue()).isNotEqualTo(0);
 
-<<<<<<< HEAD
-		owners = this.owners.findByLastName("Schultz", pageable);
-		assertThat(owners.getTotalElements()).isEqualTo(found + 1);
-=======
 		albums = this.albums.findByName("Schultz");
 		assertThat(albums.size()).isEqualTo(found + 1);
->>>>>>> ebe21b1 (First version of port from homePIX)
 	}
 
 	@Test
@@ -161,10 +130,6 @@ class ClinicServiceTests {
 	}
 
 	@Test
-<<<<<<< HEAD
-	void shouldFindAllPetTypes() {
-		Collection<PetType> petTypes = this.owners.findPetTypes();
-=======
 	void shouldFindPictureFileWithCorrectId() {
 		PictureFile pictureFile7 = this.pictureFiles.findById(7);
 		assertThat(pictureFile7.getTitle()).startsWith("Samantha");
@@ -174,7 +139,6 @@ class ClinicServiceTests {
 	@Test
 	void shouldFindAllPictureFileTypes() {
 		Collection<PictureFileType> pictureFileTypes = this.pictureFiles.findPictureFileTypes();
->>>>>>> ebe21b1 (First version of port from homePIX)
 
 		PictureFileType pictureFileType1 = EntityUtils.getById(pictureFileTypes, PictureFileType.class, 1);
 		assertThat(pictureFileType1.getName()).isEqualTo("cat");
@@ -188,17 +152,6 @@ class ClinicServiceTests {
 		Album album6 = this.albums.findById(6);
 		int found = album6.getPictureFiles().size();
 
-<<<<<<< HEAD
-		Pet pet = new Pet();
-		pet.setName("bowser");
-		Collection<PetType> types = this.owners.findPetTypes();
-		pet.setType(EntityUtils.getById(types, PetType.class, 2));
-		pet.setBirthDate(LocalDate.now());
-		owner6.addPet(pet);
-		assertThat(owner6.getPets().size()).isEqualTo(found + 1);
-
-		this.owners.save(owner6);
-=======
 		PictureFile pictureFile = new PictureFile();
 		pictureFile.setTitle("bowser");
 		Collection<PictureFileType> types = this.pictureFiles.findPictureFileTypes();
@@ -209,35 +162,15 @@ class ClinicServiceTests {
 
 		this.pictureFiles.save(pictureFile);
 		this.albums.save(album6);
->>>>>>> ebe21b1 (First version of port from homePIX)
 
 		album6 = this.albums.findById(6);
 		assertThat(album6.getPictureFiles().size()).isEqualTo(found + 1);
 		// checks that id has been generated
-<<<<<<< HEAD
-		pet = owner6.getPet("bowser");
-		assertThat(pet.getId()).isNotNull();
-=======
 		assertThat(pictureFile.getId()).isNotNull();
->>>>>>> ebe21b1 (First version of port from homePIX)
 	}
 
 	@Test
 	@Transactional
-<<<<<<< HEAD
-	void shouldUpdatePetName() throws Exception {
-		Owner owner6 = this.owners.findById(6);
-		Pet pet7 = owner6.getPet(7);
-		String oldName = pet7.getName();
-
-		String newName = oldName + "X";
-		pet7.setName(newName);
-		this.owners.save(owner6);
-
-		owner6 = this.owners.findById(6);
-		pet7 = owner6.getPet(7);
-		assertThat(pet7.getName()).isEqualTo(newName);
-=======
 	void shouldUpdatePictureFileName() throws Exception {
 		PictureFile pictureFile7 = this.pictureFiles.findById(7);
 		String oldName = pictureFile7.getTitle();
@@ -248,7 +181,6 @@ class ClinicServiceTests {
 
 		pictureFile7 = this.pictureFiles.findById(7);
 		assertThat(pictureFile7.getTitle()).isEqualTo(newName);
->>>>>>> ebe21b1 (First version of port from homePIX)
 	}
 
 	@Test
@@ -264,34 +196,6 @@ class ClinicServiceTests {
 
 	@Test
 	@Transactional
-<<<<<<< HEAD
-	void shouldAddNewVisitForPet() {
-		Owner owner6 = this.owners.findById(6);
-		Pet pet7 = owner6.getPet(7);
-		int found = pet7.getVisits().size();
-		Visit visit = new Visit();
-		visit.setDescription("test");
-
-		owner6.addVisit(pet7.getId(), visit);
-		this.owners.save(owner6);
-
-		owner6 = this.owners.findById(6);
-
-		assertThat(pet7.getVisits()) //
-				.hasSize(found + 1) //
-				.allMatch(value -> value.getId() != null);
-	}
-
-	@Test
-	void shouldFindVisitsByPetId() throws Exception {
-		Owner owner6 = this.owners.findById(6);
-		Pet pet7 = owner6.getPet(7);
-		Collection<Visit> visits = pet7.getVisits();
-
-		assertThat(visits) //
-				.hasSize(2) //
-				.element(0).extracting(Visit::getDate).isNotNull();
-=======
 	void shouldAddNewVisitForPictureFile() {
 		PictureFile pictureFile7 = this.pictureFiles.findById(7);
 		int found = pictureFile7.getVisits().size();
@@ -313,7 +217,6 @@ class ClinicServiceTests {
 		Visit[] visitArr = visits.toArray(new Visit[visits.size()]);
 		assertThat(visitArr[0].getDate()).isNotNull();
 		assertThat(visitArr[0].getPictureFileId()).isEqualTo(7);
->>>>>>> ebe21b1 (First version of port from homePIX)
 	}
 
 }

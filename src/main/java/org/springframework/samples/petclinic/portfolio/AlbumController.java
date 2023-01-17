@@ -15,8 +15,8 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
+import jakarta.validation.Valid;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -40,12 +39,8 @@ class AlbumController extends PaginationController {
 
 	private final AlbumRepository albums;
 
-	private VisitRepository visits;
-
-	public AlbumController(AlbumRepository albumService, VisitRepository visits) {
-
+	public AlbumController(AlbumRepository albumService ) {
 		this.albums = albumService;
-		this.visits = visits;
 	}
 
 	@InitBinder
@@ -163,9 +158,6 @@ class AlbumController extends PaginationController {
 	public ModelAndView showAlbum(@PathVariable("id") int id,  Map<String, Object> model) {
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
 		Album album = this.albums.findById(id);
-		for (PictureFile pictureFile : album.getPictureFiles()) {
-			pictureFile.setVisitsInternal(visits.findByPictureFileId(pictureFile.getId()));
-		}
 		mav.addObject(album);
 		model.put("pagination", super.pagination);
 		model.put("link_params", "");

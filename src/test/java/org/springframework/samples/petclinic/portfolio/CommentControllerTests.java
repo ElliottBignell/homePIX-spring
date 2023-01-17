@@ -28,12 +28,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java
-=======
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.petclinic.visit.VisitRepository;
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/CommentControllerTests.java
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -52,17 +49,6 @@ class CommentControllerTests {
 	private MockMvc mockMvc;
 
 	@MockBean
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java
-	private OwnerRepository owners;
-
-	@BeforeEach
-	void init() {
-		Owner owner = new Owner();
-		Pet pet = new Pet();
-		owner.addPet(pet);
-		pet.setId(TEST_PET_ID);
-		given(this.owners.findById(TEST_OWNER_ID)).willReturn(owner);
-=======
 	private VisitRepository visits;
 
 	@MockBean
@@ -71,41 +57,24 @@ class CommentControllerTests {
 	@BeforeEach
 	void init() {
 		given(this.pictureFiles.findById(TEST_PET_ID)).willReturn(new PictureFile());
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/CommentControllerTests.java
 	}
 
 	@Test
 	void testInitNewVisitForm() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java
-		mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/visits/new", TEST_OWNER_ID, TEST_PET_ID))
-				.andExpect(status().isOk()).andExpect(view().name("pets/createOrUpdateVisitForm"));
-=======
 		mockMvc.perform(get("/albums/*/pets/{petId}/visits/new", TEST_PET_ID)).andExpect(status().isOk())
 				.andExpect(view().name("pets/createOrUpdateVisitForm"));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/CommentControllerTests.java
 	}
 
 	@Test
 	void testProcessNewVisitFormSuccess() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java
-		mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/visits/new", TEST_OWNER_ID, TEST_PET_ID)
-				.param("name", "George").param("description", "Visit Description"))
-				.andExpect(status().is3xxRedirection()).andExpect(view().name("redirect:/owners/{ownerId}"));
-=======
 		mockMvc.perform(post("/albums/*/pets/{petId}/visits/new", TEST_PET_ID).param("name", "George")
 				.param("description", "Visit Description")).andExpect(status().is3xxRedirection())
 				.andExpect(view().name("redirect:/albums/{ownerId}"));
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/CommentControllerTests.java
 	}
 
 	@Test
 	void testProcessNewVisitFormHasErrors() throws Exception {
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java
-		mockMvc.perform(
-				post("/owners/{ownerId}/pets/{petId}/visits/new", TEST_OWNER_ID, TEST_PET_ID).param("name", "George"))
-=======
 		mockMvc.perform(post("/albums/*/pets/{petId}/visits/new", TEST_PET_ID).param("name", "George"))
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/CommentControllerTests.java
 				.andExpect(model().attributeHasErrors("visit")).andExpect(status().isOk())
 				.andExpect(view().name("pets/createOrUpdateVisitForm"));
 	}

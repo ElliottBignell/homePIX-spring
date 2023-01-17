@@ -49,33 +49,20 @@ class PictureFileControllerTests {
 	private MockMvc mockMvc;
 
 	@MockBean
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java
-	private OwnerRepository owners;
-=======
 	private PictureFileRepository pictureFiles;
 
 	@MockBean
 	private AlbumRepository albums;
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/PictureFileControllerTests.java
 
 	@BeforeEach
 	void setup() {
 		PictureFileType cat = new PictureFileType();
 		cat.setId(3);
 		cat.setName("hamster");
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java
-		given(this.owners.findPetTypes()).willReturn(Lists.newArrayList(cat));
-		Owner owner = new Owner();
-		Pet pet = new Pet();
-		owner.addPet(pet);
-		pet.setId(TEST_PET_ID);
-		given(this.owners.findById(TEST_OWNER_ID)).willReturn(owner);
-=======
 		given(this.pictureFiles.findPictureFileTypes()).willReturn(Lists.newArrayList(cat));
 		given(this.albums.findById(TEST_OWNER_ID)).willReturn(new Album());
 		given(this.pictureFiles.findById(TEST_PET_ID)).willReturn(new PictureFile());
 
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/PictureFileControllerTests.java
 	}
 
 	@Test
