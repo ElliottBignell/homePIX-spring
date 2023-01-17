@@ -44,11 +44,7 @@ import org.springframework.samples.petclinic.portfolio.collection.PictureFileTyp
 class PictureFileTypeFormatterTests {
 
 	@Mock
-<<<<<<< HEAD:src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java
-	private OwnerRepository pets;
-=======
 	private PictureFileRepository pictureFiles;
->>>>>>> ebe21b1 (First version of port from homePIX):src/test/java/org/springframework/samples/petclinic/portfolio/PictureFileTypeFormatterTests.java
 
 	private PictureFileTypeFormatter pictureFileTypeFormatter;
 

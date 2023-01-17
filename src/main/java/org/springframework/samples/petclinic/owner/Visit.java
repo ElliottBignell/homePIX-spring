@@ -42,12 +42,9 @@ public class Visit extends BaseEntity {
 	@NotEmpty
 	private String description;
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/Visit.java
-=======
 	@Column(name = "pet_id")
 	private Integer pictureFileId;
 
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/visit/Visit.java
 	/**
 	 * Creates a new instance of Visit for the current date
 	 */
@@ -71,8 +68,6 @@ public class Visit extends BaseEntity {
 		this.description = description;
 	}
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/Visit.java
-=======
 	public Integer getPictureFileId() {
 		return this.pictureFileId;
 	}
@@ -81,5 +76,4 @@ public class Visit extends BaseEntity {
 		this.pictureFileId = pictureFileId;
 	}
 
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/visit/Visit.java
 }

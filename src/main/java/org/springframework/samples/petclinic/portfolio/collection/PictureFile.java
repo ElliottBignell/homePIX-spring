@@ -36,9 +36,9 @@ import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.petclinic.model.BaseEntity;
+import org.springframework.samples.petclinic.owner.Visit;
 import org.springframework.samples.petclinic.portfolio.Album;
 import org.springframework.samples.petclinic.portfolio.Keywords;
-import org.springframework.samples.petclinic.visit.Visit;
 
 /**
  * Simple business object representing a pet.
@@ -194,20 +194,4 @@ public class PictureFile extends BaseEntity {
 		}
 		return this.visits;
 	}
-
-	public void setVisitsInternal(Collection<Visit> visits) {
-		this.visits = new LinkedHashSet<>(visits);
-	}
-
-	public List<Visit> getVisits() {
-		List<Visit> sortedVisits = new ArrayList<>(getVisitsInternal());
-		PropertyComparator.sort(sortedVisits, new MutableSortDefinition("date", false, false));
-		return Collections.unmodifiableList(sortedVisits);
-	}
-
-	public void addVisit(Visit visit) {
-		getVisitsInternal().add(visit);
-		visit.setPictureFileId(this.getId());
-	}
-
 }

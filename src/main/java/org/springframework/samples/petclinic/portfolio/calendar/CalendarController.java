@@ -16,7 +16,6 @@
 package org.springframework.samples.petclinic.portfolio.calendar;
 
 import org.springframework.samples.petclinic.portfolio.PaginationController;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -32,13 +31,6 @@ import java.util.Map;
 class CalendarController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "calendar/createOrUpdateOwnerForm";
-
-	private VisitRepository visits;
-
-	public CalendarController( VisitRepository visits ) {
-		super();
-		this.visits = visits;
-	}
 
 	@InitBinder
 	public void setAllowedFields(WebDataBinder dataBinder) {

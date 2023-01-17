@@ -26,14 +26,8 @@ import org.springframework.context.annotation.ImportRuntimeHints;
  * @author Dave Syer
  *
  */
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java
-@SpringBootApplication
-@ImportRuntimeHints(PetClinicRuntimeHints.class)
-public class PetClinicApplication {
-=======
 @SpringBootApplication(proxyBeanMethods = false)
 public class homePIXApplication {
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/homePIXApplication.java
 
 	public static void main(String[] args) {
 		SpringApplication.run(homePIXApplication.class, args);

@@ -17,15 +17,13 @@ package org.springframework.samples.petclinic.portfolio;
 
 import java.util.Map;
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/VisitController.java
-=======
 import javax.validation.Valid;
 
+import org.springframework.samples.petclinic.owner.Pet;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/CommentController.java
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -49,16 +47,11 @@ class CommentController {
 
 	private final OwnerRepository owners;
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/VisitController.java
-	public VisitController(OwnerRepository owners) {
-		this.owners = owners;
-=======
 	private final PictureFileRepository pictureFiles;
 
 	public CommentController(VisitRepository visits, PictureFileRepository picturefiles) {
 		this.visits = visits;
 		this.pictureFiles = picturefiles;
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/CommentController.java
 	}
 
 	@InitBinder
@@ -74,47 +67,15 @@ class CommentController {
 	 * @return PictureFile
 	 */
 	@ModelAttribute("visit")
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/VisitController.java
-	public Visit loadPetWithVisit(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId,
-			Map<String, Object> model) {
-		Owner owner = this.owners.findById(ownerId);
-
-		Pet pet = owner.getPet(petId);
-		model.put("pet", pet);
-		model.put("owner", owner);
-
-=======
 	public Visit loadPictureFileWithVisit(@PathVariable("petId") int petId, Map<String, Object> model) {
 		PictureFile pictureFile = this.pictureFiles.findById(petId);
 		pictureFile.setVisitsInternal(this.visits.findByPictureFileId(petId));
 		model.put("pictureFile", pictureFile);
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/CommentController.java
 		Visit visit = new Visit();
 		pictureFile.addVisit(visit);
 		return visit;
 	}
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/VisitController.java
-	// Spring MVC calls method loadPetWithVisit(...) before initNewVisitForm is
-	// called
-	@GetMapping("/owners/{ownerId}/pets/{petId}/visits/new")
-	public String initNewVisitForm() {
-		return "pets/createOrUpdateVisitForm";
-	}
-
-	// Spring MVC calls method loadPetWithVisit(...) before processNewVisitForm is
-	// called
-	@PostMapping("/owners/{ownerId}/pets/{petId}/visits/new")
-	public String processNewVisitForm(@ModelAttribute Owner owner, @PathVariable int petId, @Valid Visit visit,
-			BindingResult result) {
-		if (result.hasErrors()) {
-			return "pets/createOrUpdateVisitForm";
-		}
-
-		owner.addVisit(petId, visit);
-		this.owners.save(owner);
-		return "redirect:/owners/{ownerId}";
-=======
 	// Spring MVC calls method loadPictureFileWithVisit(...) before initNewVisitForm is called
 	@GetMapping("/albums/*/pets/{petId}/visits/new")
 	public String initNewVisitForm(@PathVariable("petId") int petId, Map<String, Object> model) {
@@ -131,7 +92,6 @@ class CommentController {
 			this.visits.save(visit);
 			return "redirect:/albums/{ownerId}";
 		}
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/CommentController.java
 	}
 
 }

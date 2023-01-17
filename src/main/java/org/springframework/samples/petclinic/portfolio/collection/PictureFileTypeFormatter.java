@@ -36,19 +36,11 @@ import java.util.Locale;
 @Component
 public class PictureFileTypeFormatter implements Formatter<PictureFileType> {
 
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java
-	private final OwnerRepository owners;
-
-	@Autowired
-	public PetTypeFormatter(OwnerRepository owners) {
-		this.owners = owners;
-=======
 	private final PictureFileRepository pictureFiles;
 
 	@Autowired
 	public PictureFileTypeFormatter(PictureFileRepository picturefiles) {
 		this.pictureFiles = picturefiles;
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/collection/PictureFileTypeFormatter.java
 	}
 
 	@Override
@@ -57,15 +49,9 @@ public class PictureFileTypeFormatter implements Formatter<PictureFileType> {
 	}
 
 	@Override
-<<<<<<< HEAD:src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java
-	public PetType parse(String text, Locale locale) throws ParseException {
-		Collection<PetType> findPetTypes = this.owners.findPetTypes();
-		for (PetType type : findPetTypes) {
-=======
 	public PictureFileType parse(String text, Locale locale) throws ParseException {
 		Collection<PictureFileType> findPictureFileTypes = this.pictureFiles.findPictureFileTypes();
 		for (PictureFileType type : findPictureFileTypes) {
->>>>>>> ebe21b1 (First version of port from homePIX):src/main/java/org/springframework/samples/petclinic/portfolio/collection/PictureFileTypeFormatter.java
 			if (type.getName().equals(text)) {
 				return type;
 			}
