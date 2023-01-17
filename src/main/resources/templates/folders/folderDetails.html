@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+<h2 th:text="${folder.name}"></h2>
+</body>
+
+</html>

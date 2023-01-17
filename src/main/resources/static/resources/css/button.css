@@ -1,0 +1,416 @@
+@import 'globalVariables.css';
+
+/**
+ * Button base
+ * Theme override and extension of `oxygen-component` styling.
+ */
+
+:root {
+  /* Neutral/Default Button Variables */
+
+  --button-primary-color: var(--color-primary);
+  --button-primary-color-hover: var(--color-primary-dark);
+  --button-primary-color-contrast: var(--color-primary-contrast);
+
+  --button-accent-color-contrast: var(--button-accent-color);
+  --button-accent-color-hover: var(--color-accent-dark);
+  --button-accent-color: var(--color-text-inverse-primary);
+
+  --button-neutral-color: var(--color-gray4);
+  --button-neutral-color-contrast: var(--color-text-inverse-primary);
+  --button-neutral-color-hover: var(--color-gray8);
+
+
+  --neutral-border-color: var(--color-text-primary);
+  --neutral-raised-bg: var(--color-white);
+  --neutral-text-color: var(--color-text-primary);
+
+  --neutral-hover-bg: var(--color-gray8);
+  --neutral-hover-border-color: var(--neutral-hover-bg);
+  --neutral-hover-text-color: var(--color-text-inverse-primary);
+
+  --neutral-disabled-border-color: var(--neutral-disabled-text-color);
+  --neutral-disabled-text-color: var(--color-text-disabled);
+
+  /* Primary Button Variables */
+  --primary-bg: var(--color-primary);
+  --primary-text-color: var(--color-text-inverse-primary);
+
+  --primary-hover-bg: var(--color-gray8);
+
+  --primary-disabled-bg: var(--button-disabled-primary-background);
+  --primary-disabled-text-color: var(--color-text-inverse-disabled);
+
+  /* Flat Button Variables */
+  --flat-text-color: var(--color-link-primary);
+
+  --flat-hover-bg: transparent;
+  --flat-hover-text-color: var(--color-text-primary);
+
+  --flat-disabled-text-color: color(var(--color-link-primary) a(38%));
+
+  /* Accent Button Variables */
+  --accent-bg: var(--color-accent);
+  --accent-text-color: var(--color-text-inverse-primary);
+
+  --accent-hover-bg: var(--color-accent-dark);
+
+  --accent-disabled-text-color: color(var(--color-white) a(38%));
+  --accent-disabled-bg: var(--button-disabled-accent-background);
+
+  /* Button Ripple Variables */
+  --ripple-color-light: var(--color-white);
+  --ripple-color-dark: var(--color-gray6);
+  --ripple-opacity: var(--ripple-primary-opacity);
+
+  --ripple-color-default: var(--ripple-color-light);
+  --ripple-color-primary: var(--ripple-color-dark);
+  --ripple-color-accent: var(--ripple-color-dark);
+
+  --button-floating-background: color(var(--color-gray7) a(70%));
+  --button-floating-hover-background: color(var(--color-gray7) a(90%));
+  --button-floating-icon-color: var(--color-text-inverse-primary);
+  --button-floating-size: 60px;
+  --button-floating-margin: 24px;
+  --button-floating-mobile-margin: 16px;
+
+  --button-floating-shadow-size: 6px;
+  --button-floating-hover-shadow-size: 12px;
+  --button-floating-shadow1: 0 0 var(--button-floating-shadow-size) 0 var(--color-dark-quaternary);
+  --button-floating-shadow2: 0 var(--button-floating-shadow-size) var(--button-floating-shadow-size) 0 color(var(--color-gray6) a(26%));
+  --button-floating-hover-shadow1: 0 0 var(--button-floating-hover-shadow-size) 0 var(--color-dark-quaternary);
+  --button-floating-hover-shadow2: 0 var(--button-floating-hover-shadow-size) var(--button-floating-hover-shadow-size) 0 color(var(--color-gray6) a(26%));
+
+  --button-stacked-padding: var(--spacing-sm);
+
+  --button-stacked-color: var(--color-text-secondary);
+  --button-stacked-hover-color: var(--color-text-primary);
+
+  /* Button Icon Variables */
+  --button-icon-size: var(--icon-font-size-default);
+
+  /* Small, Medium, Large button size/padding Variables */
+  --button-padding: 40px;
+  --button-small-padding: 8px;
+  --button-large-padding: 80px;
+  --button-large-font-size: 18px;
+}
+
+/*
+  composing button to be used here in `.button` selector,
+  but also in `IconButton`s `.toggle` root selector.
+*/
+.buttonBase {
+  border-radius: 2px;
+  font-size: var(--button-font-size);
+  height: var(--button-height);
+  line-height: var(--button-height);
+  padding: 0 var(--button-padding);
+  text-transform: none;
+  cursor: pointer;
+  min-width: 0;
+
+  &.neutral,
+  &.primary,
+  &.accent {
+    font-family: var(--font-primary-bold);
+  }
+}
+
+.buttonWithRipple {
+  & .ripple {
+    opacity: var(--ripple-opacity);
+  }
+}
+
+.buttonFlat {
+  &.flat {
+    box-shadow: none;
+    color: var(--flat-text-color);
+    padding: 0 8px;
+    background: none;
+
+    &.inlineFlat {
+      padding: 0;
+    }
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: var(--flat-hover-bg);
+      color: var(--flat-hover-text-color);
+    }
+
+    &[disabled] {
+      box-shadow: none;
+      color: var(--flat-disabled-text-color);
+    }
+  }
+}
+
+.buttonNeutral {
+  &.neutral {
+    &:hover,
+    &:active {
+      background: var(--neutral-hover-bg);
+      color: var(--neutral-hover-text-color);
+    }
+
+    &[disabled] {
+      box-shadow: var(--button-default-border) var(--neutral-disabled-border-color);
+      color: var(--neutral-disabled-text-color);
+    }
+
+    &.stacked {
+      box-shadow: none;
+    }
+
+    & .ripple {
+      background-color: var(--ripple-color-default);
+    }
+
+    &:not([disabled]) {
+      box-shadow: var(--button-default-border) var(--neutral-border-color);
+      color: var(--neutral-text-color);
+      &:hover,
+      &:active {
+        background-color: var(--neutral-hover-bg);
+        box-shadow: var(--button-default-border) var(--neutral-hover-bg);
+        color: var(--neutral-hover-text-color);
+      }
+    }
+  }
+}
+
+.buttonAccent {
+  &.accent {
+    background-color: var(--accent-bg);
+    box-shadow: none;
+    color: var(--accent-text-color);
+
+    &:hover,
+    &:active {
+      background-color: var(--accent-hover-bg);
+      color: var(--accent-text-color);
+    }
+
+    &[disabled] {
+      background-color: var(--accent-disabled-bg);
+      box-shadow: none;
+      color: var(--accent-disabled-text-color);
+    }
+
+    & .ripple {
+      background-color: var(--ripple-color-accent);
+    }
+
+    &:not([disabled]) {
+      &.raised,
+      &.floating {
+        background: var(--button-accent-color);
+        color: var(--button-accent-color-contrast);
+      }
+
+      &.flat,
+      &.toggle {
+        &:focus:not(:active) {
+          background: var(--button-accent-color-hover);
+        }
+      }
+
+      &.flat:hover {
+        background: var(--button-accent-color-hover);
+      }
+    }
+  }
+}
+
+.buttonPrimary {
+  &.primary {
+    &:not([disabled]) {
+      background-color: var(--primary-bg);
+      color: var(--primary-text-color);
+
+      &:hover,
+      &:active {
+        color: var(--primary-text-color);
+      }
+
+      &.raised,
+      &.floating {
+        background: var(--button-primary-color);
+        color: var(--button-primary-color-contrast);
+      }
+
+      &.flat,
+      &.toggle {
+        &:focus:not(:active) {
+          background: var(--button-primary-color-hover);
+        }
+      }
+
+      &.flat:hover {
+        background: var(--button-primary-color-hover);
+      }
+    }
+
+    &[disabled] {
+      background-color: var(--primary-disabled-bg);
+      color: var(--primary-disabled-text-color);
+    }
+
+    & .ripple {
+      background-color: var(--ripple-color-primary);
+    }
+  }
+}
+
+.buttonFloating {
+  &.floating {
+    background-color: var(--button-floating-background);
+    box-shadow: var(--button-floating-shadow1), var(--button-floating-shadow2);
+    position: fixed;
+    border-radius: 100%;
+    bottom: var(--button-floating-mobile-margin);
+    color: var(--button-floating-icon-color);
+    height: var(--button-floating-size);
+    min-height: var(--button-floating-size);
+    min-width: var(--button-floating-size);
+    padding: 0;
+    position: fixed;
+    right: var(--button-floating-mobile-margin);
+    width: var(--button-floating-size);
+
+    @media (--screen-sm) {
+      bottom: var(--button-floating-margin);
+      right: var(--button-floating-margin);
+    }
+
+    & > .icon:not([data-react-toolbox='tooltip']) {
+      line-height: inherit;
+      margin: 0;
+      vertical-align: middle;
+    }
+
+    & .icon {
+      color: var(--button-floating-icon-color);
+    }
+
+    & .ripple {
+      background-color: var(--ripple-color-default);
+    }
+
+    &:hover {
+      box-shadow: var(--button-floating-hover-shadow1), var(--button-floating-hover-shadow2);
+    }
+  }
+}
+
+.button {
+  composes: buttonBase;
+  composes: buttonWithRipple;
+  composes: buttonFlat;
+  composes: buttonNeutral;
+  composes: buttonAccent;
+  composes: buttonPrimary;
+  composes: buttonFloating;
+
+  &.primary,
+  &.neutral,
+  &.accent {
+    padding: 0 40px;
+  }
+
+  &.small {
+    padding: 0 var(--button-small-padding);
+  }
+
+  &.large {
+    font-size: var(--button-large-font-size);
+    height: var(--button-large-height);
+    padding: 0 var(--button-large-padding);
+  }
+
+  &.blockLevel {
+    display: block;
+    font-size: var(--button-large-font-size);
+    height: var(--button-large-height);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  &.stacked {
+    min-width: initial;
+    padding-bottom: var(--spacing-xs);
+    &.neutral {
+      color: var(--button-stacked-color);
+      font-family: var(--font-primary);
+
+      &:not([disabled]) {
+        box-shadow: none;
+      }
+
+      &:hover {
+        background: none;
+        color: var(--button-stacked-hover-color);
+      }
+    }
+
+    &.primary,
+    &.accent {
+      font-family: var(--font-primary-bold);
+    }
+
+    &.primary,
+    &.accent,
+    &.neutral {
+      padding-top: 3px;
+      padding-left: var(--button-stacked-padding);
+      padding-right: var(--button-stacked-padding);
+      padding-bottom: 2px;
+    }
+
+    &.inlineFlat {
+      padding: 0;
+    }
+  }
+
+  & .icon,
+  & > span:not([data-react-toolbox='tooltip']) {
+    font-size: var(--button-icon-size);
+    margin-bottom: 1px;
+    margin-right: 8px;
+    opacity: 1;
+    vertical-align: top;
+  }
+
+  & > svg {
+    height: var(--button-height);
+  }
+
+  & > span {
+    &.rippleWrapper {
+      margin: 0;
+    }
+  }
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.toggle {
+  width: var(--button-height);
+
+  & > .icon,
+  & svg {
+    line-height: var(--button-height);
+  }
+}
+
+
+
+// WEBPACK FOOTER //
+// ./~/@sstk/brand-theme/src/theme/Button/ButtonBase.css

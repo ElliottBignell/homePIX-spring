@@ -1,0 +1,98 @@
+DROP TABLE vet_specialties IF EXISTS;
+DROP TABLE vets IF EXISTS;
+DROP TABLE specialties IF EXISTS;
+DROP TABLE visits IF EXISTS;
+DROP TABLE picture_file IF EXISTS;
+DROP TABLE types IF EXISTS;
+DROP TABLE albums IF EXISTS;
+
+
+CREATE TABLE vets (
+  id         INTEGER IDENTITY PRIMARY KEY,
+  forename   VARCHAR(30),
+  last_name  VARCHAR(30)
+);
+CREATE INDEX vets_last_name ON vets (last_name);
+
+CREATE TABLE specialties (
+  id   INTEGER IDENTITY PRIMARY KEY,
+  name VARCHAR(80)
+);
+CREATE INDEX specialties_name ON specialties (name);
+
+CREATE TABLE vet_specialties (
+  vet_id       INTEGER NOT NULL,
+  specialty_id INTEGER NOT NULL
+);
+ALTER TABLE vet_specialties ADD CONSTRAINT fk_vet_specialties_vets FOREIGN KEY (vet_id) REFERENCES vets (id);
+ALTER TABLE vet_specialties ADD CONSTRAINT fk_vet_specialties_specialties FOREIGN KEY (specialty_id) REFERENCES specialties (id);
+
+CREATE TABLE types (
+  id   INTEGER IDENTITY PRIMARY KEY,
+  name VARCHAR(80)
+);
+CREATE INDEX types_name ON types (name);
+
+CREATE TABLE IF NOT EXISTS albums (
+  id INTEGER IDENTITY PRIMARY KEY,
+  name VARCHAR(30),
+  count INT(4) UNSIGNED NOT NULL,
+  thumbnail_id INT(8) UNSIGNED NOT NULL
+);
+CREATE INDEX albums_name ON albums (name);
+
+CREATE TABLE IF NOT EXISTS folders (
+  id INTEGER IDENTITY PRIMARY KEY,
+  name VARCHAR(30),
+  count INT(4) UNSIGNED NOT NULL,
+  thumbnail_id INT(8) UNSIGNED NOT NULL
+);
+CREATE INDEX folders_name ON folders (name);
+
+CREATE TABLE keywords (
+    id      INTEGER IDENTITY PRIMARY KEY,
+    content VARCHAR(200),
+    count   INT(4) UNSIGNED NOT NULL
+);
+CREATE INDEX keywords_content ON keywords (content);
+
+CREATE TABLE picture_file (
+  id                  INTEGER IDENTITY PRIMARY KEY,
+  filename            VARCHAR(200),
+  title               VARCHAR(200),
+  last_modified       DATE,
+  path_id             INTEGER NOT NULL,
+  album_id            INTEGER NOT NULL,
+  keywords_id         INTEGER NOT NULL,
+  sortkey             INTEGER NOT NULL,
+  added_on            DATE,
+  taken_on            DATE,
+  location            INTEGER NOT NULL,
+  primary_category    INTEGER NOT NULL,
+  secondary_category  INTEGER NOT NULL,
+  hits                INTEGER NOT NULL
+) ;
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_albums      FOREIGN KEY (album_id)           REFERENCES   albums (id);
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_path        FOREIGN KEY (path_id)            REFERENCES    types (id);
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_keywords    FOREIGN KEY (keywords_id)        REFERENCES keywords (id);
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_location    FOREIGN KEY (location)           REFERENCES    types (id);
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_category1   FOREIGN KEY (primary_category)   REFERENCES    types (id);
+ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_category2   FOREIGN KEY (secondary_category) REFERENCES    types (id);
+CREATE INDEX picture_file_title ON picture_file (title);
+
+CREATE TABLE albumcontent (
+  id INTEGER IDENTITY PRIMARY KEY,
+  album_id integer NOT NULL,
+  entry_id integer NOT NULL
+ );
+ALTER TABLE albumcontent ADD CONSTRAINT fk_albumcontent FOREIGN KEY (album_id) REFERENCES albums (id);
+ALTER TABLE albumcontent ADD CONSTRAINT fk_albumentries FOREIGN KEY (entry_id) REFERENCES picture_file (id);
+
+CREATE TABLE visits (
+  id          INTEGER IDENTITY PRIMARY KEY,
+  pet_id      INTEGER NOT NULL,
+  visit_date  DATE,
+  description VARCHAR(255)
+);
+ALTER TABLE visits ADD CONSTRAINT fk_visits_picture_file FOREIGN KEY (pet_id) REFERENCES picture_file (id);
+CREATE INDEX visits_pet_id ON visits (pet_id);

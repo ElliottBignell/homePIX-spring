@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+<h2>Folders</h2>
+
+<table id="folders" class="table table-striped">
+  <thead>
+  <tr>
+    <th style="width: 150px;"></th>
+    <th style="width: 200px;">Name</th>
+    <th></th>
+    <th style="width: 120px"></th>
+    <th>Picture Count</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="folder : ${selections}">
+    <td>
+    </td>
+    <td th:text="${folder.name}">
+      <a th:href="@{/folders/__${folder.id}__}" th:text="${folder.name}"/></a>
+    </td>
+    <td>
+    </td>
+    <td>
+    </td>
+    <td>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 <html xmlns:th="https://www.thymeleaf.org"
-  th:replace="~{fragments/layout :: layout (~{::body},'owners')}">
+  th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
 
 <body>
 
@@ -8,23 +8,27 @@
     Visit
   </h2>
 
-  <b>Pet</b>
+  <b>Picture</b>
   <table class="table table-striped">
     <thead>
       <tr>
         <th>Name</th>
         <th>Birth Date</th>
         <th>Type</th>
-        <th>Owner</th>
+        <th>Albums</th>
       </tr>
     </thead>
     <tr>
-      <td th:text="${pet.name}"></td>
+      <td th:text="${pictureFile.name}"></td>
       <td
-        th:text="${#temporals.format(pet.birthDate, 'yyyy-MM-dd')}"></td>
-      <td th:text="${pet.type}"></td>
+        th:text="${#temporals.format(pictureFile.birthDate, 'yyyy-MM-dd')}"></td>
+      <td th:text="${pictureFile.type}"></td>
       <td
+<<<<<<< HEAD
         th:text="${owner?.firstName + ' ' + owner?.lastName}"></td>
+=======
+        th:text="${pictureFile.album?.name}"></td>
+>>>>>>> ebe21b1 (First version of port from homePIX)
     </tr>
   </table>
 
@@ -38,8 +42,13 @@
 
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
+<<<<<<< HEAD
         <input type="hidden" name="petId" th:value="${pet.id}" />
         <button class="btn btn-primary" type="submit">Add Visit</button>
+=======
+        <input type="hidden" name="petId" th:value="${pictureFile.id}" />
+        <button class="btn btn-default" type="submit">Add Visit</button>
+>>>>>>> ebe21b1 (First version of port from homePIX)
       </div>
     </div>
   </form>
@@ -51,7 +60,7 @@
       <th>Date</th>
       <th>Description</th>
     </tr>
-    <tr th:if="${!visit['new']}" th:each="visit : ${pet.visits}">
+    <tr th:if="${!visit['new']}" th:each="visit : ${pictureFile.visits}">
       <td th:text="${#temporals.format(visit.date, 'yyyy-MM-dd')}"></td>
       <td th:text=" ${visit.description}"></td>
     </tr>

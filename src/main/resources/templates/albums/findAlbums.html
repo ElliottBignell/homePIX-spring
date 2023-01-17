@@ -1,0 +1,44 @@
+<html xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<body>
+
+  <h2>Find Albums</h2>
+
+  <form th:object="${album}" th:action="@{/albums}" method="get"
+    class="form-horizontal" id="search-album-form">
+    <div class="form-group">
+      <div class="control-group" id="nameGroup">
+        <label class="col-sm-2 control-label">Name </label>
+        <div class="col-sm-10">
+          <input class="form-control" th:field="*{name}" size="30"
+            maxlength="80" /> <span class="help-inline"><div
+              th:if="${#fields.hasAnyErrors()}">
+              <p th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</p>
+            </div></span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+<<<<<<< HEAD:src/main/resources/templates/owners/findOwners.html
+        <button type="submit" class="btn btn-primary">Find
+          Owner</button>
+=======
+        <button type="submit" class="btn btn-default">Find
+          Albums</button>
+>>>>>>> ebe21b1 (First version of port from homePIX):src/main/resources/templates/albums/findAlbums.html
+      </div>
+    </div>
+
+    <a class="btn btn-primary" th:href="@{/owners/new}">Add Owner</a>
+
+<<<<<<< HEAD:src/main/resources/templates/owners/findOwners.html
+  </form>
+=======
+  <br />
+  <a class="btn btn-default" th:href="@{/albums/new}">Add Albums</a>
+>>>>>>> ebe21b1 (First version of port from homePIX):src/main/resources/templates/albums/findAlbums.html
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+table {
+    padding         : 1px;
+    border-collapse : collapse;
+    border-spacing  : 5px;
+    font-size       : 400%;
+}
+
+.titlecontent {
+    font-size       : 0.3em;
+    font-weight     : bold;
+    margin-bottom   : 0px;
+}
+
+.titletext {
+    font-size       : 0.25em;
+    font-style      : italic;
+    margin-bottom   : 0px;
+}
+
+#draggable { width: 100px; height: 100px; padding: 0.5em; float: left; margin: 10px 10px 10px 0; }
+#droppable { width: 150px; height: 150px; padding: 0.5em; float: left; margin: 10px; }
+

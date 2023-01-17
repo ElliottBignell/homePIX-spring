@@ -1,0 +1,29 @@
+#slideout {
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,.3);
+  color: #333;
+  position: fixed;
+  top: 60px;
+  height: calc(100% - 60px);
+  right: -60px;
+  width: calc(100% - 60px);
+  opacity: 50%;
+  -webkit-transition-duration: 0.3s;
+  -moz-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+}
+#slideout form {
+  display: block;
+  padding: 20px;
+  opacity: 50%;
+}
+#slideout textarea {
+  display:block;
+  height: 100px;
+  margin-bottom: 6px;
+  width: 250px;
+}
+#slideout.on {
+  right: 0;
+}

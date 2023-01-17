@@ -16,15 +16,44 @@
 
 package org.springframework.samples.petclinic.system;
 
+import org.springframework.samples.petclinic.portfolio.Album;
+import org.springframework.samples.petclinic.portfolio.AlbumRepository;
+import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.Collection;
+import java.util.Map;
 
 @Controller
 class WelcomeController {
 
-	@GetMapping("/")
-	public String welcome() {
-		return "welcome";
+	private final AlbumRepository albums;
+
+	public WelcomeController(AlbumRepository clinicService) {
+		this.albums = clinicService;
 	}
 
+	@GetMapping("/")
+	public String welcome(Album album, BindingResult result, Map<String, Object> model) {
+
+		Collection<Album> results = this.albums.findByName( "Slides" );
+		if (results.isEmpty()) {
+			// no albums found
+			result.rejectValue("name", "notFound", "not found");
+			return "albums/findAlbums";
+		}
+		else if (results.size() == 1) {
+			// 1 album found
+			album = results.iterator().next();
+			model.put("selections", results.iterator().next());
+			return "welcome";
+		}
+		else {
+			// multiple albums found
+			model.put("selections", results);
+			return "albums/albumListPictorial";
+		}
+	}
 }

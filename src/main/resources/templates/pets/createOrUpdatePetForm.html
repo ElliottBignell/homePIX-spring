@@ -1,19 +1,23 @@
 <html xmlns:th="https://www.thymeleaf.org"
-  th:replace="~{fragments/layout :: layout (~{::body},'owners')}">
+  th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
 
 <body>
 
   <h2>
-    <th:block th:if="${pet['new']}">New </th:block>
-    Pet
+    <th:block th:if="${pictureFile['new']}">New </th:block>
+    Picture
   </h2>
-  <form th:object="${pet}" class="form-horizontal" method="post">
+  <form th:object="${pictureFile}" class="form-horizontal" method="post">
     <input type="hidden" name="id" th:value="*{id}" />
     <div class="form-group has-feedback">
       <div class="form-group">
-        <label class="col-sm-2 control-label">Owner</label>
+        <label class="col-sm-2 control-label">Albums</label>
         <div class="col-sm-10">
+<<<<<<< HEAD
           <span th:text="${owner?.firstName + ' ' + owner?.lastName}" />
+=======
+          <span th:text="${pictureFile.album?.name}" />
+>>>>>>> ebe21b1 (First version of port from homePIX)
         </div>
       </div>
       <input
@@ -26,9 +30,15 @@
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
         <button
+<<<<<<< HEAD
           th:with="text=${pet['new']} ? 'Add Pet' : 'Update Pet'"
           class="btn btn-primary" type="submit" th:text="${text}">Add
           Pet</button>
+=======
+          th:with="text=${pictureFile['new']} ? 'Add Picture' : 'Update Picture'"
+          class="btn btn-default" type="submit" th:text="${text}">Add
+          Picture</button>
+>>>>>>> ebe21b1 (First version of port from homePIX)
       </div>
     </div>
   </form>

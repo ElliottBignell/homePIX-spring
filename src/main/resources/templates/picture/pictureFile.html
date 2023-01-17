@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<body>
+
+<script th:src="@{resources/js/navigation.js}" type="text/javascript" async=""></script>
+
+<script>
+
+    var dirty = false;
+    swipe_det = new Object();
+
+    swipe_det.sX = 0;
+    swipe_det.sY = 0;
+    swipe_det.eX = 0;
+    swipe_det.eY = 0;
+
+    var min_x = 30;  //min x swipe for horizontal swipe
+    var max_x = 30;  //max x difference for vertical swipe
+    var min_y = 50;  //min y swipe for vertical swipe
+    var max_y = 60;  //max y difference for horizontal swipe
+    var direc = "";
+
+    function goForth() {
+        window.location.href = $( '#back' ).attr('href') ;
+    }
+
+    function goBack() {
+        window.location.href = $( '#forth' ).attr('href');
+    }
+
+    function navigate(el,d) {
+
+        switch ( d ) {
+        case "r":
+            goForth();
+            break;
+        case "l":
+            goBack();
+            break;
+        }
+    }
+
+    function init() {
+
+        var editable = document.getElementById( 'titletext' );
+
+        editable.addEventListener('input', function() {
+            dirty = true;
+        });
+
+        editable.addEventListener('blur', function() {
+
+            if ( dirty ) {
+
+              var pic_id = $("input#pic_id").val();
+              var val    = jQuery("#titletext").text();
+
+              $.ajax({
+                url: '/keywords/change/' + pic_id,
+                data: {
+                  'key': 'Title',
+                  'value': val
+                },
+                dataType: 'json',
+                success: function (results) {
+                  dirty = false;
+                }
+              });
+            }
+        });
+
+/*
+        var fullScreenButton = document.getElementById( 'fullscreen' );
+
+        fullScreenButton.addEventListener('click', function() {
+
+            $('#fullScreenPic').show();
+            $('#details').hide();
+            $('#panetop').hide();
+            $('#panenavigate').hide();
+            $('#panemain' ).addClass( "paneonly" );
+            $('#panemain' ).removeClass( "panemain" );
+            $('#picmain' ).addClass( "piconly" );
+            $('#picmain' ).removeClass( "picmain" );
+        });
+
+        var hideButton = document.getElementById( 'hidescreen' );
+
+        hideButton.addEventListener('click', function() {
+
+            $('#fullScreenPic').hide();
+            $('#details').show();
+            $('#panetop').show();
+            $('#panenavigate').show();
+            $('#panemain' ).addClass( "panemain" );
+            $('#panemain' ).removeClass( "paneonly" );
+            $('#picmain' ).addClass( "picmain" );
+            $('#picmain' ).removeClass( "piconly" );
+        });
+*/
+    }
+
+    $( window ).load( function() {
+
+        var img = document.querySelector( '#picture_8' );
+
+        $('#dimensions').html( img.naturalWidth + ' x ' + img.naturalHeight );
+    } );
+
+    $(document).ready( function() {
+
+        $('#submit_keywords').submit( function( e ) {
+
+          e.preventDefault();
+
+          var pic_id     = $("input#pic_id").val();
+          var vocabulary = $("input#vocabulary").val();
+
+          $.ajax({
+            url: '/keywords/add/' + pic_id,
+            data: {
+              'vocabulary': vocabulary
+            },
+            dataType: 'json',
+            success: function (results) {
+
+              reload_keyword_buttons( results, pic_id )
+              $("input#vocabulary").val( "" );
+            }
+          });
+        } );
+
+        $( '[id^=picture_]' ).on( 'touchstart mousedown', function(e) {
+
+            e.preventDefault();
+            swipe_det.eX = e.pageX;
+            swipe_det.eY = e.pageY;
+        });
+
+        $( '[id^=picture_]' ).on( 'touchmove mousemove', function(e) {
+
+            e.preventDefault();
+            swipe_det.sX = e.pageX;
+            swipe_det.sY = e.pageY;
+        });
+
+       $( '[id^=picture_]' ).on( 'touchend mouseup', function(e) {
+
+            if ((((swipe_det.eX - min_x > swipe_det.sX) ||
+                  (swipe_det.eX + min_x < swipe_det.sX) ) &&
+                 ((swipe_det.eY < swipe_det.sY + max_y) &&
+                  (swipe_det.sY > swipe_det.eY - max_y) &&
+                  (swipe_det.eX > 0))
+            )) {
+
+                //horizontal detection
+                if(swipe_det.eX > swipe_det.sX) {
+                    goBack();
+                }
+                else {
+                    goForth();
+                }
+            }
+            else if ((((swipe_det.eY - min_y > swipe_det.sY) ||
+                       (swipe_det.eY + min_y < swipe_det.sY)) &&
+                      ((swipe_det.eX < swipe_det.sX + max_x) &&
+                       (swipe_det.sX > swipe_det.eX - max_x) &&
+                       (swipe_det.eY > 0))
+            )) {
+
+                //vertical detection
+                if(swipe_det.eY > swipe_det.sY) {
+                    goForth();
+                }
+                else {
+                   goBack();
+                }
+            }
+
+            if (direc != "") {
+                //if(typeof func == 'function')
+                    navigate(el,direc);
+            }
+            direc = "";
+            swipe_det.sX = 0; swipe_det.sY = 0; swipe_det.eX = 0; swipe_det.eY = 0;
+       });
+    } );
+
+    function remove_keyword( keyword, pic_id ) {
+
+      $.ajax({
+        url: '/keywords/remove/' + pic_id,
+        data: {
+          'vocabulary': keyword
+        },
+        dataType: 'json',
+        success: function (results) {
+          reload_keyword_buttons( results, pic_id )
+        }
+      });
+    }
+
+    var i = setInterval(function(){$("#trace").val($("input[name=line-style]:checked").val());},100);
+
+    window.onload = init;
+
+  </script>
+
+<link rel="stylesheet" href="/static/css/clearall.css">
+<link rel="stylesheet" href="/static/css/dropdown.css">
+
+<div class="techfont" style="width:100%;height:100%;">
+  <div id="details" style="width:100%;height:100%;">
+    <table id="maintab" style="padding:0px;border:0px;width:100%;height:100%;">
+      <tr id="div_{{ picture.modid }}" colspan=4 style="height:100%;">
+        <td style="width:1em;vertical-align:middle;">
+          <a id="back"
+             th:href="@{/albums/__${album.id}__/item/__${ previous }__}">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+          </a>
+          <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
+        </td>
+        <td id="picframe" style="height:100%;width:calc(100%-15em);vertical-align:top;">
+          <!--<div class="bounding-box" style="background-image:url("/{{ picture.modpath }}/{{ picture.file }}");">-->
+          <img th:id="@{picture__${picture.id}__}"
+               class="lazyload imageinlist imageresponsive"
+               th:src="${picture.filename}"
+               th:data-src="${picture.filename}"
+               th:alt="${picture.filename}"
+               style="height:30vw;object-fit:contain;"
+          >
+          </img>
+
+          <div id="titletext"
+               style="position:relative;left:2.3em;right:2.3em;top:100%;width:calc( 100% - 4.6em );"
+               contenteditable="true"
+          >
+            <h1 style="position:absolute;top:0%;left:50%;width:100%;font-size:1em;height:1.2em;transform: translate(-50%, -50%);" th:text="${picture.title}">Unnamed</h1>
+            <form id="comment-form" style="position:absolute;top:3.2em;"
+                  method="POST"
+                  th:object="${form}"
+                  >
+              <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
+              <table class="table"
+                     style="position:absolute;top:calc(120%+2em);left:0em;right:2em;font-size:40%;"
+              >
+                <tr>
+                  <td style="width:7em;"><label for="id_username">Username</label></td>
+                  <td><input id="id_username" name="username"
+                             type="text" class="form-control"></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td><label for="id_password">Your comment</label></td>
+                  <td><textarea id="id_comment" name="comment"
+                                form="comment-form" class="form-control"
+                                placeholder="Your opinion matters!"
+                  >
+                                    </textarea>
+                  </td>
+                  <td>
+                    <input type="submit" value="Submit"
+                           class="btn btn-primary pull-right" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                  </td>
+                  <td>
+                    <script src='https://www.google.com/recaptcha/api.js'></script>
+                    <div class="g-recaptcha" data-sitekey="6Lf0O-cZAAAAABGe-nlRbdrHR12HhorTn8QjMkw7"></div>
+                  </td>
+                  <td>
+                  </td>
+                </tr>
+              </table>
+              <!--
+              <div th:if="${#fields.hasAnyErrors()}">
+                <ul>
+                  <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+                </ul>
+                Error in commenting.
+                Please try again.
+                </p>
+i             </div>
+              -->
+
+              <input type="hidden" name="next" value="{{ next }}" />
+            </form>
+          </div>
+        </td>
+        <td style="width:1em;vertical-align:middle;">
+          <a id="forth"
+             th:href="@{/albums/__${album.id}__/item/__${ next }__}">
+              <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+          <!--th:href="../{{ next.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-right"></span></a>-->
+        </td>
+        <td style="width:7em;">
+
+          <div style="position:absolute;top:0em;height:1.5em;width:5em;">
+            <span>
+              <a href="https://twitter.com/intent/tweet?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on twitter">
+                <svg width="48" height="48" fill="none" class="bo">
+                    <path d="M22.05 7.54a4.47 4.47 0 0 0-3.3-1.46 4.53 4.53 0 0 0-4.53 4.53c0 .35.04.7.08 1.05A12.9 12.9 0 0 1 5 6.89a5.1 5.1 0 0 0-.65 2.26c.03 1.6.83 2.99 2.02 3.79a4.3 4.3 0 0 1-2.02-.57v.08a4.55 4.55 0 0 0 3.63 4.44c-.4.08-.8.13-1.21.16l-.81-.08a4.54 4.54 0 0 0 4.2 3.15 9.56 9.56 0 0 1-5.66 1.94l-1.05-.08c2 1.27 4.38 2.02 6.94 2.02 8.3 0 12.86-6.9 12.84-12.85.02-.24 0-.43 0-.65a8.68 8.68 0 0 0 2.26-2.34c-.82.38-1.7.62-2.6.72a4.37 4.37 0 0 0 1.95-2.51c-.84.53-1.81.9-2.83 1.13z" fill="#0af">
+                    </path>
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/v5.0/dialog/share/?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on facebook">
+                  <svg width="48" height="48" fill="none" class="bo">
+                      <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#fff">
+                      </path>
+                      <path d="M23.2 5H5.8a.8.8 0 0 0-.8.8V23.2c0 .44.35.8.8.8h9.3v-7.13h-2.38V13.9h2.38v-2.38c0-2.45 1.55-3.66 3.74-3.66 1.05 0 1.95.08 2.2.11v2.57h-1.5c-1.2 0-1.48.57-1.48 1.4v1.96h2.97l-.6 2.97h-2.37l.05 7.12h5.1a.8.8 0 0 0 .79-.8V5.8a.8.8 0 0 0-.8-.79" fill="#47a">
+                      </path>
+                  </svg>
+              </a>
+              <a th:href="@{https://www.linkedin.com/sharing/share-offsite/?url=${ picture.filename}}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
+                  <svg width="48" height="48" fill="none" class="bo">
+                      <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#07c">
+                      </path>
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M10.76 20.9v-8.57H7.89v8.58h2.87zm-1.44-9.75c1 0 1.63-.65 1.63-1.48-.02-.84-.62-1.48-1.6-1.48-.99 0-1.63.64-1.63 1.48 0 .83.62 1.48 1.59 1.48h.01zM12.35 20.9h2.87v-4.79c0-.25.02-.5.1-.7.2-.5.67-1.04 1.46-1.04 1.04 0 1.46.8 1.46 1.95v4.59h2.87v-4.92c0-2.64-1.42-3.87-3.3-3.87-1.55 0-2.23.86-2.61 1.45h.02v-1.24h-2.87c.04.8 0 8.58 0 8.58z" fill="#fff">
+                      </path>
+                  </svg>
+              </a>
+              <br>
+            </span>
+          </div>
+
+          <div class="techfont" style="position:absolute;top:1.5em;vertical-align:top;width:5.5em;line-height:0.2em;padding:0px;">
+
+              <span class="titletext">
+                  ID:
+              </span>
+            <span id="filename" class="titlecontent" th:text="${ picture.id }">
+                <br>
+            </span>
+            <span th:if="${picture.title}">
+              <span class="titletext">
+                  Description:
+              </span>
+              <span id="description" class="titlecontent" th:text="${picture.title}">
+                <br>
+              </span>
+            </span>
+            <span th:if="${picture.location}">
+              <span class="titletext">
+                Location:
+              </span>
+              <span id="description" class="titlecontent" th:text="${picture.location}">
+                <br>
+              </span>
+            </span>
+            <span class="titletext">
+              Hits:
+            </span>
+            <span id="description" class="titlecontent" th:text="${picture.hits}">
+              <br>
+            </span>
+            <span th:if="${picture.primaryCategory}">
+              <span class="titletext">
+                Category 1:
+              </span>
+              <span id="description" class="titlecontent" th:text="${ picture.primaryCategory }">
+                <br>
+              </span>
+            </span>
+            <span th:if="${picture.secondaryCategory}">
+              <span class="titletext">
+                Category 2:
+              </span>
+              <span id="description" class="titlecontent" th:text="${ picture.secondaryCategory }">
+                <br>
+              </span>
+            </span>
+            <span th:if="${picture.filename}">
+              <span class="titletext">
+                Filename:
+              </span>
+              <span id="filename" class="titlecontent" th:text="${ picture.filename }">
+                <br>
+              </span>
+            </span>
+            <span th:if="${picture.takenOn}">
+              <span class="titletext">
+                Taken on:
+              </span>
+              <span id="datetime" class="titlecontent" th:text="${#temporals.format(picture.takenOn, 'dd-MMM-yyyy')}">
+                {{ picture.taken_on|date:"d M, Y" }}<br>
+              </span>
+            </span>
+            <span class="titletext">
+                Dimensions:<br>
+            </span>
+
+            <span class="titletext">
+                <br><a href="comment/">Add comment</a>
+            </span>
+
+            <div style="height:1em;">
+            </div>
+
+            <span id="dimensions" class="titlecontent"> x <br> </span>
+            <span th:if="false">
+              <span id="megapixels" class="titlecontent"> ? <br></span>
+              <span class="titletext">
+                  AspectRatio:
+              </span>
+              <span id="aspect" class="titlecontent"> ? <br> </span>
+              <span class="titletext">
+                  Camera:
+              </span>
+              <span id="camera" class="titlecontent"> ? <br></span>
+              <span class="titletext">
+                  Exposure:
+              </span>
+              <span id="fnumber" class="titlecontent"> ? </span>
+              <span id="exposure" class="titlecontent"> ? </span>
+              <span id="exposureprogram" class="titlecontent"> ? </span>
+              <span id="iso" class="titlecontent"> ? </span>
+              <span id="flash" class="titlecontent"> ? <br></span>
+              <span class="titletext">
+                  Lens:
+              </span>
+              <span id="lensid" class="titlecontent"> ? <br></span>
+              <span id="lens" class="titlecontent"> ? <br></span>
+              <span id="focusmode" class="titlecontent"> ? <br></span>
+              <span id="focusdistance" class="titlecontent"> ? <br></span>
+              <span id="focallength" class="titlecontent"> ? </span>
+              <span id="focallen35mm" class="titlecontent"> ? <br></span>
+            </span>
+          </div>
+
+          <div class="techfont" style="position:absolute;top:6.5em;vertical-align:top;width:5.5em;line-height:0.2em;padding:0px;">
+            <div style="height:2em;width:7em;">
+              <form ih:action="@{/albums/add/__${ picture.id }__" method="get" class="float-right" style="font-size:0.5em;">
+                <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
+                <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:400px;"/>
+                <div th:each="album : ${albums}" id="image-dropdown" class="image-dropdown">
+<!--                  <input type="radio" th:id="@{line${ album.name }}" name="line-style" th:value="${ album.name }" /><label th:each="line{{ album.name }}" th:text="${ album.filename }" style="background:url('{{}}') 50% 50%;">Unnamed</label>-->
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="techfont" style="position:absolute;top:9em;vertical-align:bottom;height:5em;width:5em;line-height:0.2em;padding:0px;">
+            <div id="panel1" style="display:inline">
+              <span class="titletext">
+                  Keywords:
+              </span>
+              <span id="keywords" class="titlecontent" th:each="word : ${picture.keywords}">
+                <button type="button" data-react-toolbox="button" th:text="${word}">
+                <i class="glyphicon glyphicon-remove"></i>
+                </button>
+              </span>
+              <form id="submit_keywords" action="" method="get" style="font-size:0.3em;padding-top:10px;">
+                <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
+                <input name="vocabulary"  type="text"   id="vocabulary" placeholder="Add keywords...">
+                <input name="pic_id"      type="hidden" id="pic_id"     value="{{ picture.modid }}">
+              </form>
+            </div>
+            <div id="panel2" style="display:none">
+              <a href=javascript:panel2() class="unembellish">
+                <span class="titletext">
+                    Location:
+                </span>
+              </a>
+              <span id="map">
+                <img src=""/>
+              /<span>
+            </div>
+            <span class="titletext">
+                <br>Copyright
+            </span>
+            <span id="copyright" class="titlecontent"> ? <br></span>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

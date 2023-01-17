@@ -39,7 +39,7 @@ public interface VetRepository extends Repository<Vet, Integer> {
 
 	/**
 	 * Retrieve all <code>Vet</code>s from the data store.
-	 * @return a <code>Collection</code> of <code>Vet</code>s
+	 * @return a <code>PictureCollection</code> of <code>Vet</code>s
 	 */
 	@Transactional(readOnly = true)
 	@Cacheable("vets")

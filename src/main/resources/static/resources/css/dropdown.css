@@ -1,0 +1,33 @@
+#image-dropdown {
+    /*style the "box" in its minimzed state*/
+    border:1px solid black; width:400px; height:50px; overflow:hidden;
+    /*animate the dropdown collapsing*/
+    transition: height 0.1s;
+}
+#image-dropdown:hover {
+    /*when expanded, the dropdown will get native means of scrolling*/
+    height:400px; overflow-y:scroll;
+    /*animate the dropdown expanding*/
+    transition: height 0.5s;
+}
+#image-dropdown input {
+    /*hide the nasty default radio buttons!*/
+    position:absolute;top:0;left:0;opacity:0;
+}
+#image-dropdown label {
+    /*style the labels to look like dropdown options*/
+    display:none; margin:2px; height:92px; opacity:0.2;
+    background:url("http://www.google.com/images/srpr/logo3w.png") 50% 50%;
+}
+#image-dropdown:hover label{
+    /*this is how labels render in the "expanded" state.
+     we want to see only the selected radio button in the collapsed menu,
+     and all of them when expanded*/
+    display:block;
+}
+#image-dropdown input:checked + label {
+    /*tricky! labels immediately following a checked radio button
+      (with our markup they are semantically related) should be fully opaque
+      and visible even in the collapsed menu*/
+    opacity:1 !important; display:block;
+}

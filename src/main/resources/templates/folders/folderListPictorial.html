@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+<h2>Folders</h2>
+
+<div class="col-sm-12 panemain" id="panemain" style="width:90%;">
+  <div style="background:transparent;position:absolute;left:0em;right:0em;top:0em;bottom:0em;">
+
+
+    <div class="centerstage">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="row">
+          <div class="col-md-6">
+            <h1>Folders</h1>
+          </div>
+          <div class="col-md-6">
+            <span class="pull-right">
+              <form action="/folders_new/" method="get">
+                <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
+                <input id="name" name="name" type="text" placeholder="Add new...">
+              </form>
+              <br>Click on <span class="tou-node" id="tou-4-1bccd7d6-3bbe-4408-8f32-a630da59bc94" lang="it"></span> to  open the folder
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <figure th:each="folder : ${selections}" class="tt_base droppable techfont gallery justified" id="div_2__">
+        <figcaption th:text="${folder.name}" class="desc">Unnamed</figcaption>
+        <a id="@{piclink___${folder.count}__}" th:href="${folder.id}">
+          <section class="wrapper" id="file-number__">
+              <span class="tt_subject">
+                <img th:id="@{picture_${folder.id}}"
+                     class="gallery_picture lazyloaded"
+                     src="https://drive.google.com/uc?export=view&id=1JMOyeB6aNetfKhLCYFiPVD7H-nwoEPpH"
+                     date-src="https://drive.google.com/uc?export=view&id=1JMOyeB6aNetfKhLCYFiPVD7H-nwoEPpH"
+                     alt="Thumbnail"
+                />
+              </span>
+          </section>
+        </a>
+        <figcaption th:text="Thumbnail" class="count">Empty</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+        //imgnav = new folderMover( "." )
+    </script>
+
+
+
+</div>
+
+</body>
+</html>

@@ -2,8 +2,13 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.samples</groupId>
+<<<<<<< HEAD
   <artifactId>spring-petclinic</artifactId>
   <version>3.0.0-SNAPSHOT</version>
+=======
+  <artifactId>spring-homePIX</artifactId>
+  <version>2.4.0.BUILD-SNAPSHOT</version>
+>>>>>>> ebe21b1 (First version of port from homePIX)
 
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -108,8 +113,14 @@
     </dependency>
 
     <dependency>
+<<<<<<< HEAD
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
+=======
+      <groupId>org.thymeleaf.extras</groupId>
+      <artifactId>thymeleaf-extras-java8time</artifactId>
+      <version>3.0.1.RELEASE</version>
+>>>>>>> ebe21b1 (First version of port from homePIX)
     </dependency>
 
   </dependencies>

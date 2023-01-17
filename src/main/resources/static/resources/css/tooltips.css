@@ -1,0 +1,221 @@
+#container {
+  margin-top: 20px;
+  overflow-y:scroll;
+}
+
+/* Tooltip container */
+.tt_base {
+    position: relative;
+    overflow:hidden;
+    display: inline-block;
+    margin:0.3em;
+    background-color: var( --homepix-bg-lightest );
+    /* border-bottom: 1px dotted black; */ /* If you want dots under the hoverable text */
+}
+
+.tt_base .tt_left {
+
+    position:absolute;
+    left: 2px;
+    top: 2px;
+    width: calc( 100% - 4px);
+    padding: 5px 2px;
+    background-color: var( --homepix-text );
+    color: var( --homepix-text );
+    text-align: right;
+    vertical-align: top;
+    margin:auto;
+}
+
+.tt_base .tt_lefttext {
+
+    /* Text and font */
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: top;
+
+    -moz-transform-origin:top left;
+    -webkit-transform-origin:top left;
+    -o-transform-origin:top left;
+    -ms-transform-origin:top left;
+    transform-origin:top left;
+}
+
+.tt_base .tt_lefttextnooff {
+
+    position:relative;
+
+    /* Text and font */
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: right;
+    vertical-align: top;
+    margin-left: 0px;
+    opacity:0.5;
+    left:5px;
+    right:5px;
+}
+
+/* Non-dynamic header for directories */
+.tt_base .tt_dir {
+
+    position:absolute;
+    left: 0%;
+    top: 2px;
+    width: 18px;
+    visibility: visible;
+
+    /* Position the tt_base text */
+    z-index: 1;
+    margin-left: 0px;
+}
+
+.tt_base .tt_top {
+
+    right: 0%;
+    top: 0%;
+    padding: 10px 10px;
+    border-radius: 6px;
+    background-color: #555;
+    color: #fff;
+
+    /* Text and font */
+    font-size: 10pt;
+}
+
+.tt_base .tt_bottom {
+
+    right: 0%;
+    bottom: 0%;
+    padding: 10px 10px;
+    border-radius: 6px;
+    background-color: #555;
+    color: #fff;
+
+    /* Text and font */
+    font-size: 10pt;
+}
+
+/* Tooltip text */
+.tt_base .tt_text {
+
+    visibility: hidden;
+
+    /* Position the tt_base text */
+    position: absolute;
+    z-index: 1;
+    margin-left: 0px;
+
+    /* Fade in tt_base */
+    opacity:0.5;
+    transition: opacity 1s;
+}
+
+/* Tooltip arrow */
+.tt_base .tt_text::after {
+    content: "";
+    border-width: 0px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+/* Show the tt_base text when you mouse over the tt_ container */
+.tt_base:hover .tt_text {
+    visibility: visible;
+    opacity:0.75;
+    transition: opacity 1s;
+}
+
+/* Tooltip header */
+.tt_base .tt_subject {
+    visibility: visible;
+}
+
+/* Tooltip header */
+.tt_base .tt_header {
+
+    visibility: hidden;
+
+    /* Position the header bar */
+    left: -1px;
+    top: -1px;
+    bottom: 100%;
+}
+
+.tt_base .tt_header::after {
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    bottom: 100%;
+}
+
+.tt_base:hover .tt_header {
+    visibility: visible;
+}
+
+.tt_base .tt_header h1 {
+    border-width: 0px;
+    border-style: solid;
+    color:var( --homepix-dark );
+}
+
+/* Tooltip header */
+.tt_base .tt_edit {
+
+    visibility: hidden;
+
+    /* Position the edit box */
+    position: absolute;
+    z-index: 1;
+    top: 150px;
+    left: 10%;
+    margin-left: 5px;
+}
+
+.tt_base .tt_edit::after {
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    bottom: 100%;
+}
+
+.tt_base:hover .tt_edit {
+    visibility: visible;
+}
+
+.tt_unselected {
+
+    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    box-shadow: 0 0 0 0px white;
+}
+
+.tt_selected {
+
+    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    box-shadow: 0 0 0 2px green,
+                0 0 0 4px green,
+                0 0 0 6px green;
+}
+
+.tt_focussed {
+
+    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    box-shadow: 0 0 0 2px red,
+                0 0 0 4px yellow,
+                0 0 0 6px red;
+}
+
+.tt_container {
+  height: 200px;
+  position: relative;
+  border: 3px solid green;
+}
+
+.tt_vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}

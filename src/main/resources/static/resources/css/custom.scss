@@ -1,0 +1,46 @@
+// Custom.scss
+// Option B: Include parts of Bootstrap
+
+/* custom.scss */    
+/* import the necessary Bootstrap files */
+
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+
+/* -------begin customization-------- */   
+
+/* simply assign the value */ 
+
+$body-bg: #e05915;
+$enable-gradients: true;
+$color:      #431c5d;
+$link-color: #431c5d;
+
+/* or, use an existing variable */
+
+$theme-colors: (
+
+  primary: $purple
+
+);
+
+/* -------end customization-------- */  
+
+
+
+// finally, import Bootstrap to set the changes!
+
+@import "bootstrap";
+
+// Required
+ @import "../node_modules/bootstrap/scss/bootstrap";
+ @import "../node_modules/bootstrap/scss/functions";
+ @import "../node_modules/bootstrap/scss/variables";
+ @import "../node_modules/bootstrap/scss/mixins";
+ 
+ Optional
+ @import "../node_modules/bootstrap/scss/reboot";
+ @import "../node_modules/bootstrap/scss/type";
+ @import "../node_modules/bootstrap/scss/images";
+ @import "../node_modules/bootstrap/scss/code";
+ @import "../node_modules/bootstrap/scss/grid";

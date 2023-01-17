@@ -1,0 +1,42 @@
+@import 'globalVariables.css';
+
+.pill,
+.filterText,
+.button,
+.icon,
+.toggle {
+  height: 26px !important;
+  line-height: 26px !important;
+}
+
+.pill {
+  margin: 4px 4px 0 0 !important;
+}
+
+.removeCloseIcon {
+  cursor: default;
+  pointer-events: none;
+
+  & > button:first-child {
+    & > span {
+      padding: 0 12px !important;
+    }
+  }
+  & > button:last-child {
+    display: none;
+  }
+}
+
+.filterPill {
+  background-color: color(var(--color-light-primary) a(0%)) !important;
+  border: 1px solid var(--color-dark-quaternary) !important;
+}
+
+.filterPill:hover {
+  background-color: var(--color-gray2) !important;
+}
+
+
+
+// WEBPACK FOOTER //
+// ./src/app/components/ContentEditor/components/EditorKeywords/Keyword.css

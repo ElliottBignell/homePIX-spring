@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+  <body>
+
+    <h2>Albums</h2>
+
+    <table id="albums" class="table table-striped">
+        <thead>
+        <tr>
+            <th style="width: 150px;"></th>
+            <th style="width: 200px;">Name</th>
+            <th></th>
+            <th style="width: 120px"></th>
+            <th>Picture Count</th>
+        </tr>
+        </thead>
+        <tbody>
+          <tr th:each="album : ${selections}">
+            <td>
+            </td>
+            <td th:text="${album.name}">
+                  <a th:href="@{/albums/__${album.id}__}" th:text="${album.name}"/></a>
+              </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td th:text="${#sets.size(album.pictureFiles)}">
+            </td>
+          </tr>
+        </tbody>
+    </table>
+
+  </body>
+</html>

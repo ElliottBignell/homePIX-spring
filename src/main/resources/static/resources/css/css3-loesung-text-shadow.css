@@ -1,0 +1,35 @@
+h1 {
+    font-size: 24pt;
+}
+h2 {
+    font-size: 24pt;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    vertical-align:top;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+h3 {
+    font-size: 14pt;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    vertical-align:top;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+a.directory {
+    font-size: 16pt;
+    color: red;
+    text-decoration:none;
+    margin-left:10%;
+}
+div.info{
+    font-size: 16pt;
+    text-decoration:none;
+    white-space: nowrap;
+}
+div,span{
+    font-size: 10pt;
+}
