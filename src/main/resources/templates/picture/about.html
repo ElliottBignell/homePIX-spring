@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+<h2>homePIX Photo Page</h2>
+
+<style type="text/css">
+      .fa_custom {
+        color: #0099CC
+      }
+    </style>
+
+<div style="position:absolute;top:4em;left:50em;">
+  <a href="https://www.linkedin.com/in/elliottbignell/">
+    <img src="{% static 'images/1606398009197.jpeg' %}" style="width:25em;">
+  </a>
+  <p><i class="fa fa-linkedin fa_custom fa-4x"></i>
+  <p><a href="https://twitter.com/ElliottCBi/" style="color:var( --homepix-dark );">
+    <img src="{% static 'images/twitter.png' %}" style="width:5em;"> @ElliottCBi
+  </a>
+  <p><a href="https://www.alamy.com/portfolio/elliottbignellonalamy" style="color:var( --homepix-dark );">Marketplace</a>
+</div>
+<div class="techfont" id="div_8" style="min-height:100px;">
+  <h1>Blog created as Python Django exercise on Udemy course</h1>
+  <h2>Implementation for pictures by
+    <a href="https://www.linkedin.com/in/elliottbignell/" style="color:var( --homepix-dark );">Elliott Bignell</a>
+  </h2>
+
+  <p><a href="https://github.com/ElliottBignell/homePIX" style="color:var( --homepix-dark );">GitHub source project</a>
+  <h2>Happy shooting</h2>
+
+  <h2>TODO</h2>
+
+  <ul>
+    <li>Mobile-ready version (graceful degradation)</li>
+    <li>User albums and starred, or otherwise retrievable</li>
+    <li>"Buy" links</li>
+    <li>Comments</li>
+    <li>Allow identification of repeats</li>
+    <li>Allow collapse of series</li>
+    <li>Full drag-and-drop organisation with keywords.etc</li>
+    <li>Add breadcrumbs</li>
+    <li>Add default pictures</li>
+    <li>Delete buttons etc. for removing Albums and content</li>
+    <li>Import and export CSV</li>
+    <li>Complete front page with albums, folder then pictures in sequence</li>
+    <li>Delete dead entries from album database table</li>
+    <li>Bulk operations and multiple selection</li>
+    <li>Mashup using multiple online sources and local files</li>
+    <li>Shares toFacebook et al</li>
+    <li>React</li>
+    <li>Cookies to keep user preferences</li>
+  </ul>
+  <h3>Organisation</h3>
+  <ul>
+    <li>Show album when selected</li>
+    <li>Add folders (read-only)</li>
+    <li>Add tab for return to pictures view</li>
+    <li>Add keyboard operations for adding to albums</li>
+    <li>Make drag-grab easier to perform</li>
+    <li>Allow hiding and sorting of content</li>
+    <li>Allow removal of content from album (delete button and a keyboard action)</li>
+  </ul>
+  <h3>Easter Eggs Stuff</h3>
+  <ul>
+    <li>Welcome Page</li>
+    <li>WebGL seashells</li>
+  </ul>
+
+  <h2>Done</h2>
+  <ul>
+    <li>Filter by date range</li>
+  </ul>
+</div>
+
+<h2>Testing Matrix</h2>
+<table style="width:100%;">
+  <tr style="height:2em;">
+    <td>
+
+    </td>
+    <td>
+      Content
+    </td>
+    <td>
+      Search
+    </td>
+    <td>
+      Sort
+    </td>
+    <td>
+      Examine
+    </td>
+  </tr>
+  <tr style="height:2em;">
+    <td>
+      Pictures
+    </td>
+  </tr>
+  <tr style="height:2em;">
+    <td>
+      Folders
+    </td>
+  </tr>
+  <tr style="height:2em;">
+    <td>
+      Albums
+    </td>
+  </tr>
+  <tr style="height:2em;">
+    <td>
+      Organiser
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
+<!DOCTYPE html>

@@ -1,0 +1,153 @@
+{% extends "homePIX/base.html" %}
+{% block content %}
+
+  <script>
+
+    var dirty = false;
+
+    function init() {
+
+        var editable = document.getElementById( 'titletext' );
+
+        editable.addEventListener('input', function() {
+            dirty = true;
+        });
+
+        editable.addEventListener('blur', function() {
+
+            if ( dirty ) {
+
+              var pic_id = $("input#pic_id").val();
+              var val    = jQuery("#titletext").text();
+
+              $.ajax({
+                url: '/keywords/change/' + pic_id,
+                data: {
+                  'key': 'Title',
+                  'value': val
+                },
+                dataType: 'json',
+                success: function (results) {
+                  dirty = false;
+                }
+              });
+            }
+        });
+    }
+
+    function remove_keyword( keyword, pic_id ) {
+
+      $.ajax({
+        url: '/keywords/remove/' + pic_id,
+        data: {
+          'vocabulary': keyword
+        },
+        dataType: 'json',
+        success: function (results) {
+          reload_keyword_buttons( results, pic_id )
+        }
+      });
+    }
+
+    //window.onload = init;
+
+  </script>
+
+  <div class="centerstage">
+    <div class="techfont" id="div_" style="min-height:100px;">
+      <div class="col-md-3">
+        <h1>Organise</h1>
+      </div>
+      <div class="col-md-3">
+      </div>
+      <div class="col-md-3">
+        <form action="{% url 'picturefile_organise' %}" method="get">
+          Sort by
+          <select name="sort">
+            {% for option in sort_options %}
+              {% if option == sort %}
+                <option value="{{ option }}" selected>{{ option }}</option>
+              {% else %}
+                <option value="{{ option }}">{{ option }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <button type="submit">
+            {% if order == "desc" %}
+              <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+            {% else %}
+              <span class="glyphicon glyphicon-sort-by-attributes"></span>
+            {% endif %}
+          </button>
+          {% if order == "desc" %}
+            <input type="hidden" id="direction" name="direction" value="asc"/>
+          {% else %}
+            <input type="hidden" id="direction" name="direction" value="desc"/>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4" id="paneleft">
+    <div id="select_keywords" draggable="true" class="droppable draggable" style="position:absolute;top:30px;height:120px;width:80%;overflow-y:scroll;">
+        <input id="edit_keywords" name="search" type="text" placeholder="No keywords loaded...">
+        <span id="btn_keywords_add"   class="glyph glyphicon glyphicon-plus"></span><br>
+    </div>
+    <div id="apply_keywords" style="position:absolute;top:30px;height:120px;left:85%;width:15%;font-size:1.5em;">
+      <span id="btn_keywords_apply"   class="glyph glyphicon glyphicon-chevron-right"></span><br>
+      <span id="btn_keywords_del"   class="glyph glyphicon glyphicon-chevron-left"></span><br>
+      <span id="btn_keywords_reset" class="glyph glyphicon glyphicon-remove-sign"></span>
+    </div>
+    <div id="all_keywords" class="droppable draggable" style="position:absolute;top:160px;height:120px;width:90%;overflow-y:scroll;">
+      {% for word in sidebar %}
+        <button type="button" class="droppable draggable keyword" data-react-toolbox="button">
+        {{ word }}
+        <i class="glyphicon glyphicon-remove"></i>
+        </button>
+      {% empty %}
+        No keywords loaded
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-sm-8" id="paneright">
+    {% for picture in object_list %}
+      <div class="tt_base droppable" id="div_{{ picture.id }}" style="min-height:200px;">
+        <!-- <a id="piclink_8" href="{{ picture.modpath }}/{{ picture.modfile }}"> -->
+      <section class="wrapper" id="modfile-number_{{ picture.id }}">
+          <span class="tt_subject">
+            <img id="picture_{{ picture.id }}"
+                 class="lazyload selectable"
+                 src="/{{ picture.modpath }}/{{ picture.modpreview }}"
+                 data-src="/{{ picture.modpath }}/{{ picture.modfile }}"
+                 alt="{{ picture.modpath }}/{{ picture.modfile }}"
+                 style="position:relative;top:100%;left:0%;z-index:0;height:200px;">
+                <div id="header_o_{{ picture.id }}" class="tt_left tt_text">
+                  <div id="header_{{ picture.id }}" class="tt_lefttextnooff">
+                    {{ picture.title }}
+                  </div>
+                </div>
+                <span class="tt_text tt_top">
+                  <article id="art_pageno_{{ picture.id }}">{{ picture.taken_on }}</article>
+                </span>
+                <span class="tt_text tt_bottom">
+                  <article id="art_keywords_{{ picture.id }}">{{ picture.keywords }}</article>
+                </span>
+              </img>
+          </span>
+        </section>
+        <span class="tt_edit">
+            <form id="editprops{{ picture.id }}">
+                <fieldset>
+                    <input id="title{{ picture.id }}" type="text" value="test">
+                </fieldset>
+            </form>
+        </span>
+      </div>
+    {% empty %}
+      <div class="techfont" id="div_{{ picture.id }}" style="min-height:100px;">
+        No pictures found
+      </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}
