@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="homePIXApplication" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="17" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <envs>
+      <env name="DBCONFIG" value="Debug" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="org.springframework.samples.petclinic.homePIXApplication" />
+    <module name="spring-homePIX" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.springframework.samples.petclinic.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
+      <option name="credential" />
+      <option name="region" />
+      <option name="useCurrentConnection" value="false" />
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

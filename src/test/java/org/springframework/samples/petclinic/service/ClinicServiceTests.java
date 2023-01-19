@@ -110,7 +110,7 @@ class ClinicServiceTests {
 
 		Album album = new Album();
 		album.setName("Sam");
-		album.setCount(0);
+		album.setPicture_count(0);
 		this.albums.save(album);
 		assertThat(album.getId().longValue()).isNotEqualTo(0);
 

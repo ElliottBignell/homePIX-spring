@@ -29,6 +29,11 @@ class AboutController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about";
 
+	@GetMapping("/about/")
+	public String aboutSLash(Album album, BindingResult result, Map<String, Object> model) {
+		return about( album, result, model );
+	}
+
 	@GetMapping("/about")
 	public String about(Album album, BindingResult result, Map<String, Object> model) {
 		model.put("pagination", super.pagination);

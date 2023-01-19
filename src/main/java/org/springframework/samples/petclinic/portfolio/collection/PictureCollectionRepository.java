@@ -16,6 +16,7 @@
 package org.springframework.samples.petclinic.portfolio.collection;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -33,9 +34,30 @@ import org.springframework.transaction.annotation.Transactional;
 public interface PictureCollectionRepository extends Repository<PictureCollection, Integer> {
 
 	/**
-	 * Save an {@link Collection} to the data store, either inserting or updating it.
-	 * @param collection the {@link Collection} to save
+	 * Retrieve {@link PictureCollection}s from the data store by last name, returning all pictureCollections
+	 * whose last name <i>starts</i> with the given name.
+	 * @param name Value to search for
+	 * @return a PictureCollection of matching {@link PictureCollection}s (or an empty PictureCollection if none
+	 * found)
 	 */
-	void save(PictureCollection collection);
+
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename =:name")
+	@Transactional(readOnly = true)
+	Collection<PictureCollection> findByName(@Param("name") String name);
+
+	/**
+	 * Retrieve an {@link PictureCollection} from the data store by id.
+	 * @param id the id to search for
+	 * @return the {@link PictureCollection} if found
+	 */
+	@Query("SELECT picture_file FROM PictureFile picture_file")
+	@Transactional(readOnly = true)
+	List< PictureFile > findAll();
+
+	/**
+	 * Save an {@link PictureCollection} to the data store, either inserting or updating it.
+	 * @param pictureCollection the {@link PictureCollection} to save
+	 */
+	void save(PictureCollection pictureCollection);
 
 }

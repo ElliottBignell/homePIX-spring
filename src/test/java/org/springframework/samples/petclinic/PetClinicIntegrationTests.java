@@ -27,7 +27,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.petclinic.vet.VetRepository;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -37,15 +36,10 @@ class PetClinicIntegrationTests {
 	int port;
 
 	@Autowired
-	private VetRepository vets;
-
-	@Autowired
 	private RestTemplateBuilder builder;
 
 	@Test
 	void testFindAll() throws Exception {
-		vets.findAll();
-		vets.findAll(); // served from cache
 	}
 
 	@Test

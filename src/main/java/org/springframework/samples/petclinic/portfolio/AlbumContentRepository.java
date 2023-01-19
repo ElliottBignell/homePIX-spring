@@ -30,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Data. See:
  * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-creation
  *
- * @author Ken Krebs
- * @author Juergen Hoeller
- * @author Sam Brannen
- * @author Michael Isvy
+ * @author Elliott Bignell
  */
 public interface AlbumContentRepository extends Repository<AlbumContent, Integer> {
 
@@ -42,18 +39,18 @@ public interface AlbumContentRepository extends Repository<AlbumContent, Integer
 	 * @param id the id to search for
 	 * @return the {@link AlbumContent} if found
 	 */
-	@Query("SELECT albumContent FROM AlbumContent albumContent left join fetch albumContent.pictureFiles WHERE albumContent.id =:id")
-	@Transactional(readOnly = true)
-	AlbumContent findById(@Param("id") Integer id);
+	//@Query("SELECT albumContent FROM AlbumContent albumContent left join fetch albumContent.pictureFiles WHERE albumContent.id =:id")
+	//@Transactional(readOnly = true)
+	//AlbumContent findById(@Param("id") Integer id);
 
 	/**
 	 * Retrieve an {@link AlbumContent} from the data store by id.
 	 * @param id the id to search for
 	 * @return the {@link AlbumContent} if found
 	 */
-	@Query("select picture_file from (( AlbumContent INNER JOIN picture_file ON picture_file.id=AlbumContent.entry_id) INNER JOIN album ON album.id=AlbumContent.album_id")
-	@Transactional(readOnly = true)
-	List<PictureFile> findPicturesById(@Param("album_id") Integer album_id);
+	//@Query("select picture_file from (( AlbumContent INNER JOIN picture_file ON picture_file.id=AlbumContent.entry_id) INNER JOIN album ON album.id=AlbumContent.album_id")
+	//@Transactional(readOnly = true)
+	//List<PictureFile> findPicturesById(@Param("album_id") Integer album_id);
 
 	/**
 	 * Save an {@link AlbumContent} to the data store, either inserting or updating it.

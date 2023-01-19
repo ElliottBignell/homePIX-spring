@@ -76,8 +76,8 @@ class AlbumContentController {
 
 	@GetMapping("/album/{id}/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId, Model model) {
-		AlbumContent albumContent = this.albums.findById(ownerId);
-		model.addAttribute(albumContent);
+		//AlbumContent albumContent = this.albums.findById(ownerId);
+		//model.addAttribute(albumContent);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
@@ -102,7 +102,7 @@ class AlbumContentController {
 	@GetMapping("/album/{id}/{ownerId}")
 	public ModelAndView showOwner(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
-		AlbumContent albumContent = this.albums.findById(ownerId);
+		//AlbumContent albumContent = this.albums.findById(ownerId);
 		return mav;
 	}
 

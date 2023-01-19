@@ -73,6 +73,11 @@ class AlbumController extends PaginationController {
 		return "albums/findAlbums";
 	}
 
+	@GetMapping("/albums/")
+	public String processFindFormSlash(Album album, BindingResult result, Map<String, Object> model) {
+		return processFindForm( album, result, model);
+	}
+
 	@GetMapping("/albums")
 	public String processFindForm(Album album, BindingResult result, Map<String, Object> model) {
 
@@ -99,6 +104,11 @@ class AlbumController extends PaginationController {
 			model.put("selections", results);
 			return "albums/albumList";
 		}
+	}
+
+	@GetMapping("/album/")
+	public String processFindAlbumsSlash(Album album, BindingResult result, Map<String, Object> model) {
+		return processFindAlbums( album, result, model);
 	}
 
 	@GetMapping("/album")
@@ -167,6 +177,11 @@ class AlbumController extends PaginationController {
 	@GetMapping("/albums/{id}")
 	public ModelAndView showAlbums(@PathVariable("id") int id,  Map<String, Object> model) {
 		return showAlbum(id, model);
+	}
+
+	@GetMapping("/albums/{id}/item/{pictureId}/")
+	public String showElementSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,  Map<String, Object> model) {
+		return showElement( id, pictureId,  model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}")

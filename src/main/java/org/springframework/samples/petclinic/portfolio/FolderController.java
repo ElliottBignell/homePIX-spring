@@ -76,6 +76,11 @@ class FolderController extends PaginationController {
 		return "folders/findFolders";
 	}
 
+	@GetMapping("/folders/")
+	public String processFindFormSlash(Folder folder, BindingResult result, Map<String, Object> model) {
+		return processFindForm( folder, result, model);
+	}
+
 	@GetMapping("/folders")
 	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
 
@@ -102,6 +107,11 @@ class FolderController extends PaginationController {
 			model.put("selections", results);
 			return "folders/folderList";
 		}
+	}
+
+	@GetMapping("/folder/")
+	public String processFindFoldersSlash(Folder folder, BindingResult result, Map<String, Object> model) {
+		return processFindFolders( folder, result, model);
 	}
 
 	@GetMapping("/folder")

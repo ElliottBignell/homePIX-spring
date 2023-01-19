@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
@@ -38,14 +37,11 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileType;
-import org.springframework.samples.petclinic.visit.Visit;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -64,9 +60,6 @@ class AlbumControllerTests {
 	@MockBean
 	private AlbumRepository albums;
 
-	@MockBean
-	private VisitRepository visits;
-
 	private Album george;
 
 	@BeforeEach
@@ -74,16 +67,13 @@ class AlbumControllerTests {
 		george = new Album();
 		george.setId(TEST_OWNER_ID);
 		george.setName("George");
-		george.setCount(0);
+		george.setPicture_count(0);
 		PictureFile max = new PictureFile();
 		PictureFileType dog = new PictureFileType();
 		dog.setName("dog");
 		max.setType(dog);
 		george.setPictureFilesInternal(Collections.singleton(max));
 		given(this.albums.findById(TEST_OWNER_ID)).willReturn(george);
-		Visit visit = new Visit();
-		visit.setDate(LocalDate.now());
-		given(this.visits.findByPictureFileId(max.getId())).willReturn(Collections.singletonList(visit));
 	}
 
 	@Test
@@ -188,9 +178,6 @@ class AlbumControllerTests {
 						@SuppressWarnings("unchecked")
 						List<PictureFile> pictureFiles = (List<PictureFile>) item;
 						PictureFile pictureFile = pictureFiles.get(0);
-						if (pictureFile.getVisits().isEmpty()) {
-							return false;
-						}
 						return true;
 					}
 

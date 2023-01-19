@@ -37,9 +37,9 @@ public class Album extends BaseEntity {
 	@NotEmpty
 	private String name;
 
-	@Column(name = "count")
+	@Column(name = "picture_count")
 	@NotEmpty
-	private int count;
+	private int picture_count;
 
 	@Column(name = "thumbnail_id")
 	@NotEmpty
@@ -56,12 +56,12 @@ public class Album extends BaseEntity {
 		this.name = address;
 	}
 
-	public int getCount() {
-		return this.count;
+	public int getPicture_count() {
+		return this.picture_count;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
+	public void setPicture_count(int picture_count) {
+		this.picture_count = picture_count;
 	}
 
 	public int getThumbnailId() {

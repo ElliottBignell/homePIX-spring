@@ -23,6 +23,7 @@ import jakarta.persistence.*;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileType;
 
 /**
  * Simple JavaBean domain object representing an album.
@@ -37,58 +38,15 @@ public class AlbumContent extends BaseEntity {
 	@JoinColumn(name = "album_id")
 	private Album album;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "album", cascade = CascadeType.ALL)
-	private Set<PictureFile> pictureFiles;
+	@ManyToOne
+	@JoinColumn(name = "picture_id")
+	private PictureFile pictureFile;
 
-	protected Set<PictureFile> getPictureFilesInternal() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
-	}
-
-	protected void setPictureFilesInternal(Set<PictureFile> pictureFiles) {
-		this.pictureFiles = pictureFiles;
-	}
-
-	public Set<PictureFile> getPictureFiles() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
-	}
-
-	public void addPictureFile(PictureFile pictureFile) {
-		if (pictureFile.isNew()) {
-			getPictureFilesInternal().add(pictureFile);
-		}
-	}
-
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this AlbumContent.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
 	public PictureFile getPictureFile(String name) {
 		return getPictureFile(name, false);
 	}
 
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this AlbumContent.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
 	public PictureFile getPictureFile(String name, boolean ignoreNew) {
-		name = name.toLowerCase();
-		for (PictureFile pictureFile : getPictureFilesInternal()) {
-			if (!ignoreNew || !pictureFile.isNew()) {
-				String compName = pictureFile.getTitle();
-				compName = compName.toLowerCase();
-				if (compName.equals(name)) {
-					return pictureFile;
-				}
-			}
-		}
 		return null;
 	}
 

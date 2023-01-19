@@ -4,7 +4,66 @@
 
 <body>
 
-<h2>Collection</h2>
+<h2 th:text="@{Collection from __${fromDate}__ to __${toDate}__}">Collection</h2>
+
+<div style="overflow-y: auto; max-height: 92vh;">
+
+  <figure th:each="pictureFile : ${collection}" class="tt_base droppable draggable" id="div_${ album.id }">
+    <!-- <a id="piclink_${ album.id }}" href="{{ albumcontent.modpath }}/{{ albumcontent.file }"> -->
+    <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/collection/__${pictureFile.id}__/}">
+      <section class="wrapper" th:id=" @{file-number_${pictureFile.id}}">
+                  <span class="tt_subject">
+                    <img th:id="@{picture__${pictureFile.id}__}"
+                         class="lazyload imageinlist imageresponsive"
+                         th:src="${pictureFile.filename}"
+                         th:data-src="${pictureFile.filename}"
+                         th:alt="${pictureFile.filename}"
+                    >
+                    </img>
+                </span>
+      </section>
+      <div th:id="@{header_o_${ album.id }}" class="tt_left tt_text">
+        <a th:href="@{./make_thumbnail/${request.GET.ID}/${ album.id }/}" style="color:black;height:1em;"><i class="material-icons">album</i></a>
+        <a th:href="@{./move/${ album.id }/-1/}">
+          <i class="material-icons" style="color:black;height:1em;">
+            keyboard_arrow_left
+          </i>
+        </a>
+        <a th:href="@{./move/${ album.id }/+1/}">
+          <i class="material-icons" style="color:black;height:1em;">
+            keyboard_arrow_right
+          </i>
+        </a>
+        <a th:href="@{./move/${ album.id }/+1/}">
+          <i class="material-icons" style="color:black;height:1em;">
+            bedtime
+          </i>
+        </a>
+        <a th:href="@{./delete/${ album.id }/}">
+          <i class="material-icons" style="color:black;height:1em;">
+            delete
+          </i>
+        </a>
+        <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+          <div th:id="@{header_${ album.id }}" class="tt_lefttextnooff">
+            ${ album.title }
+          </div>
+        </figcaption>
+      </div>
+      <figcaption class="tt_text tt_bottom">
+        <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
+      </figcaption>
+    </a>
+    <figcaption class="tt_edit">
+      <form id="editprops">
+        <fieldset>
+          <input id="@{title__${ album.id }__}" type="text" th:value="${pictureFile.title}">
+        </fieldset>
+      </form>
+    </figcaption>
+  </figure>
+</div>
+
 
 </body>
 </html>

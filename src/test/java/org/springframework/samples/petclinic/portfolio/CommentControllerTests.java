@@ -30,12 +30,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Test class for {@link CommentController}
- *
+ Failed to execute SQL script statement of URL DROP TABLE albums IF EXISTS*
  * @author Colin But
  */
 @WebMvcTest(CommentController.class)
@@ -47,9 +46,6 @@ class CommentControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;
-
-	@MockBean
-	private VisitRepository visits;
 
 	@MockBean
 	private PictureFileRepository pictureFiles;

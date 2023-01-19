@@ -43,6 +43,11 @@ class OrganiseController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@GetMapping("/organise/")
+	public String initCreationFormSLash(Map<String, Object> model) {
+		return initCreationForm( model);
+	}
+
 	@GetMapping("/organise")
 	public String initCreationForm(Map<String, Object> model) {
 		Organise organise = new Organise();

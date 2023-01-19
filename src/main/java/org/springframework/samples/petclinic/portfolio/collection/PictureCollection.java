@@ -28,14 +28,11 @@ import org.springframework.samples.petclinic.model.BaseEntity;
  * @author Elliott Bignell
  */
 @Entity
-@Table(name = "picture_file")
 public class PictureCollection extends BaseEntity {
 
 	private String name;
 	private int count;
 	private int thumbnail_id;
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "album", cascade = CascadeType.ALL)
-	private Set<PictureFile> pictureFiles;
 
 	public String getName() {
 		return this.name;
@@ -59,63 +56,6 @@ public class PictureCollection extends BaseEntity {
 
 	public void setThumbnailId(int thumbnail_id) {
 		this.thumbnail_id = thumbnail_id;
-	}
-
-	public PictureFile getThumbnail() {
-
-		Set<PictureFile> files = getPictureFilesInternal();
-
-		if ( null == files || 0 == files.size() ) {
-			return new PictureFile();
-		}
-
-		return files.iterator().next();
-	}
-
-	protected Set<PictureFile> getPictureFilesInternal() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
-	}
-
-	protected void setPictureFilesInternal(Set<PictureFile> pictureFiles) {
-		this.pictureFiles = pictureFiles;
-	}
-
-	public Set<PictureFile> getPictureFiles() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
-	}
-
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this PictureCollection.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
-	public PictureFile getPictureFile(String name) {
-		return getPictureFile(name, false);
-	}
-
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this PictureCollection.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
-	public PictureFile getPictureFile(String name, boolean ignoreNew) {
-		name = name.toLowerCase();
-		for (PictureFile pictureFile : getPictureFilesInternal()) {
-			if (!ignoreNew || !pictureFile.isNew()) {
-				String compName = pictureFile.getTitle();
-				compName = compName.toLowerCase();
-				if (compName.equals(name)) {
-					return pictureFile;
-				}
-			}
-		}
-		return null;
 	}
 
 	@Override
