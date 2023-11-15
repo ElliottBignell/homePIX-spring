@@ -37,7 +37,7 @@ class WelcomeController {
 	@GetMapping("/")
 	public String welcome(Album album, BindingResult result, Map<String, Object> model) {
 
-		Collection<Album> results = this.albums.findByName( "Slides" );
+		Collection<Album> results = this.albums.findByName("Slides");
 		if (results.isEmpty()) {
 			// no albums found
 			result.rejectValue("name", "notFound", "not found");
@@ -55,4 +55,5 @@ class WelcomeController {
 			return "albums/albumListPictorial";
 		}
 	}
+
 }

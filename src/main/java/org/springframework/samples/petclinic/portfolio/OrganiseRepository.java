@@ -18,14 +18,15 @@ package org.springframework.samples.petclinic.portfolio;
 import java.util.Collection;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Repository class for <code>Organise</code> domain objects All method names are compliant
- * with Spring Data naming conventions so this interface can easily be extended for Spring
- * Data. See:
+ * Repository class for <code>Organise</code> domain objects All method names are
+ * compliant with Spring Data naming conventions so this interface can easily be extended
+ * for Spring Data. See:
  * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-creation
  *
  * @author Ken Krebs
@@ -33,21 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Sam Brannen
  * @author Michael Isvy
  */
-public interface OrganiseRepository extends Repository<Organise, Integer> {
-
-	/**
-	 * Retrieve an {@link Organise} from the data store by id.
-	 * @param id the id to search for
-	 * @return the {@link Organise} if found
-	 */
-	@Query("SELECT album FROM Organise album left join fetch album.pictureFiles WHERE album.id =:id")
-	@Transactional(readOnly = true)
-	Organise findById(@Param("id") Integer id);
-
-	/**
-	 * Save an {@link Organise} to the data store, either inserting or updating it.
-	 * @param album the {@link Organise} to save
-	 */
-	void save(Organise album);
+public interface OrganiseRepository extends CrudRepository<Organise, Integer> {
 
 }

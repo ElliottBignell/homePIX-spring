@@ -4,7 +4,7 @@ import java.util.List;
 
 public class CalendarYearGroup {
 
-	private List< CalendarYear > years;
+	private List<CalendarYear> years;
 
 	public CalendarYearGroup(List<CalendarYear> years) {
 		this.years = years;
@@ -17,4 +17,5 @@ public class CalendarYearGroup {
 	public void setYears(List<CalendarYear> years) {
 		this.years = years;
 	}
+
 }

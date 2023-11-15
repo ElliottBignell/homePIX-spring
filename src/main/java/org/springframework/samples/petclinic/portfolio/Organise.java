@@ -29,32 +29,34 @@ import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
  * @author Elliottt Bignell
  */
 @Entity
-@Table(name = "albumcontent")
+// @Table(name = "albumcontent")
 public class Organise extends BaseEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "album_id")
 	private Album album;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "album", cascade = CascadeType.ALL)
-	private Set<PictureFile> pictureFiles;
+	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	// private Set<PictureFile> pictureFiles;
 
 	protected Set<PictureFile> getPictureFilesInternal() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
+		/*
+		 * if (this.pictureFiles == null) { this.pictureFiles = new HashSet<>(); } return
+		 * this.pictureFiles;
+		 */
+
+		return null;
 	}
 
 	protected void setPictureFilesInternal(Set<PictureFile> pictureFiles) {
-		this.pictureFiles = pictureFiles;
+		// this.pictureFiles = pictureFiles;
 	}
 
 	public Set<PictureFile> getPictureFiles() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
+		/*
+		 * if (this.pictureFiles == null) { this.pictureFiles = new HashSet<>(); } return
+		 * this.pictureFiles;
+		 */ return null;
 	}
 
 	public void addPictureFile(PictureFile pictureFile) {
@@ -64,7 +66,8 @@ public class Organise extends BaseEntity {
 	}
 
 	/**
-	 * Return the PictureFile with the given name, or null if none found for this Organise.
+	 * Return the PictureFile with the given name, or null if none found for this
+	 * Organise.
 	 * @param name to test
 	 * @return true if pet name is already in use
 	 */
@@ -73,29 +76,24 @@ public class Organise extends BaseEntity {
 	}
 
 	/**
-	 * Return the PictureFile with the given name, or null if none found for this Organise.
+	 * Return the PictureFile with the given name, or null if none found for this
+	 * Organise.
 	 * @param name to test
 	 * @return true if pet name is already in use
 	 */
 	public PictureFile getPictureFile(String name, boolean ignoreNew) {
-		name = name.toLowerCase();
-		for (PictureFile pictureFile : getPictureFilesInternal()) {
-			if (!ignoreNew || !pictureFile.isNew()) {
-				String compName = pictureFile.getTitle();
-				compName = compName.toLowerCase();
-				if (compName.equals(name)) {
-					return pictureFile;
-				}
-			}
-		}
+		/*
+		 * name = name.toLowerCase(); for (PictureFile pictureFile :
+		 * getPictureFilesInternal()) { if (!ignoreNew || !pictureFile.isNew()) { String
+		 * compName = pictureFile.getTitle(); compName = compName.toLowerCase(); if
+		 * (compName.equals(name)) { return pictureFile; } } }
+		 */
 		return null;
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-			.append("id", this.getId())
-			.toString();
+		return new ToStringCreator(this).append("id", this.getId()).toString();
 	}
 
 }

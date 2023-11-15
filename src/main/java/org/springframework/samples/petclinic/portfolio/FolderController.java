@@ -16,33 +16,38 @@
 package org.springframework.samples.petclinic.portfolio;
 
 import jakarta.validation.Valid;
+import org.checkerframework.checker.regex.qual.Regex;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Collection;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Juergen Hoeller
  * @author Ken Krebs
  * @author Arjen Poutsma
  * @author Michael Isvy
+ * @author Elliott Bignell
  */
 @Controller
 class FolderController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
-	private final FolderRepository folders;
-
-	public FolderController(FolderRepository clinicService ) {
-		this.folders = clinicService;
+	public FolderController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles) {
+		super(albums, folders, pictureFiles);
 	}
 
 	@InitBinder
@@ -53,7 +58,6 @@ class FolderController extends PaginationController {
 	@GetMapping("/folders/new")
 	public String initCreationForm(Map<String, Object> model) {
 		Folder folder = new Folder();
-		model.put("pagination", super.pagination);
 		model.put("folder", folder);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
@@ -71,14 +75,13 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/find")
 	public String initFindForm(Map<String, Object> model) {
-		model.put("pagination", super.pagination);
 		model.put("folder", new Folder());
 		return "folders/findFolders";
 	}
 
 	@GetMapping("/folders/")
 	public String processFindFormSlash(Folder folder, BindingResult result, Map<String, Object> model) {
-		return processFindForm( folder, result, model);
+		return processFindForm(folder, result, model);
 	}
 
 	@GetMapping("/folders")
@@ -86,6 +89,31 @@ class FolderController extends PaginationController {
 
 		// allow parameterless GET request for /folders to return all records
 		if (folder.getName() == null) {
+
+			// String dir = "/mnt/homepix/jpegs/";
+			String dir = "/home/elliott/SpringFramweworkGuru/spring-petclinic-old/src/main/resources/static/resources/images/";
+
+			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
+					.map(File::getName).sorted().collect(Collectors.toList());
+
+			folders.deleteAll();
+
+			for (String name : folderNames) {
+
+				Folder item = new Folder();
+
+				item.setName(name);
+				item.setThumbnailId(36860);
+
+				final Pattern JPEGS = Pattern.compile(".*jpg$");
+
+				long count = Stream.of(new File(dir + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
+						.filter(file -> JPEGS.matcher(file.getName()).find()).count();
+				item.setPicture_count((int) count);
+
+				folders.save(item);
+			}
+
 			folder.setName(""); // empty string signifies broadest possible search
 		}
 
@@ -103,7 +131,6 @@ class FolderController extends PaginationController {
 		}
 		else {
 			// multiple folders found
-			model.put("pagination", super.pagination);
 			model.put("selections", results);
 			return "folders/folderList";
 		}
@@ -111,7 +138,7 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folder/")
 	public String processFindFoldersSlash(Folder folder, BindingResult result, Map<String, Object> model) {
-		return processFindFolders( folder, result, model);
+		return processFindFolders(folder, result, model);
 	}
 
 	@GetMapping("/folder")
@@ -136,7 +163,6 @@ class FolderController extends PaginationController {
 		}
 		else {
 			// multiple folders found
-			model.put("pagination", super.pagination);
 			model.put("selections", results);
 			return "folders/folderListPictorial";
 		}
@@ -144,14 +170,14 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
-		Folder folder = this.folders.findById(ownerId);
+		Optional<Folder> folder = this.folders.findById(ownerId);
 		model.addAttribute(folder);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
 	@PostMapping("/folders/{ownerId}/edit")
 	public String processUpdateOwnerForm(@Valid Folder folder, BindingResult result,
-										 @PathVariable("ownerId") int ownerId) {
+			@PathVariable("ownerId") int ownerId) {
 		if (result.hasErrors()) {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
@@ -162,16 +188,93 @@ class FolderController extends PaginationController {
 		}
 	}
 
-	@GetMapping("/folder/{id}")
-	public String showFolder(@PathVariable("id") int id, Model model) {
+	@GetMapping("/folder/{name}")
+	public String showFolder(@PathVariable("name") String name, Model model) {
 
-		Folder folder = this.folders.findById(id);
-		model.addAttribute(folder);
-		return "folders/folderDetails";
+		Collection<Folder> folder = this.folders.findByName(name);
+
+		if (folder.isEmpty()) {
+			return "/folders";
+		}
+		else {
+			model.addAttribute(folder.iterator().next());
+			return "folders/folderDetails";
+		}
 	}
 
-	@GetMapping("/folders/{id}")
-	public String showFolders(@PathVariable("id") int id, Model model) {
-		return showFolder( id, model );
+	@GetMapping("/folders/{name}")
+	public String showFolders(@PathVariable("name") String name, Model model) {
+		return showFolder(name, model);
 	}
+
+	@GetMapping("/folders/{name}/")
+	public String showFoldersByName(@PathVariable("name") String name, Model model) {
+		return showFolder(name, model);
+	}
+
+	@GetMapping("/folders/{name}/file/{filename}")
+	public String showPictureFile(@PathVariable("name") String name, @PathVariable("filename") String filename,
+			Map<String, Object> model) {
+
+		Collection<Folder> folders = this.folders.findByName(name);
+
+		if (folders.isEmpty()) {
+			return "folders/folderList.html";
+		}
+		else {
+
+			ModelAndView mav = new ModelAndView("albums/albumDetails");
+			Folder folder = folders.iterator().next();
+
+			List<PictureFile> pictureFiles = folder.getPictureFiles();
+
+			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + filename, pictureFiles, model, false);
+
+			mav.addObject(pictureFiles);
+			model.put("link_params", "");
+
+			model.put("collection", pictureFiles);
+			model.put("baseLink", "/folders/" + name);
+			model.put("albums", this.albums.findAll());
+
+			Collection<Album> albums = this.albums.findAll();
+
+			return "picture/pictureFile.html";
+		}
+	}
+
+	@GetMapping("/folders/{name}/item/{id}")
+	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
+			Map<String, Object> model) {
+
+		Collection<Folder> folders = this.folders.findByName(name);
+
+		if (folders.isEmpty()) {
+			return "/folders/" + name + "/";
+		}
+		else {
+
+			ModelAndView mav = new ModelAndView("albums/albumDetails");
+			Folder folder = folders.iterator().next();
+
+			List<PictureFile> pictureFiles = folder.getPictureFiles();
+
+			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + pictureFiles.get(id).getTitle(), pictureFiles,
+					model, false);
+
+			mav.addObject(pictureFiles);
+			model.put("link_params", "");
+
+			model.put("collection", pictureFiles);
+			model.put("baseLink", "/folders/" + name);
+
+			return "picture/pictureFile.html";
+		}
+	}
+
+	@ModelAttribute(name = "albums")
+	Collection<Album> findAllAlbums() {
+		return this.albums.findAll();
+	}
+
 }

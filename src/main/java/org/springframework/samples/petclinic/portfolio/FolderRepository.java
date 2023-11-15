@@ -18,6 +18,7 @@ package org.springframework.samples.petclinic.portfolio;
 import java.util.Collection;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,33 +33,24 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Juergen Hoeller
  * @author Sam Brannen
  * @author Michael Isvy
+ * @author Elliott Bignell
  */
-public interface FolderRepository extends Repository<Folder, Integer> {
+public interface FolderRepository extends CrudRepository<Folder, Integer> {
 
 	/**
 	 * Retrieve {@link Folder}s from the data store by last name, returning all folders
 	 * whose last name <i>starts</i> with the given name.
 	 * @param name Value to search for
-	 * @return a PictureCollection of matching {@link Folder}s (or an empty PictureCollection if none
-	 * found)
+	 * @return a PictureCollection of matching {@link Folder}s (or an empty
+	 * PictureCollection if none found)
 	 */
 
 	@Query("SELECT DISTINCT folder FROM Folder folder WHERE folder.name LIKE :name%")
 	@Transactional(readOnly = true)
 	Collection<Folder> findByName(@Param("name") String name);
 
-	/**
-	 * Retrieve an {@link Folder} from the data store by id.
-	 * @param id the id to search for
-	 * @return the {@link Folder} if found
-	 */
-	@Query("SELECT folder FROM Folder folder WHERE folder.id =:id")
+	@Query("SELECT DISTINCT folder FROM Folder folder")
 	@Transactional(readOnly = true)
-	Folder findById(@Param("id") Integer id);
+	Collection<Folder> findAll();
 
-	/**
-	 * Save an {@link Folder} to the data store, either inserting or updating it.
-	 * @param folder the {@link Folder} to save
-	 */
-	void save(Folder folder);
 }

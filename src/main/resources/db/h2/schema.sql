@@ -7,26 +7,6 @@ DROP TABLE types IF EXISTS;
 DROP TABLE albums IF EXISTS;
 
 
-CREATE TABLE vets (
-  id         INTEGER IDENTITY PRIMARY KEY,
-  forename   VARCHAR(30),
-  last_name  VARCHAR(30)
-);
-CREATE INDEX vets_last_name ON vets (last_name);
-
-CREATE TABLE specialties (
-  id   INTEGER IDENTITY PRIMARY KEY,
-  name VARCHAR(80)
-);
-CREATE INDEX specialties_name ON specialties (name);
-
-CREATE TABLE vet_specialties (
-  vet_id       INTEGER NOT NULL,
-  specialty_id INTEGER NOT NULL
-);
-ALTER TABLE vet_specialties ADD CONSTRAINT fk_vet_specialties_vets FOREIGN KEY (vet_id) REFERENCES vets (id);
-ALTER TABLE vet_specialties ADD CONSTRAINT fk_vet_specialties_specialties FOREIGN KEY (specialty_id) REFERENCES specialties (id);
-
 CREATE TABLE types (
   id   INTEGER IDENTITY PRIMARY KEY,
   name VARCHAR(80)
@@ -42,7 +22,7 @@ CREATE TABLE IF NOT EXISTS albums (
 CREATE INDEX albums_name ON albums (name);
 
 CREATE TABLE IF NOT EXISTS folders (
-  id INTEGER IDENTITY PRIMARY KEY,
+  id INTEGER IDENTITY PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(30),
   picture_count INT(4) UNSIGNED NOT NULL,
   thumbnail_id INT(8) UNSIGNED NOT NULL
@@ -62,7 +42,6 @@ CREATE TABLE picture_file (
   title               VARCHAR(200),
   last_modified       DATE,
   path_id             INTEGER NOT NULL,
-  album_id            INTEGER NOT NULL,
   keywords_id         INTEGER NOT NULL,
   sortkey             INTEGER NOT NULL,
   added_on            DATE,
@@ -85,8 +64,8 @@ CREATE TABLE albumcontent (
   album_id integer NOT NULL,
   entry_id integer NOT NULL
  );
-ALTER TABLE albumcontent ADD CONSTRAINT fk_albumcontent FOREIGN KEY (album_id) REFERENCES albums (id);
-ALTER TABLE albumcontent ADD CONSTRAINT fk_albumentries FOREIGN KEY (entry_id) REFERENCES picture_file (id);
+ALTER TABLE albumcontent ADD CONSTRAINT fk_album_album_id FOREIGN KEY (album_id) REFERENCES albums (id);
+ALTER TABLE albumcontent ADD CONSTRAINT fk_album_entry_id FOREIGN KEY (entry_id) REFERENCES picture_file (id);
 
 CREATE TABLE visits (
   id          INTEGER IDENTITY PRIMARY KEY,

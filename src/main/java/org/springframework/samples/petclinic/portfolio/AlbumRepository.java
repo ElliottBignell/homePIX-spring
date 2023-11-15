@@ -17,7 +17,9 @@ package org.springframework.samples.petclinic.portfolio;
 
 import java.util.Collection;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,34 +32,24 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Elliott Bignell
  */
-public interface AlbumRepository extends Repository<Album, Integer> {
+public interface AlbumRepository extends CrudRepository<Album, Integer> {
 
 	/**
 	 * Retrieve {@link Album}s from the data store by last name, returning all albums
 	 * whose last name <i>starts</i> with the given name.
 	 * @param name Value to search for
-	 * @return a PictureCollection of matching {@link Album}s (or an empty PictureCollection if none
-	 * found)
+	 * @return a PictureCollection of matching {@link Album}s (or an empty
+	 * PictureCollection if none found)
 	 */
 
 	@Query("SELECT DISTINCT album FROM Album album WHERE album.name LIKE :name%")
-	//@Query("SELECT DISTINCT album FROM Album album left join fetch album.pictureFiles WHERE album.name LIKE :name%")
+	// @Query("SELECT DISTINCT album FROM Album album left join fetch album.pictureFiles
+	// WHERE album.name LIKE :name%")
 	@Transactional(readOnly = true)
 	Collection<Album> findByName(@Param("name") String name);
 
-	/**
-	 * Retrieve an {@link Album} from the data store by id.
-	 * @param id the id to search for
-	 * @return the {@link Album} if found
-	 */
-	@Query("SELECT album FROM Album album left join fetch album.pictureFiles WHERE album.id =:id")
+	@Query("SELECT DISTINCT album FROM Album album")
 	@Transactional(readOnly = true)
-	Album findById(@Param("id") Integer id);
-
-	/**
-	 * Save an {@link Album} to the data store, either inserting or updating it.
-	 * @param album the {@link Album} to save
-	 */
-	void save(Album album);
+	Collection<Album> findAll();
 
 }

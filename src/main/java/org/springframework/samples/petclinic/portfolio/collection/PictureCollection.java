@@ -31,7 +31,9 @@ import org.springframework.samples.petclinic.model.BaseEntity;
 public class PictureCollection extends BaseEntity {
 
 	private String name;
+
 	private int count;
+
 	private int thumbnail_id;
 
 	public String getName() {
@@ -60,10 +62,7 @@ public class PictureCollection extends BaseEntity {
 
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-			.append("id", this.getId())
-			.append("name", this.getName())
-			.toString();
+		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
 
 }

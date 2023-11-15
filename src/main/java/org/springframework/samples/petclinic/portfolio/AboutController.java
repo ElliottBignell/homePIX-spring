@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +30,18 @@ class AboutController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about";
 
+	AboutController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles) {
+		super(albums, folders, pictureFiles);
+	}
+
 	@GetMapping("/about/")
 	public String aboutSLash(Album album, BindingResult result, Map<String, Object> model) {
-		return about( album, result, model );
+		return about(album, result, model);
 	}
 
 	@GetMapping("/about")
 	public String about(Album album, BindingResult result, Map<String, Object> model) {
-		model.put("pagination", super.pagination);
 		return ABOUT_FORM;
 	}
+
 }

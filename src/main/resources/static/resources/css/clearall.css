@@ -10,16 +10,19 @@ table {
     font-size       : 400%;
 }
 
-.titlecontent {
-    font-size       : 0.3em;
-    font-weight     : bold;
+.titletext {
+    font-style      : italic;
     margin-bottom   : 0px;
 }
 
-.titletext {
-    font-size       : 0.25em;
-    font-style      : italic;
-    margin-bottom   : 0px;
+.titlefont{
+  position:absolute;
+  top:0%;
+  left:50%;
+  width:100%;
+  font-size:0.5em;
+  height:1.2em;
+  transform: translate(-50%, 50%);
 }
 
 #draggable { width: 100px; height: 100px; padding: 0.5em; float: left; margin: 10px 10px 10px 0; }

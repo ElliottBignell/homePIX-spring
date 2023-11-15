@@ -5,7 +5,9 @@ import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 public class CalendarDay {
 
 	private String name;
+
 	private PictureFile thumbnail;
+
 	private int dayOfMonth;
 
 	public CalendarDay(String name, PictureFile thumbnail) {
@@ -37,4 +39,5 @@ public class CalendarDay {
 	public void setDayOfMonth(int dayOfMonth) {
 		this.dayOfMonth = dayOfMonth;
 	}
+
 }

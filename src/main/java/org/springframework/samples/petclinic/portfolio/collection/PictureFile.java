@@ -16,12 +16,16 @@
 package org.springframework.samples.petclinic.portfolio.collection;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.petclinic.model.BaseEntity;
 import org.springframework.samples.petclinic.portfolio.Album;
+import org.springframework.samples.petclinic.portfolio.AlbumContent;
 import org.springframework.samples.petclinic.portfolio.Keywords;
 
 /**
@@ -50,10 +54,6 @@ public class PictureFile extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "path_id")
 	private PictureFileType path;
-
-	@ManyToOne
-	@JoinColumn(name = "album_id")
-	private Album album;
 
 	@ManyToOne
 	@JoinColumn(name = "keywords_id")
@@ -85,17 +85,24 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "hits")
 	private int hits;
 
+	@OneToMany(mappedBy = "pictureFile")
+	private List<AlbumContent> albumContent;
+
 	public void setLast_modified(LocalDate last_modified) {
 		this.last_modified = last_modified;
 	}
 
-	public String getFilename() { return this.filename; }
+	public String getFilename() {
+		return this.filename;
+	}
 
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
-	public String getTitle() { return this.title; }
+	public String getTitle() {
+		return this.title;
+	}
 
 	public void setTitle(String title) {
 		this.title = title;
@@ -153,11 +160,7 @@ public class PictureFile extends BaseEntity {
 		this.location = location;
 	}
 
-	public Album getOwner() {
-		return this.album;
-	}
-
-	protected void setKeywords(Keywords keywords) {
+	public void setKeywords(Keywords keywords) {
 		this.keywords = keywords;
 	}
 
@@ -165,7 +168,4 @@ public class PictureFile extends BaseEntity {
 		return this.keywords;
 	}
 
-	public void setOwner(Album album) {
-		this.album = album;
-	}
 }

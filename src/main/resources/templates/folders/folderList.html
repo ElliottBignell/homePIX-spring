@@ -20,14 +20,15 @@
   <tr th:each="folder : ${selections}">
     <td>
     </td>
-    <td th:text="${folder.name}">
-      <a th:href="@{/folders/__${folder.id}__}" th:text="${folder.name}"/></a>
+    <td>
+      <a th:href="@{/folders/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder name</a>
     </td>
     <td>
     </td>
     <td>
     </td>
     <td>
+      <a th:href="@{/folders/__${folder.name}__}" th:text="${folder.picture_count}" style="color:black;">File count</a>
     </td>
   </tr>
   </tbody>

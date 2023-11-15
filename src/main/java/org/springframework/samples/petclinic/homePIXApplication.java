@@ -29,6 +29,8 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @SpringBootApplication(proxyBeanMethods = false)
 public class homePIXApplication {
 
+	// https://api.flickr.com/services/rest/?method=flickr.photosets.getList&api_key=4653c7a47e46e9c6f0ff19388000b524&user_id=50027087@N00&format=json&nojsoncallback=1
+
 	public static void main(String[] args) {
 		SpringApplication.run(homePIXApplication.class, args);
 	}

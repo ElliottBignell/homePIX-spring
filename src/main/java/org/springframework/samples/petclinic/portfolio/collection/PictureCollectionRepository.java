@@ -15,18 +15,21 @@
  */
 package org.springframework.samples.petclinic.portfolio.collection;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Repository class for <code>PictureCollection</code> domain objects All method names are compliant
- * with Spring Data naming conventions so this interface can easily be extended for Spring
- * Data. See:
+ * Repository class for <code>PictureCollection</code> domain objects All method names are
+ * compliant with Spring Data naming conventions so this interface can easily be extended
+ * for Spring Data. See:
  * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-creation
  *
  * @author Elliott Bignell
@@ -34,11 +37,11 @@ import org.springframework.transaction.annotation.Transactional;
 public interface PictureCollectionRepository extends Repository<PictureCollection, Integer> {
 
 	/**
-	 * Retrieve {@link PictureCollection}s from the data store by last name, returning all pictureCollections
-	 * whose last name <i>starts</i> with the given name.
+	 * Retrieve {@link PictureCollection}s from the data store by last name, returning all
+	 * pictureCollections whose last name <i>starts</i> with the given name.
 	 * @param name Value to search for
-	 * @return a PictureCollection of matching {@link PictureCollection}s (or an empty PictureCollection if none
-	 * found)
+	 * @return a PictureCollection of matching {@link PictureCollection}s (or an empty
+	 * PictureCollection if none found)
 	 */
 
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename =:name")
@@ -52,10 +55,19 @@ public interface PictureCollectionRepository extends Repository<PictureCollectio
 	 */
 	@Query("SELECT picture_file FROM PictureFile picture_file")
 	@Transactional(readOnly = true)
-	List< PictureFile > findAll();
+	List<PictureFile> findAll();
+
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE NOT( taken_on > :to OR taken_on < :from)")
+	@Transactional(readOnly = true)
+	Set<PictureFile> findByDates(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE NOT( taken_on > :to OR taken_on < :from)")
+	@Transactional(readOnly = true)
+	List<PictureFile> findByDates(@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("sort") Sort sort);
 
 	/**
-	 * Save an {@link PictureCollection} to the data store, either inserting or updating it.
+	 * Save an {@link PictureCollection} to the data store, either inserting or updating
+	 * it.
 	 * @param pictureCollection the {@link PictureCollection} to save
 	 */
 	void save(PictureCollection pictureCollection);

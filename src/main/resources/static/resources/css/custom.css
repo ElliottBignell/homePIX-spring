@@ -39,7 +39,7 @@
   --danger: #dc3545;
   --light: #f8f9fa;
   --dark: #343a40;
-  --homepix-dark: #431c5d;
+  --homepix-dark: #480607; // https://html-color.codes/maroon, Bulgarian Rose
   --homepix-text: #cdd422;
   --homepix-bg: #bccbde;
   --homepix-bglight: #c2dde6;
@@ -153,13 +153,14 @@ sup {
   top: -.5em; }
 
 a {
-  color: #bcebdd;
+  color: #ffffff;
   text-decoration: none;
-  background-color: transparent; }
-  a:hover {
-    color: #bcebdd;
-    background-color: #e05915;
-    text-decoration: underline; }
+  background-color: transparent;
+}
+a:hover {
+    color: #ffffc0;
+    text-decoration: underline;
+}
 
 a:not([href]):not([tabindex]) {
   color: inherit;
@@ -207,8 +208,8 @@ th {
   text-align: inherit; }
 
 label {
-  display: inline-block;
-  margin-bottom: 0.5rem; }
+  margin-bottom: 0.5rem;
+}
 
 button {
   border-radius: 0; }
@@ -1552,7 +1553,7 @@ pre {
 .form-control {
   display: block;
   width: 100%;
-  height: calc(1.5em + 0.75rem + 2px);
+  //height: calc(1.5em + 0.75rem + 2px);
   padding: 0.375rem 0.75rem;
   font-size: 1rem;
   font-weight: 400;
@@ -8305,14 +8306,8 @@ table {
     font-size       : 400%;
 }
 
-.titlecontent {
-    font-size       : 0.3em;
-    font-weight     : bold;
-    margin-bottom   : 0px;
-}
-
 .titletext {
-    font-size       : 0.25em;
+    font-size       : 10pt;
     font-style      : italic;
     margin-bottom   : 0px;
 }
@@ -8334,47 +8329,13 @@ table {
 
 /*# sourceMappingURL=custom.css.map */
 
-.image-dropdown {
-    /*style the "box" in its minimzed state*/
-    border:1px solid black; width:400px; height:50px; overflow:hidden;
-    /*animate the dropdown collapsing*/
-    transition: height 0.1s;
-}
-.image-dropdown:hover {
-    /*when expanded, the dropdown will get native means of scrolling*/
-    height:400px; overflow-y:scroll;
-    /*animate the dropdown expanding*/
-    transition: height 0.5s;
-}
-.image-dropdown input {
-    /*hide the nasty default radio buttons!*/
-    position:absolute;top:0;left:0;opacity:0;
-}
-.image-dropdown label {
-    /*style the labels to look like dropdown options*/
-    display:none; margin:2px; height:92px; opacity:0.2;
-    background:url("http://www.google.com/images/srpr/logo3w.png") 50% 50%;
-}
-.image-dropdown:hover label{
-    /*this is how labels render in the "expanded" state.
-     we want to see only the selected radio button in the collapsed menu,
-     and all of them when expanded*/
-    display:block;
-}
-.image-dropdown input:checked + label {
-    /*tricky! labels immediately following a checked radio button
-      (with our markup they are semantically related) should be fully opaque
-      and visible even in the collapsed menu*/
-    opacity:1 !important; display:block;
-}
-
 .imageinlist {
-    border:2px solid white;
+    border:none;
     position:relative;
     top:100%;
     left:0%;
     z-index:0;
-    border-radius:12px;
+    border-radius:6px;
 }
 
 @media only screen and (max-width: 599px) {
@@ -8383,6 +8344,16 @@ table {
         min-height:0em;
         width:100%;
     }
+
+    .imageresponsive:hover {
+        background:
+            linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0, 0.6)
+            );
+        transition: opacity 0.5s;
+    }
 }
 
 @media only screen and (min-width: 600px) {
@@ -8390,4 +8361,67 @@ table {
     .imageresponsive {
         height:200px;
     }
+
+    .imageresponsive:hover {
+        opacity:50%;
+        background:
+            linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0, 0.6)
+            );
+        transition: opacity 0.5s;
+    }
+}
+
+.tt_base .imageresponsive {
+    height:200px;
+}
+
+.tt_base .imageresponsive_ {
+    height:160px;
+    transition: 0.2s;
+}
+
+.tt_base:hover .imageresponsive_ {
+    background:
+        linear-gradient(
+          to bottom,
+          transparent,
+          transparent,
+          transparent,
+          transparent,
+          transparent,
+          black
+        );
+    transition: 0.2s;
+}
+
+.tt_base .imageresponsive_::after {
+    transition:0.2s;
+}
+
+.tt_base .tt_header {
+    position: absolute;
+    bottom: 100%;
+    left:0px;
+    top:20px;
+    height:40px;
+    width:100%;
+    border-radius:6px;
+    transition: opacity 0.5s;
+    background:
+        linear-gradient(
+          to bottom,
+          black,
+          transparent
+        );
+}
+
+.tt_base:hover .tt_header {
+    transition: opacity 0.5s;
+}
+
+.tt_base .tt_header:after {
+    transition: opacity 0.5s;
 }

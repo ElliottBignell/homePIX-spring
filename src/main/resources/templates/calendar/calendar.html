@@ -18,153 +18,105 @@
 
 <h2>Calendar</h2>
 
+<span th:each="year : ${yearNames}">
+  <span th:text="${year}">Year</span><br>
+</span>
+
 <div id="div_collection" style="overflow-y: auto; max-height: 92vh;">
-  <c th:if="${null != calendar.items}">
-    <div id="div_collection" style="padding-left:5em;padding-right:5em;margin-left:5em;margin-right:5em;">
-      <table>
-        <c th:each="item : ${calendar.items}">
-          <tr>
-            <c th:each="year : ${item.getYears}">
-             <td>
-               <div class="calendar_year">
-                 <table th:id="@{quarterly__${year.getYear}__}">
-                   <tr>
-                     <td style="colspan:4;">
-                       <h1 class="techfont" style="color:var( --homepix-bg ); font-size:18px;" th:text="${year.getYear}"></h1>
-                     </td>
-                   </tr>
-                   <tr>
-                     <td>
-                       <table th:id="@{quarterlytable__${year.getYear}__}" class="calendar_year_table">
-                         <tr th:each="quarter : ${year.getQuarters}" style="height:48px;">
-                           <td th:each="month : ${quarter.getMonths}" th:id="@{month__${year.getYear}____${month.getName}__}" style="width:56px;height:56px;padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;">
-                               <figure class="calendar_tile calendar_tile_medium">
-                                 <a th:onclick="@{scrollIntoView('#quarterly-__${ year.getYear }__-__${ month.getName }__');}">
-                                  <c th:if="${month.getThumbnail != null}">
-                                    <img th:if="${month.thumbnail}"
-                                         id="picture_{{ month.0.0.0 }}"
-                                         class="lazyload calendar_thumbnail calendar_tile_medium"
-                                         src="{% month_thumbnail year month.0.0.4 %}"
-                                         data-src="{% month_thumbnail year month.0.0.4 %}"
-                                         alt="{{ month.0.0.3|date:'d' }}">
+  <c th:each="year : ${years}">
+    <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
+      <tr style="height:10em;">
+          <td th:text="${year.getYear}">
+            <h1 class="techfont" style="color:var( --homepix-dark ); font-size:96px;position:relative;top:1.8em;left:-0.5em;background: none;transform-origin: 0 0;transform: rotate(270deg);" th:text="${year.getYear}">
+            </h1>
+          </td>
+      </tr>
+      <tr>
+        <td>
+          <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
+            <tr>
+              <td>
+                <table id="quarterly_{{ year.getYear }}_{{ month }}">
+                  <tr th:each="quarter, iterStat : ${year.getQuarters}" style="height:48px;">
+                    <td th:each="month : ${quarter.getMonths}" id="month_{{ year }}_{{ idx }}_{{day}}" style="width:calc(25%-2em);padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;">
+                      <div th:id="@{#quarterly-__${ year.getYear }__-__${ month.getName }__}">
+                        <table th:id="@{q_table__${ year }___${ month.name }__}" class="calendar_day_table">
+                          <tr>
+                            <td style="width:0.3em;"></td>
+                            <td style="colspan:7;">
+                              <div class="techfont" style="position:relative;top:0.2em;left:0.2em;color:var( --homepix-bg ); font-size:20px;" th:text="@{__${month.getName}__}">
+                              </div>
+                            </td>
+                            <td style="width:0.3em;"></td>
+                          </tr>
+                          <tr>
+                            <td>.</td>
+                            <td th:each="day : ${calendar.dayNames}" class="techfont" style="height:2em;color:var( --homepix-bg ); font-size:12px;">
+                              <a href="collection/?fromDate={{ year }}-{{month.0.0.4}}-{{day}}&toDate={{ year }}-{{month.0.0.4}}-{{day}}&ID=&Key=&search=&sort=" th:text="${day}">
+                              </a>
+                              </td>
+                            <td>.</td>
+                          </tr>
+                          <tr>
+                            <td></td>
+                            <td style="colspan:7;">
+                            </td>
+                            <td></td>
+                          </tr>
+                          <tr th:each="week : ${month.getWeeks}">
+                            <td></td>
+                              <td th:each="day : ${week.getDays}">
+                                <a  th:if="${day.thumbnail}"
+                                    th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}">
+                                <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
+                                     th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
+                                  <c th:if="true">
+                                    <img id="picture_{{ day.0 }}"
+                                         class="lazyload calendar_thumbnail calendar_tile_small"
+                                         th:src="${day.thumbnail.filename}"
+                                         th:data-src="${ day.thumbnail.filename}"
+                                         alt="">
                                     </img>
-                                    <figcaption class="calendar_month">
-                                      <div class="scrim scrim_medium" th:text="${month.getName}">
-                                      </div>
-                                    </figcaption>
                                   </c>
-                                  <c th:if="${month.getThumbnail == null}" th:text="${month.getName}">
-                                  </c>
-                                 </a>
-                               </figure>
-                           </td>
-                         </tr>
-                       </table>
-                     </td>
-                   </tr>
-                 </table>
-               </div>
-             </td>
-            </c>
-          </tr>
-        </c>
-
-      <div id="div_collection" style="padding-left:5em;padding-right:5em;margin-left:5em;margin-right:5em;">
-        <c th:each="item : ${calendar.items}">
-          <c th:each="year : ${item.getYears}">
-            <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
-              <tr style="height:10em;">
-                  <td th:text="${year.getYear}">
-                    <h1 class="techfont" style="color:var( --homepix-dark ); font-size:96px;position:relative;top:1.8em;left:-0.5em;background: none;transform-origin: 0 0;transform: rotate(270deg);" th:text="${year.getYear}">
-                    </h1>
-                  </td>
-              </tr>
-              <tr>
-                <td>
-                  <table id="quarterly_{{ year }}_{{ month }}">
-                    <tr th:each="quarter, iterStat : ${year.getQuarters}" style="height:48px;">
-                      <td th:each="month : ${quarter.getMonths}" id="month_{{ year }}_{{ idx }}_{{day}}" style="width:calc(25%-2em);padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;">
-                        <div th:id="@{#quarterly-__${ year.getYear }__-__${ month.getName }__}">
-                          <table th:id="@{q_table__${ year }___${ month.name }__}" class="calendar_day_table">
-                            <tr>
-                              <td style="width:0.3em;"></td>
-                              <td style="colspan:7;">
-                                <div class="techfont" style="position:relative;top:0.2em;left:0.2em;color:var( --homepix-bg ); font-size:20px;" th:text="@{__${month.getName}__}">
-                                </div>
-                              </td>
-                              <td style="width:0.3em;"></td>
-                            </tr>
-                            <tr>
-                              <td>.</td>
-                              <td th:each="day : ${calendar.dayNames}" class="techfont" style="height:2em;color:var( --homepix-bg ); font-size:12px;">
-                                <a href="collection/?fromDate={{ year }}-{{month.0.0.4}}-{{day}}&toDate={{ year }}-{{month.0.0.4}}-{{day}}&ID=&Key=&search=&sort=" th:text="${day}">
-                                </a>
-                              </td>
-                              <td>.</td>
-                            </tr>
-                            <tr>
-                              <td></td>
-                              <td style="colspan:7;">
-                              </td>
-                              <td></td>
-                            </tr>
-                            <tr th:each="week : ${month.getWeeks}">
-                              <td></td>
-                                <td th:each="day : ${week.getDays}">
-                                  <a th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getName }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getName }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}">
-                                  <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;" 
-                                       th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
-                                    <c th:if="true">
-                                      <img th:if="${day.thumbnail}"
-                                           id="picture_{{ day.0 }}"
-                                          class="lazyload calendar_thumbnail calendar_tile_small"
-                                          th:src="${day.thumbnail.filename}"
-                                          th:data-src="${ day.thumbnail.filename}"
-                                          th:alt="${day.getName}">
-                                      </img>
-                                    </c>
-                                    <c th:if="false">
-                                      <div class="calendar_day_pic">
-                                        <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;" th:text="${day.getName}">
-                                        </div>
-                                      </div>
-                                        <div class="calendar_day" style="color:var( --homepix-dark );background-color:var( --homepix-bg );">
-                                          <div class="calendar_day" style="color:var( --homepix-dark );background-color:var( --homepix-bg );" th:text="${day.getName}">
-                                          </div>
-                                        </div>
-                                    </c>
+                                  <div class="calendar_day_pic" style="position:relative;top:-36px;">
+                                    <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;" th:text="${day.getDayOfMonth}">
+                                    </div>
                                   </div>
-                                  </a>
-                              </td>
-                              <td></td>
-                            </tr>
-                            <tr th:if="${month.count < 6}">
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                            </tr>
-                          </table>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </c>
-        </c>
-      </div>
-    </c>
-
-    <c th:if="${null == calendar.items}">
-      <div class="techfont" id="div_header" style="min-height:100px;">
-        <h1>Nothing here!</h1>
-      </div>
-    </c>
+                                </div>
+                                </a>
+                                <a  th:if="${day.thumbnail == null}" >
+                                  <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
+                                       th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
+                                    <div class="calendar_day_pic" style="position:relative;top:-36px;">
+                                      <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;">
+                                      </div>
+                                    </div>
+                                  </div>
+                                </a>
+                            </td>
+                            <td></td>
+                          </tr>
+                          <tr th:if="${month.count <= 6}">
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                          </tr>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              <td>
+            <tr>
+          <table>
+        <td>
+      <tr>
+    </table>
+  </c>
 </div>
 
 </body>

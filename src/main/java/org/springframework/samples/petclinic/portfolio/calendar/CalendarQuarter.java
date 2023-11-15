@@ -4,7 +4,7 @@ import java.util.List;
 
 public class CalendarQuarter {
 
-	private List< CalendarMonth > months;
+	private List<CalendarMonth> months;
 
 	public CalendarQuarter(List<CalendarMonth> months) {
 		this.months = months;
@@ -17,4 +17,5 @@ public class CalendarQuarter {
 	public void setMonths(List<CalendarMonth> months) {
 		this.months = months;
 	}
+
 }

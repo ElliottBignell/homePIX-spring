@@ -15,14 +15,16 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 
 /**
  * Simple JavaBean domain object representing an album.
@@ -45,8 +47,15 @@ public class Album extends BaseEntity {
 	@NotEmpty
 	private int thumbnail_id;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "album", cascade = CascadeType.ALL)
-	private Set<PictureFile> pictureFiles;
+	@OneToMany(mappedBy = "album")
+	private List<AlbumContent> albumContent;
+
+	@Autowired
+	private final PictureFileRepository pictureFileRepository;
+
+	public Album(PictureFileRepository pictureFileRepository) {
+		this.pictureFileRepository = pictureFileRepository;
+	}
 
 	public String getName() {
 		return this.name;
@@ -74,38 +83,60 @@ public class Album extends BaseEntity {
 
 	public PictureFile getThumbnail() {
 
-		Set<PictureFile> files = getPictureFilesInternal();
+		PictureFile thumbnail = this.albumContent.stream()
+				.filter(entry -> entry.getPictureFile().getId() == this.thumbnail_id).findAny().orElse(null)
+				.getPictureFile();
 
-		if ( null == files || 0 == files.size() ) {
+		if (null == thumbnail) {
 			return new PictureFile();
 		}
 
-		return files.iterator().next();
+		return thumbnail;
 	}
 
-	protected Set<PictureFile> getPictureFilesInternal() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
+	protected List<PictureFile> getPictureFilesInternal() {
+
+		List<PictureFile> pictureFiles = this.albumContent.stream()
+				.filter(entry -> entry.getPictureFile().getId() == this.thumbnail_id).map(AlbumContent::getPictureFile)
+				.collect(Collectors.toList());
+
+		return pictureFiles;
 	}
 
-	protected void setPictureFilesInternal(Set<PictureFile> pictureFiles) {
-		this.pictureFiles = pictureFiles;
+	protected void setPictureFilesInternal(List<PictureFile> pictureFiles) {
+		// this.pictureFiles = pictureFiles;
 	}
 
-	public Set<PictureFile> getPictureFiles() {
-		if (this.pictureFiles == null) {
-			this.pictureFiles = new HashSet<>();
-		}
-		return this.pictureFiles;
+	public List<PictureFile> getPictureFileRepository() {
+		return getPictureFilesInternal();
 	}
 
 	public void addPictureFile(PictureFile pictureFile) {
-		if (pictureFile.isNew()) {
-			getPictureFilesInternal().add(pictureFile);
+
+		/*Optional<PictureFile> newFile = this.pictureFileRepository.findById(pictureFile.getId());
+
+		if (newFile.isEmpty()) {
+			pictureFileRepository.save(newFile.get());
 		}
-		pictureFile.setOwner(this);
+
+		PictureFile existingFile = this.albumContent.stream()
+				.filter(entry -> entry.getPictureFile().getId() == pictureFile.getId())
+				.map(AlbumContent::getPictureFile).findAny().orElse(null);
+
+		if (null == existingFile) {
+			getPictureFilesInternal().add(pictureFile);
+		}*/
+	}
+
+	public void deletePictureFile(PictureFile pictureFile) {
+
+		PictureFile existingFile = this.albumContent.stream()
+				.filter(entry -> entry.getPictureFile().getId() == pictureFile.getId())
+				.map(AlbumContent::getPictureFile).findAny().orElse(null);
+
+		if (null != existingFile) {
+			this.albumContent.removeIf(item -> item.getPictureFile().getId() == pictureFile.getId());
+		}
 	}
 
 	/**
@@ -138,10 +169,7 @@ public class Album extends BaseEntity {
 
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-				.append("id", this.getId())
-				.append("name", this.getName())
-				.toString();
+		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
 
 }

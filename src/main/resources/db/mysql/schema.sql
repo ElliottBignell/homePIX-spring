@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS picture_file (
   type_id INT(4) UNSIGNED NOT NULL,
   album_id INT(4) UNSIGNED NOT NULL,
   INDEX(name),
-  FOREIGN KEY (album_id) REFERENCES album(id),
   FOREIGN KEY (type_id) REFERENCES types(id)
 ) engine=InnoDB;
 

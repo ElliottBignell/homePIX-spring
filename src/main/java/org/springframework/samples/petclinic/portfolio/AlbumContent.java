@@ -39,22 +39,20 @@ public class AlbumContent extends BaseEntity {
 	private Album album;
 
 	@ManyToOne
-	@JoinColumn(name = "picture_id")
+	@JoinColumn(name = "entry_id")
 	private PictureFile pictureFile;
 
-	public PictureFile getPictureFile(String name) {
-		return getPictureFile(name, false);
+	public PictureFile getPictureFile() {
+		return pictureFile;
 	}
 
-	public PictureFile getPictureFile(String name, boolean ignoreNew) {
-		return null;
+	public Album getAlbum() {
+		return album;
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-			.append("id", this.getId())
-			.toString();
+		return new ToStringCreator(this).append("id", this.getId()).toString();
 	}
 
 }

@@ -21,14 +21,26 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
- * Simple JavaBean domain object representing an folder.
+ * Simple JavaBean domain object representing a folder.
  *
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Sam Brannen
  * @author Michael Isvy
+ * @author Elliott Bignell
  */
 @Entity
 @Table(name = "folders")
@@ -39,11 +51,9 @@ public class Folder extends BaseEntity {
 	private String name;
 
 	@Column(name = "picture_count")
-	@NotEmpty
 	private int picture_count;
 
 	@Column(name = "thumbnail_id")
-	@NotEmpty
 	private int thumbnail_id;
 
 	public String getName() {
@@ -52,6 +62,17 @@ public class Folder extends BaseEntity {
 
 	public void setName(String address) {
 		this.name = address;
+	}
+
+	public String getDisplayName() {
+
+		final Pattern JS_PATTERN = Pattern.compile("(?<=[a-zA-Z])(?=[A-Z])");
+
+		Matcher matcher = JS_PATTERN.matcher(this.name);
+
+		String result = matcher.replaceAll(" ").replaceAll("_", " ");
+
+		return result;
 	}
 
 	public int getPicture_count() {
@@ -70,11 +91,48 @@ public class Folder extends BaseEntity {
 		this.thumbnail_id = thumbnail_id;
 	}
 
+	public List<PictureFile> getPictureFiles() {
+		return loadPictureFiles();
+	}
+
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-			.append("id", this.getId())
-			.append("name", this.getName())
-			.toString();
+		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
+
+	private List<PictureFile> loadPictureFiles() {
+
+		List<PictureFile> pictureFiles = null;
+
+		if (pictureFiles == null) {
+
+			pictureFiles = new ArrayList<>();
+
+			String dir = "/home/elliott/SpringFramweworkGuru/spring-petclinic-old/src/main/resources/static/resources/images/"
+					+ this.name + "/jpegs";
+
+			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
+					.map(File::getName).sorted().collect(Collectors.toList());
+
+			int index = 0;
+
+			for (String name : folderNames) {
+
+				PictureFile item = new PictureFile();
+
+				item.setId(index++);
+				item.setFilename("/resources/images/" + this.name + "/jpegs" + '/' + name);
+				item.setTitle(name);
+
+				Keywords keywords = new Keywords();
+				keywords.setContent(this.name);
+				item.setKeywords(keywords);
+
+				pictureFiles.add(item);
+			}
+		}
+
+		return pictureFiles;
+	}
+
 }

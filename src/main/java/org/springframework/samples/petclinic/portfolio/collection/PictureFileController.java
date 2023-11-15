@@ -16,8 +16,11 @@
 package org.springframework.samples.petclinic.portfolio.collection;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.portfolio.Album;
 import org.springframework.samples.petclinic.portfolio.AlbumRepository;
+import org.springframework.samples.petclinic.portfolio.FolderRepository;
+import org.springframework.samples.petclinic.portfolio.PaginationController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -25,27 +28,26 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * @author Juergen Hoeller
  * @author Ken Krebs
  * @author Arjen Poutsma
+ * @author Elliott Bignell
  */
 @Controller
 @RequestMapping("/albums/{albumId}")
-class PictureFileController {
+public class PictureFileController extends PaginationController {
 
 	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePictureFileForm";
+
 	private static final String ABOUT_FORM = "picture/about.html";
 
-	private final PictureFileRepository pictureFiles;
-
-	private final AlbumRepository albums;
-
-	public PictureFileController(PictureFileRepository pictureFiles, AlbumRepository albums) {
-		this.pictureFiles = pictureFiles;
-		this.albums = albums;
+	public PictureFileController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders) {
+		super(albums, folders, pictureFiles);
 	}
 
 	@ModelAttribute("types")
@@ -55,7 +57,7 @@ class PictureFileController {
 
 	@ModelAttribute("album")
 	public Album findOwner(@PathVariable("albumId") int albumId) {
-		return this.albums.findById(albumId);
+		return this.albums.findById(albumId).get();
 	}
 
 	@InitBinder("album")
@@ -77,8 +79,10 @@ class PictureFileController {
 	}
 
 	@PostMapping("/pets/new")
-	public String processCreationForm(Album album, @Valid PictureFile pictureFile, BindingResult result, ModelMap model) {
-		if (StringUtils.hasLength(pictureFile.getTitle()) && pictureFile.isNew() && album.getPictureFile(pictureFile.getTitle(), true) != null) {
+	public String processCreationForm(Album album, @Valid PictureFile pictureFile, BindingResult result,
+			ModelMap model) {
+		if (StringUtils.hasLength(pictureFile.getTitle()) && pictureFile.isNew()
+				&& album.getPictureFile(pictureFile.getTitle(), true) != null) {
 			result.rejectValue("name", "duplicate", "already exists");
 		}
 		album.addPictureFile(pictureFile);
@@ -94,15 +98,18 @@ class PictureFileController {
 
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
+
 		PictureFile pictureFile = this.pictureFiles.findById(petId);
-		model.put("pictureFile", pictureFile);
+
+		if (null != pictureFile) {
+			model.put("pictureFile", pictureFile);
+		}
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
 
 	@PostMapping("/pets/{petId}/edit")
 	public String processUpdateForm(@Valid PictureFile pictureFile, BindingResult result, Album album, ModelMap model) {
 		if (result.hasErrors()) {
-			pictureFile.setOwner(album);
 			model.put("pictureFile", pictureFile);
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		}
@@ -112,4 +119,5 @@ class PictureFileController {
 			return "redirect:/albums/{albumId}";
 		}
 	}
+
 }

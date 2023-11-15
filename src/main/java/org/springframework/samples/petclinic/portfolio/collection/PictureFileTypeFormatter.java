@@ -24,9 +24,9 @@ import java.util.Collection;
 import java.util.Locale;
 
 /**
- * Instructs Spring MVC on how to parse and print elements of type 'PictureFileType'. Starting
- * from Spring 3.0, Formatters have come as an improvement in comparison to legacy
- * PropertyEditors. See the following links for more details: - The Spring ref doc:
+ * Instructs Spring MVC on how to parse and print elements of type 'PictureFileType'.
+ * Starting from Spring 3.0, Formatters have come as an improvement in comparison to
+ * legacy PropertyEditors. See the following links for more details: - The Spring ref doc:
  * https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#format
  *
  * @author Mark Fisher
@@ -36,6 +36,7 @@ import java.util.Locale;
 @Component
 public class PictureFileTypeFormatter implements Formatter<PictureFileType> {
 
+	@Autowired
 	private final PictureFileRepository pictureFiles;
 
 	@Autowired

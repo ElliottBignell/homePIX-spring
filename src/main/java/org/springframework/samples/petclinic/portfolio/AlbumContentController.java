@@ -15,18 +15,17 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
-import jakarta.validation.Valid;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Juergen Hoeller
@@ -35,37 +34,21 @@ import java.util.Map;
  * @author Michael Isvy
  */
 @Controller
-class AlbumContentController {
+class AlbumContentController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "albums/createOrUpdateOwnerForm";
 
-	private final AlbumContentRepository albums;
+	private final AlbumContentRepository albumContent;
 
-	public AlbumContentController(AlbumContentRepository albumContentRepository) {
-		this.albums = albumContentRepository;
+	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders,
+			PictureFileRepository pictureFiles) {
+		super(albums, folders, pictureFiles);
+		this.albumContent = albumContent;
 	}
 
 	@InitBinder
 	public void setAllowedFields(WebDataBinder dataBinder) {
 		dataBinder.setDisallowedFields("id");
-	}
-
-	@GetMapping("/album/{id}/new")
-	public String initCreationForm(Map<String, Object> model) {
-		AlbumContent albumContent = new AlbumContent();
-		model.put("album", albumContent);
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-	}
-
-	@PostMapping("/album/{id}/new")
-	public String processCreationForm(@Valid AlbumContent albumContent, BindingResult result) {
-		if (result.hasErrors()) {
-			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			this.albums.save(albumContent);
-			return "redirect:/albums/" + albumContent.getId();
-		}
 	}
 
 	@GetMapping("/album/{id}/find")
@@ -75,23 +58,11 @@ class AlbumContentController {
 	}
 
 	@GetMapping("/album/{id}/{ownerId}/edit")
-	public String initUpdateOwnerForm(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId, Model model) {
-		//AlbumContent albumContent = this.albums.findById(ownerId);
-		//model.addAttribute(albumContent);
+	public String initUpdateOwnerForm(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId,
+			Model model) {
+		// AlbumContent albumContent = this.albums.findById(ownerId);
+		// model.addAttribute(albumContent);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-	}
-
-	@PostMapping("/album/{id}/{ownerId}/edit")
-	public String processUpdateOwnerForm(@Valid AlbumContent albumContent, BindingResult result,
-										 @PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId) {
-		if (result.hasErrors()) {
-			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			albumContent.setId(ownerId);
-			this.albums.save(albumContent);
-			return "redirect:/albums/{id}/{ownerId}";
-		}
 	}
 
 	/**
@@ -102,8 +73,110 @@ class AlbumContentController {
 	@GetMapping("/album/{id}/{ownerId}")
 	public ModelAndView showOwner(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
-		//AlbumContent albumContent = this.albums.findById(ownerId);
+		// AlbumContent albumContent = this.albums.findById(ownerId);
 		return mav;
+	}
+
+	/**
+	 * Custom handler for displaying an album.
+	 * @param id the ID of the album to display
+	 * @return a ModelMap with the model attributes for the view
+	 */
+	@GetMapping("/album/{id}")
+	public ModelAndView showAlbum(@PathVariable("id") int id, Map<String, Object> model) {
+
+		ModelAndView mav = new ModelAndView("albums/albumDetails");
+		Collection<AlbumContent> content = this.albumContent.findByAlbumId(id);
+		Optional<Album> album = this.albums.findById(id);
+
+		mav.addObject(album.get());
+		model.put("content", content);
+		model.put("link_params", "");
+
+		return mav;
+	}
+
+	@GetMapping("/albums/{id}")
+	public ModelAndView showAlbums(@PathVariable("id") int id, Map<String, Object> model) {
+		return showAlbum(id, model);
+	}
+
+	@GetMapping("/album/{id}/item/{pictureId}")
+	public String showElementById(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+		return showElement(id, pictureId, model);
+	}
+
+	@GetMapping("/albums/{id}/item/{pictureId}/")
+	public String showElementSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+		return showElement(id, pictureId, model);
+	}
+
+	@GetMapping("/album/{id}/item/{pictureId}/")
+	public String showElementByIdSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+		return showElement(id, pictureId, model);
+	}
+
+	@GetMapping("/albums/{id}/item/{pictureId}")
+	public String showElement(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+
+		Optional<Album> album = this.albums.findById(id);
+		List<PictureFile> pictureFiles = album.get().getPictureFileRepository();
+
+		addParams(pictureId, "", pictureFiles, model, true);
+
+		model.put("baseLink", "/album/" + id);
+		model.put("album", album);
+
+		return "picture/pictureFile.html";
+	}
+
+	@GetMapping("/albums/{albumId}/add/{pictureId}")
+	public String addPictureToAlbum(@PathVariable("albumId") int albumId, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+
+		Optional<Album> album = this.albums.findById(albumId);
+
+		if (album != null) {
+
+			/*Optional<PictureFile> pictureFile = this.pictureFiles.findById(pictureId);
+
+			if (pictureFile.isPresent()) {
+				album.get().addPictureFile(pictureFile.get());
+			}
+
+			return "redirect:/albums/" + Integer.toString(albumId);*/
+		}
+
+		return "redirect:/albums/3";
+	}
+
+	@GetMapping("/albums/{albumId}/delete/{pictureId}")
+	public String deletePicture(@PathVariable("albumId") int albumId, @PathVariable("pictureId") int pictureId,
+			Map<String, Object> model) {
+
+		// Collection<AlbumContent> content =
+		// this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+		Collection<AlbumContent> content = (Collection<AlbumContent>) this.albumContent.findAll();
+
+		Optional<Album> album = this.albums.findById(albumId);
+
+		if (album != null) {
+
+			/*Optional<PictureFile> pictureFile = this.pictureFiles.findById(pictureId);
+
+			if (pictureFile.isPresent()) {
+				album.get().deletePictureFile(pictureFile.get());
+				this.albums.save(album.get());
+			}
+
+			return "redirect:/albums/" + Integer.toString(albumId);*/
+		}
+
+		return "redirect:/albums/3";
 	}
 
 }

@@ -18,19 +18,21 @@ package org.springframework.samples.petclinic.portfolio.collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Repository class for <code>PictureFile</code> domain objects All method names are compliant
- * with Spring Data naming conventions so this interface can easily be extended for Spring
- * Data. See:
+ * Repository class for <code>PictureFile</code> domain objects All method names are
+ * compliant with Spring Data naming conventions so this interface can easily be extended
+ * for Spring Data. See:
  * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-creation
  *
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Sam Brannen
  * @author Michael Isvy
+ * @author Elliott Bignell
  */
 public interface PictureFileRepository extends Repository<PictureFile, Integer> {
 
@@ -42,18 +44,12 @@ public interface PictureFileRepository extends Repository<PictureFile, Integer> 
 	@Transactional(readOnly = true)
 	List<PictureFileType> findPictureFileTypes();
 
-	/**
-	 * Retrieve a {@link PictureFile} from the data store by id.
-	 * @param id the id to search for
-	 * @return the {@link PictureFile} if found
-	 */
 	@Transactional(readOnly = true)
 	PictureFile findById(Integer id);
 
-	/**
-	 * Save a {@link PictureFile} to the data store, either inserting or updating it.
-	 * @param pictureFile the {@link PictureFile} to save
-	 */
-	void save(PictureFile pictureFile);
+	@Query("SELECT DISTINCT YEAR(taken_on) AS year FROM PictureFile picture_file ORDER BY year")
+	@Transactional(readOnly = true)
+	List<String> findYears();
 
+	void save(PictureFile pictureFile);
 }

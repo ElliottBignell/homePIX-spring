@@ -17,6 +17,7 @@ package org.springframework.samples.petclinic.portfolio;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
@@ -34,9 +35,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 class CommentController {
 
+	@Autowired
 	private final PictureFileRepository pictureFiles;
 
-	public CommentController( PictureFileRepository picturefiles) {
+	public CommentController(PictureFileRepository picturefiles) {
 		this.pictureFiles = picturefiles;
 	}
 
@@ -45,10 +47,11 @@ class CommentController {
 		dataBinder.setDisallowedFields("id");
 	}
 
-
-	// Spring MVC calls method loadPictureFileWithVisit(...) before initNewVisitForm is called
+	// Spring MVC calls method loadPictureFileWithVisit(...) before initNewVisitForm is
+	// called
 	@GetMapping("/albums/*/pets/{petId}/visits/new")
 	public String initNewVisitForm(@PathVariable("petId") int petId, Map<String, Object> model) {
 		return "pets/createOrUpdateVisitForm";
 	}
+
 }

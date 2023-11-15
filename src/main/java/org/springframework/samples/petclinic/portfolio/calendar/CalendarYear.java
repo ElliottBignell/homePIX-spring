@@ -8,11 +8,12 @@ import java.util.List;
 public class CalendarYear {
 
 	private int year;
+
 	private List<PictureFile> material;
 
-	private List< CalendarQuarter > quarters;
+	private List<CalendarQuarter> quarters;
 
-	public CalendarYear( int annum ) {
+	public CalendarYear(int annum) {
 
 		this.year = annum;
 		this.material = new ArrayList<>();
@@ -41,4 +42,5 @@ public class CalendarYear {
 	public void setQuarters(List<CalendarQuarter> quarters) {
 		this.quarters = quarters;
 	}
+
 }

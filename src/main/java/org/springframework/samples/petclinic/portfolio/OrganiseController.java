@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.portfolio;
 
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +33,12 @@ class OrganiseController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "picture/picturefile_organisation.html";
 
-	private final OrganiseRepository albums;
+	private final OrganiseRepository organiseRepository;
 
-	public OrganiseController(OrganiseRepository albumRepository) {
-		this.albums = albumRepository;
+	public OrganiseController(OrganiseRepository organiseRepository, AlbumRepository albums, FolderRepository folders,
+			PictureFileRepository pictureFiles) {
+		super(albums, folders, pictureFiles);
+		this.organiseRepository = organiseRepository;
 	}
 
 	@InitBinder
@@ -45,14 +48,14 @@ class OrganiseController extends PaginationController {
 
 	@GetMapping("/organise/")
 	public String initCreationFormSLash(Map<String, Object> model) {
-		return initCreationForm( model);
+		return initCreationForm(model);
 	}
 
 	@GetMapping("/organise")
 	public String initCreationForm(Map<String, Object> model) {
 		Organise organise = new Organise();
-		model.put("pagination", super.pagination);
 		model.put("organise", organise);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
+
 }

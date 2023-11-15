@@ -16,7 +16,7 @@
 package org.springframework.samples.petclinic.portfolio;
 
 import jakarta.validation.Valid;
-import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
+import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
 
@@ -39,7 +38,9 @@ class AlbumController extends PaginationController {
 
 	private final AlbumRepository albums;
 
-	public AlbumController(AlbumRepository albumService ) {
+	public AlbumController(AlbumRepository albumService, AlbumRepository albums, FolderRepository folders,
+			PictureFileRepository pictureFiles) {
+		super(albums, folders, pictureFiles);
 		this.albums = albumService;
 	}
 
@@ -50,7 +51,8 @@ class AlbumController extends PaginationController {
 
 	@GetMapping("/albums/new")
 	public String initCreationForm(Map<String, Object> model) {
-		Album album = new Album();
+
+		Album album = new Album(this.pictureFiles);
 		model.put("album", album);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
@@ -68,14 +70,13 @@ class AlbumController extends PaginationController {
 
 	@GetMapping("/albums/find")
 	public String initFindForm(Map<String, Object> model) {
-		model.put("pagination", super.pagination);
-		model.put("album", new Album());
+		model.put("album", new Album(this.pictureFiles));
 		return "albums/findAlbums";
 	}
 
 	@GetMapping("/albums/")
 	public String processFindFormSlash(Album album, BindingResult result, Map<String, Object> model) {
-		return processFindForm( album, result, model);
+		return processFindForm(album, result, model);
 	}
 
 	@GetMapping("/albums")
@@ -100,7 +101,6 @@ class AlbumController extends PaginationController {
 		}
 		else {
 			// multiple albums found
-			model.put("pagination", super.pagination);
 			model.put("selections", results);
 			return "albums/albumList";
 		}
@@ -108,7 +108,7 @@ class AlbumController extends PaginationController {
 
 	@GetMapping("/album/")
 	public String processFindAlbumsSlash(Album album, BindingResult result, Map<String, Object> model) {
-		return processFindAlbums( album, result, model);
+		return processFindAlbums(album, result, model);
 	}
 
 	@GetMapping("/album")
@@ -121,6 +121,7 @@ class AlbumController extends PaginationController {
 
 		// find albums by last name
 		Collection<Album> results = this.albums.findByName(album.getName());
+
 		if (results.isEmpty()) {
 			// no albums found
 			result.rejectValue("name", "notFound", "not found");
@@ -133,7 +134,6 @@ class AlbumController extends PaginationController {
 		}
 		else {
 			// multiple albums found
-			model.put("pagination", super.pagination);
 			model.put("selections", results);
 			return "albums/albumListPictorial";
 		}
@@ -141,14 +141,13 @@ class AlbumController extends PaginationController {
 
 	@GetMapping("/albums/{id}/edit")
 	public String initUpdateOwnerForm(@PathVariable("id") int id, Model model) {
-		Album album = this.albums.findById(id);
+		Optional<Album> album = this.albums.findById(id);
 		model.addAttribute(album);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
 	@PostMapping("/albums/{id}/edit")
-	public String processUpdateOwnerForm(@Valid Album album, BindingResult result,
-										 @PathVariable("id") int id) {
+	public String processUpdateOwnerForm(@Valid Album album, BindingResult result, @PathVariable("id") int id) {
 		if (result.hasErrors()) {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
@@ -159,78 +158,4 @@ class AlbumController extends PaginationController {
 		}
 	}
 
-	/**
-	 * Custom handler for displaying an album.
-	 * @param id the ID of the album to display
-	 * @return a ModelMap with the model attributes for the view
-	 */
-	@GetMapping("/album/{id}")
-	public ModelAndView showAlbum(@PathVariable("id") int id,  Map<String, Object> model) {
-		ModelAndView mav = new ModelAndView("albums/albumDetails");
-		Album album = this.albums.findById(id);
-		mav.addObject(album);
-		model.put("pagination", super.pagination);
-		model.put("link_params", "");
-		return mav;
-	}
-
-	@GetMapping("/albums/{id}")
-	public ModelAndView showAlbums(@PathVariable("id") int id,  Map<String, Object> model) {
-		return showAlbum(id, model);
-	}
-
-	@GetMapping("/albums/{id}/item/{pictureId}/")
-	public String showElementSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,  Map<String, Object> model) {
-		return showElement( id, pictureId,  model);
-	}
-
-	@GetMapping("/albums/{id}/item/{pictureId}")
-	public String showElement(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,  Map<String, Object> model) {
-
-		Album album = this.albums.findById(id);
-		Set<PictureFile> pictureFiles = album.getPictureFiles();
-
-        PictureFile picture = pictureFiles.iterator().next();
-		PictureFile first = picture;
-		PictureFile next = picture;
-		PictureFile last  = next;
-		PictureFile previous  = last;
-
-		for (Iterator<PictureFile> it = pictureFiles.iterator(); it.hasNext(); ) {
-			last = it.next();
-		}
-
-		previous = last;
-
-		Iterator<PictureFile> it = pictureFiles.iterator();
-
-		while ( it.hasNext() ) {
-
-			PictureFile f = it.next();
-
-            if ( f.getId() == pictureId ) {
-
-				picture = f;
-				break;
-			}
-
-			previous = f;
-        }
-
-		if ( it.hasNext() ) {
-			next = it.next();
-		}
-		else {
-			next = first;
-		}
-
-		model.put("pagination", super.pagination);
-		model.put("picture", picture );
-		model.put("next", next.getId() );
-		model.put("previous", previous.getId() );
-		model.put("album", album );
-		model.put("albums", albums );
-
-		return "picture/pictureFile.html";
-	}
 }

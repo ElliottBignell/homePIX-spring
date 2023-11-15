@@ -81,7 +81,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom techfont fixed-top">
 
-      <div style="width:96%;margin-right:2%;margin-left:2%;height:calc(100% - 100px)">
+      <div style="width:96%;margin-right:2%;margin-left:2%;height:8.5em">
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1" aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Toggle navigation" style="font-size:2em;">
           <span class="navbar-toggler-icon"></span>
@@ -100,8 +100,8 @@
                   </i>
                 </a>
                 <ul class="drop-down-menu">
-                  <li>
-                    <a href="/folders/" class="navlink bigmenu">Folders</a>
+                  <li th:each="folder : ${folders}">
+                    <a th:href="@{/folders/__${folder.name}__}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
                   </li>
                 </ul>
               </li>
@@ -114,8 +114,8 @@
                   </i>
                 </a>
                 <ul class="drop-down-menu">
-                  <li>
-                    <a href="/album/" class="navlink bigmenu">Albums</a>
+                  <li th:each="album : ${albums}">
+                    <a th:href="@{/albums/__${album.id}__}" class="bigmenu" th:text="${album.name}">Albums</a>
                   </li>
                 </ul>
               </li>
@@ -161,24 +161,24 @@
               </li>
 
               <li class="nav-item" style="display: inline-block;">
-                <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;margin:0px;position:relative;top:-0.34em;height:5em;width:47em;">
-                  <span class="bigbrand" style="color:var( --homepix-bg );position:absolute;top:0.5em;right:27.5em;">From...</span>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( pagination.startDate, 'dd-MMMM-YYYY' ) }"
-                        th:value="${ #temporals.format( pagination.startDate, 'dd-MMMM-YYYY' ) }"
+                <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;margin:0px;position:relative;top:-0.34em;height:5em;width:39em;">
+                  <span class="bigbrand"  th:if="${pagination}" style="color:var( --homepix-bg );position:absolute;top:10pt;left:0pt;">From...</span>
+                  <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }"
+                        th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }"
                         class="form-control mr-sm-2 date-when-start-end"
-                        style="position:absolute;left:5em;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
+                        style="position:absolute;left:30pt;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
                         onmousemove="this.style.backgroundColor='var( --homepix-alarm )'; this.style.color='var( --homepix-dark );';"
                         onmouseout=" this.style.backgroundColor='var( --homepix-dark  )'; this.style.color='var( --homepix-bg   );';"
                         >
-                  <span class="bigbrand" style="color:var( --homepix-bg );position:absolute;top:0.5em;right:14em;">...to...</span>
-                  <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( pagination.endDate, 'dd-MMMM-YYYY' ) }"
-                        th:value="${ #temporals.format( pagination.endDate, 'dd-MMMM-YYYY' ) }"
+                  <span class="bigbrand" th:if="${pagination}"  style="color:var( --homepix-bg );position:absolute;top:10pt;left:130pt;">...to...</span>
+                  <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }"
+                        th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }"
                         class="form-control mr-sm-2 date-when-start-end"
-                        style="position:absolute;left:20em;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
+                        style="position:absolute;left:160pt;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
                         onmousemove="this.style.backgroundColor='var( --homepix-alarm )'; this.style.color='var( --homepix-dark );';"
                         onmouseout=" this.style.backgroundColor='var( --homepix-dark  )'; this.style.color='var( --homepix-bg   );';"
                         >
-                  <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:21em;height:1.5em;">
+                  <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:16.8em;height:1.5em;">
                     <i class="medium material-icons">date_range </i>
                   </button>
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
@@ -187,25 +187,25 @@
                   <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
                 </form>
               </li>
-              <li class="nav-item" style="display: inline-block;">
-                <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;right-margin:12px;position:relative;width:19em;top:-0.34em;">
+              <li class="nav-item" style="display: inline-block;width:22em;">
+                <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;right-margin:12px;position:relative;width:22em;top:-0.34em;">
                   <select name="sort" id="sort" th:value="${ param.sort }" style="position:absolute;width:10em;top:0.4em;" placeholder="Sort by..." class="form-control">
                     <c th:if="${pagination}">
                      <option th:each="option : ${ pagination.sortOptions }" th:value="${ option}" th:selected="${ option ==  param.sort }" th:text="${option}">Sort options</option>
                     </c>
                   </select>
-                  <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:7em;height:1.5em;">
+                  <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:8.4em;height:1.5em;">
                     <i class="medium material-icons">sort </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( pagination.startDate, 'dd-MMM-YYYY' ) }" style="visibility:hidden;width:0em;">
-                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( pagination.endDate, 'dd-MMM-YYYY' ) }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
+                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
                   <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
                   <input name="search"   type="text" th:placeholder="${ param.search }" th:value="${ param.search }" style="visibility:hidden;width:0em;">
                 </form>
               </li>
               <li class="nav-item" style="display: inline-block;">
-                <form class="form-inline" th:action="${ '' }" method="get" style="top-margin:0px;left-margin:12px;right-margin:12px;position:relative;width:19em;top:-0.34em;">
+                <form class="form-inline" th:action="${ '' }" method="get" style="top-margin:0px;left-margin:12px;right-margin:12px;position:relative;width:22em;top:-0.34em;">
                   <input name="search"   type="text" th:value="${ param.search }" placeholder="Search..."
                         class="form-control mr-sm-2"
                         style="position:absolute;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
@@ -215,29 +215,47 @@
                   <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:8em;height:1.5em;">
                     <i class="medium material-icons">search </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( pagination.startDate, 'dd-MMM-YYYY' ) }" style="visibility:hidden;width:0em;">
-                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( pagination.endDate, 'dd-MMM-YYYY' ) }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
+                    <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
                   <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
                   <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
                 </form>
               </li>
-          {% if user.is_authenticated %}
-            <li class="nav-item" style="display: inline-block;"><a href="{% url 'picture_new'%}">   <i class="large material-icons">add_a_photo </i></a></li>
-            <li class="nav-item" style="display: inline-block;"><a href="{% url 'directory_new'%}"> <i class="large material-icons">create_new_folder </i></a></li>
-            <li class="nav-item" style="display: inline-block;"><a href="{% url 'logout'%}">        <i class="large material-icons">exit_to_app </i></a></li>
-          {% else %}
-            <li class="nav-item" style="display: inline-block;">
+        </ul>
+        <div style="position:absolute;right:1em;top:1em;width:12em;height:6em;">
+          <div style="position:absolute;left:1em;top:0em;width:4em;height:4em;">
+            <a href="{% url 'picture_new'%}">
+              <i class="large material-icons">add_a_photo </i>
+            </a>
+          </div>
+          <div style="position:absolute;left:5em;top:0em;width:4em;height:4em;">
+              <a href="{% url 'directory_new'%}">
+                <i class="large material-icons">create_new_folder </i>
+              </a>
+          </div>
+          <div style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+              <a href="{% url 'logout'%}">
+                <i class="large material-icons">exit_to_app </i>
+              </a>
+            </ul>
+          </div>
+        </div>
+        <!--
+          <div th:if="${not user_authenticated}">
+            <ul>
+              <li class="nav-item" style="display: inline-block;">
                 <a href="{% url 'login'%}" class="bigbrand">
-                <i class="large material-icons" style="color:var( {{ request.get_full_path|current_background:'calendar_view_day' }} );">
-                    person
-                </i>
+                  <i class="large material-icons" style="color:var( {{ request.get_full_path|current_background:'calendar_view_day' }} );">
+                      person
+                  </i>
                 </a>
             </li>
-          {% endif %}
-        </ul>
-
-          <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:29em;top:4em;right:4em;">
+          </ul>
+        </div>
+        -->
+        <ul>
+          <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4em;top:5em;right:4em;">
             <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
               <ul class="pagination" style="margin:0 0;">
 
@@ -275,7 +293,7 @@
                 <li>
                   <div class="container">
                     <div class="vertical-center">
-                      <div style="width:8em;height:100%;">
+                      <div style="width:10em;height:100%;">
                         <ul class="pagination" style="margin: 0 0;">
                           <li id="page_no">
                             <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );" th:href="@{?page=__${l}__}" th:text="@{Go to: __${pagination.page}__}">
@@ -369,16 +387,6 @@
 
       <th:block th:insert="${template}" />
 
-      <br />
-      <br />
-      <div class="container">
-        <div class="row">
-          <div class="col-12 text-center">
-            <img src="../static/resources/images/spring-pivotal-logo.png"
-              th:src="@{/resources/images/spring-pivotal-logo.png}" alt="Sponsored by Pivotal" /></div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script th:src="@{/webjars/bootstrap/5.1.3/dist/js/bootstrap.bundle.min.js}"></script>

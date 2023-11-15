@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.portfolio.collection;
 
+import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.NamedEntity;
 
 import jakarta.persistence.Entity;
@@ -26,5 +27,14 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "types")
 public class PictureFileType extends NamedEntity {
+
+	public String getTitle() {
+		return "Test title";
+	}
+
+	@Override
+	public String toString() {
+		return "Test";
+	}
 
 }

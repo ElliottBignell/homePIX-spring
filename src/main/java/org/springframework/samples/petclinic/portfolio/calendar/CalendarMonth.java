@@ -9,7 +9,10 @@ public class CalendarMonth {
 	PictureFile thumbnail;
 
 	private String name;
+
 	private int count;
+
+	private int index;
 
 	public List<CalendarWeek> getWeeks() {
 		return weeks;
@@ -19,12 +22,17 @@ public class CalendarMonth {
 		this.weeks = weeks;
 	}
 
-	private List< CalendarWeek > weeks;
+	private List<CalendarWeek> weeks;
 
-	public CalendarMonth(String name, int count) {
+	public CalendarMonth(int index, String name, int count) {
 
+		this.index = index;
 		this.name = name;
 		this.count = count;
+	}
+
+	public String getIndex() {
+		return String.valueOf(index + 1);
 	}
 
 	public String getName() {
@@ -50,4 +58,5 @@ public class CalendarMonth {
 	public void setCount(int count) {
 		this.count = count;
 	}
+
 }

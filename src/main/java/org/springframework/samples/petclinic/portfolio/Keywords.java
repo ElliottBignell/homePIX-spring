@@ -22,6 +22,9 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.BaseEntity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Simple JavaBean domain object representing an album.
  *
@@ -43,8 +46,8 @@ public class Keywords extends BaseEntity {
 		return this.content;
 	}
 
-	public void setContent(String address) {
-		this.content = address;
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 	public int getCount() {
@@ -57,10 +60,20 @@ public class Keywords extends BaseEntity {
 
 	@Override
 	public String toString() {
-		return new ToStringCreator(this)
-			.append("id", this.getId())
-			.append("content", this.getContent())
-			.toString();
+		return new ToStringCreator(this).append("id", this.getId()).append("content", this.getContent()).toString();
+	}
+
+	public Set<String> getItems() {
+
+		String[] elements = content.split(",");
+
+		Set<String> items = new HashSet<>();
+
+		for (String keyword : elements) {
+			items.add(keyword);
+		}
+
+		return items;
 	}
 
 }

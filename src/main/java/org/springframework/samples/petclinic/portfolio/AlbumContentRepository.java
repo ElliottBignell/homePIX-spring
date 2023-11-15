@@ -17,45 +17,44 @@ package org.springframework.samples.petclinic.portfolio;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.samples.petclinic.portfolio.collection.PictureFile;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Repository class for <code>AlbumContent</code> domain objects All method names are compliant
- * with Spring Data naming conventions so this interface can easily be extended for Spring
- * Data. See:
+ * Repository class for <code>AlbumContent</code> domain objects All method names are
+ * compliant with Spring Data naming conventions so this interface can easily be extended
+ * for Spring Data. See:
  * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-creation
  *
  * @author Elliott Bignell
  */
-public interface AlbumContentRepository extends Repository<AlbumContent, Integer> {
+public interface AlbumContentRepository extends CrudRepository<AlbumContent, Integer> {
 
 	/**
 	 * Retrieve an {@link AlbumContent} from the data store by id.
 	 * @param id the id to search for
 	 * @return the {@link AlbumContent} if found
 	 */
-	//@Query("SELECT albumContent FROM AlbumContent albumContent left join fetch albumContent.pictureFiles WHERE albumContent.id =:id")
-	//@Transactional(readOnly = true)
-	//AlbumContent findById(@Param("id") Integer id);
+	@Query("SELECT albumcontent FROM AlbumContent albumcontent left join fetch albumcontent.pictureFile WHERE albumcontent.album.id =:album_id")
+	@Transactional(readOnly = true)
+	Collection<AlbumContent> findByAlbumId(@Param("album_id") Integer album_id);
 
 	/**
-	 * Retrieve an {@link AlbumContent} from the data store by id.
-	 * @param id the id to search for
+	 * Retrieve an {@link AlbumContent} from the data store by id and {@link PictureFile }
+	 * from the data store by id
+	 * @param album_id the id to search for
+	 * @param entry_id the id to search for
 	 * @return the {@link AlbumContent} if found
 	 */
-	//@Query("select picture_file from (( AlbumContent INNER JOIN picture_file ON picture_file.id=AlbumContent.entry_id) INNER JOIN album ON album.id=AlbumContent.album_id")
-	//@Transactional(readOnly = true)
-	//List<PictureFile> findPicturesById(@Param("album_id") Integer album_id);
-
-	/**
-	 * Save an {@link AlbumContent} to the data store, either inserting or updating it.
-	 * @param album the {@link AlbumContent} to save
-	 */
-	void save(AlbumContent album);
+	@Query("SELECT albumcontent FROM AlbumContent albumcontent left join fetch albumcontent.pictureFile left join fetch albumcontent.album WHERE albumcontent.album.id =:album_id AND  albumcontent.pictureFile.id =:entry_id")
+	@Transactional(readOnly = true)
+	Collection<AlbumContent> findByAlbumIdAndEntryId(@Param("album_id") Integer album_id,
+			@Param("entry_id") Integer entry_id);
 
 }
