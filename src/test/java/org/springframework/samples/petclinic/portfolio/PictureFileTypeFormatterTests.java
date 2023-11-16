@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.petclinic.portfolio;
+package org.springframework.samples.homepix.portfolio;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.samples.petclinic.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.petclinic.portfolio.collection.PictureFileType;
-import org.springframework.samples.petclinic.portfolio.collection.PictureFileTypeFormatter;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileType;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileTypeFormatter;
 
 /**
  * Test class for {@link PictureFileTypeFormatter}

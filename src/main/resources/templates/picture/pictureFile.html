@@ -208,8 +208,8 @@
 
   </script>
 
-<link rel="stylesheet" href="/static/css/clearall.css">
-<link rel="stylesheet" href="/static/css/dropdown.css">
+<link rel="stylesheet" th:href="@{/resources/css/clearall.css}" />
+<link rel="stylesheet" th:href="@{/resources/css/dropdown.css}" />
 
 <div class="techfont" style="width:100%;height:100%;">
   <div id="details" style="width:100%;height:100%;">
@@ -217,7 +217,7 @@
       <tr id="div_{{ picture.modid }}" colspan=4 style="height:100%;">
         <td style="width:1em;vertical-align:middle;">
           <a id="back"
-             th:href="@{/albums/__${album.id}__/item/__${ previous }__}">
+             th:href="@{__${baseLink}__/item/__${ previous }__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
             <span class="glyphicon glyphicon-chevron-left"></span>
           </a>
           <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
@@ -229,7 +229,7 @@
                th:src="${picture.filename}"
                th:data-src="${picture.filename}"
                th:alt="${picture.filename}"
-               style="height:30vw;object-fit:contain;"
+               style="height:10em;object-fit:contain;"
           >
           </img>
 
@@ -237,7 +237,7 @@
                style="position:relative;left:2.3em;right:2.3em;top:100%;width:calc( 100% - 4.6em );"
                contenteditable="true"
           >
-            <h1 style="position:absolute;top:0%;left:50%;width:100%;font-size:1em;height:1.2em;transform: translate(-50%, -50%);" th:text="${picture.title}">Unnamed</h1>
+            <h1 class="techfont titlefont" th:text="${picture.title}">Unnamed</h1>
             <form id="comment-form" style="position:absolute;top:3.2em;"
                   method="POST"
                   th:object="${form}"
@@ -247,15 +247,15 @@
                      style="position:absolute;top:calc(120%+2em);left:0em;right:2em;font-size:40%;"
               >
                 <tr>
-                  <td style="width:7em;"><label for="id_username">Username</label></td>
+                  <td style="width:7em;"><label class="commentfont" for="id_username">Username</label></td>
                   <td><input id="id_username" name="username"
                              type="text" class="form-control"></td>
                   <td></td>
                 </tr>
                 <tr>
-                  <td><label for="id_password">Your comment</label></td>
+                  <td><label for="id_password" class="commentfont">Your comment</label></td>
                   <td><textarea id="id_comment" name="comment"
-                                form="comment-form" class="form-control"
+                                form="comment-form" class="form-control commentfont"
                                 placeholder="Your opinion matters!"
                   >
                                     </textarea>
@@ -287,20 +287,20 @@
 i             </div>
               -->
 
-              <input type="hidden" name="next" value="{{ next }}" />
+              <input type="hidden" name="next" th:value="${ next }" />
             </form>
           </div>
         </td>
         <td style="width:1em;vertical-align:middle;">
           <a id="forth"
-             th:href="@{/albums/__${album.id}__/item/__${ next }__}">
+             th:href="@{__${baseLink}__/item/__${ next }__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
               <span class="glyphicon glyphicon-chevron-right"></span>
           </a>
           <!--th:href="../{{ next.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-right"></span></a>-->
         </td>
         <td style="width:7em;">
 
-          <div style="position:absolute;top:0em;height:1.5em;width:5em;">
+          <div id="picture_share"  style="position:absolute;top:3em;height:1.5em;width:5em;">
             <span>
               <a href="https://twitter.com/intent/tweet?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on twitter">
                 <svg width="48" height="48" fill="none" class="bo">
@@ -328,91 +328,85 @@ i             </div>
             </span>
           </div>
 
-          <div class="techfont" style="position:absolute;top:1.5em;vertical-align:top;width:5.5em;line-height:0.2em;padding:0px;">
+          <div id="picture_details" class="techfont" style="position:absolute;top:4.5em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
 
-              <span class="titletext">
-                  ID:
-              </span>
-            <span id="filename" class="titlecontent" th:text="${ picture.id }">
-                <br>
+            <span class="titletext propertyfont">
+                   ID:
             </span>
+            <span id="filename" class="titlecontent" th:text="${ picture.id }">
+            </span>
+            <br>
             <span th:if="${picture.title}">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                   Description:
               </span>
               <span id="description" class="titlecontent" th:text="${picture.title}">
-                <br>
               </span>
+              <br>
             </span>
             <span th:if="${picture.location}">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                 Location:
               </span>
               <span id="description" class="titlecontent" th:text="${picture.location}">
-                <br>
               </span>
+              <br>
             </span>
-            <span class="titletext">
+            <span class="titletext propertyfont">
               Hits:
             </span>
             <span id="description" class="titlecontent" th:text="${picture.hits}">
-              <br>
             </span>
+            <br>
             <span th:if="${picture.primaryCategory}">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                 Category 1:
               </span>
               <span id="description" class="titlecontent" th:text="${ picture.primaryCategory }">
-                <br>
               </span>
+              <br>
             </span>
             <span th:if="${picture.secondaryCategory}">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                 Category 2:
               </span>
               <span id="description" class="titlecontent" th:text="${ picture.secondaryCategory }">
-                <br>
               </span>
+              <br>
             </span>
             <span th:if="${picture.filename}">
-              <span class="titletext">
-                Filename:
+              <span class="titletext propertyfont">
+              Filename:
               </span>
               <span id="filename" class="titlecontent" th:text="${ picture.filename }">
-                <br>
               </span>
+              <br>
             </span>
             <span th:if="${picture.takenOn}">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                 Taken on:
               </span>
               <span id="datetime" class="titlecontent" th:text="${#temporals.format(picture.takenOn, 'dd-MMM-yyyy')}">
-                {{ picture.taken_on|date:"d M, Y" }}<br>
+                {{ picture.taken_on|date:"d M, Y" }}
               </span>
             </span>
-            <span class="titletext">
-                Dimensions:<br>
+            <br>
+            <span class="titletext propertyfont">
+                Dimensions:
             </span>
-
-            <span class="titletext">
-                <br><a href="comment/">Add comment</a>
-            </span>
-
-            <div style="height:1em;">
-            </div>
-
             <span id="dimensions" class="titlecontent"> x <br> </span>
+
             <span th:if="false">
               <span id="megapixels" class="titlecontent"> ? <br></span>
-              <span class="titletext">
+              <span class="titletext propertyfont">
                   AspectRatio:
               </span>
               <span id="aspect" class="titlecontent"> ? <br> </span>
-              <span class="titletext">
+              <span class="titletext propertyfont">
                   Camera:
               </span>
               <span id="camera" class="titlecontent"> ? <br></span>
-              <span class="titletext">
+              <span class="titletext propertyfont">
                   Exposure:
               </span>
               <span id="fnumber" class="titlecontent"> ? </span>
@@ -432,26 +426,20 @@ i             </div>
             </span>
           </div>
 
-          <div class="techfont" style="position:absolute;top:6.5em;vertical-align:top;width:5.5em;line-height:0.2em;padding:0px;">
-            <div style="height:2em;width:7em;">
-              <form ih:action="@{/albums/add/__${ picture.id }__" method="get" class="float-right" style="font-size:0.5em;">
-                <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
-                <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:400px;"/>
-                <div th:each="album : ${albums}" id="image-dropdown" class="image-dropdown">
-<!--                  <input type="radio" th:id="@{line${ album.name }}" name="line-style" th:value="${ album.name }" /><label th:each="line{{ album.name }}" th:text="${ album.filename }" style="background:url('{{}}') 50% 50%;">Unnamed</label>-->
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="techfont" style="position:absolute;top:9em;vertical-align:bottom;height:5em;width:5em;line-height:0.2em;padding:0px;">
+          <div id="keywords_and_copyright" class="techfont" style="position:relative;top:5em;left:0em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
             <div id="panel1" style="display:inline">
-              <span class="titletext">
+              <span class="titletext propertyfont">
                   Keywords:
               </span>
-              <span id="keywords" class="titlecontent" th:each="word : ${picture.keywords}">
-                <button type="button" data-react-toolbox="button" th:text="${word}">
-                <i class="glyphicon glyphicon-remove"></i>
+              <span id="keywords" class="titlecontent" th:each="word : ${picture.keywords.getItems}">
+                <button type="button" class="buttonfont" data-react-toolbox="button">
+                  <span th:text="${word}"></span>
+                  <span>
+                    <a href="/remove">
+                      <i class='glyphicon glyphicon-remove'>
+                      </i>
+                    </a>
+                  </span>
                 </button>
               </span>
               <form id="submit_keywords" action="" method="get" style="font-size:0.3em;padding-top:10px;">
@@ -462,7 +450,7 @@ i             </div>
             </div>
             <div id="panel2" style="display:none">
               <a href=javascript:panel2() class="unembellish">
-                <span class="titletext">
+                <span class="titletext propertyfont">
                     Location:
                 </span>
               </a>
@@ -470,10 +458,30 @@ i             </div>
                 <img src=""/>
               /<span>
             </div>
-            <span class="titletext">
-                <br>Copyright
+            <span class="titletext propertyfont">
+                <br>Copyright &copy; Elliott Bignell
             </span>
-            <span id="copyright" class="titlecontent"> ? <br></span>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div id="add_to_album" class="techfont" style="position:relative;top:1em;left:0em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
+            <div style="height:2em;width:10em;">
+              <form th:action="@{/albums/3/add/__${ picture.id }__}" method="get" style="font-size:0.3em;">
+                <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:300px;"/>
+              </form>
+              <form th:each="album : ${albums}" th:action="@{/albums/__${album.id}__/add/__${ picture.id }__}" method="GET" style="font-size:0.3em;">
+                <div id="@{image-dropdown-__${album.id}__}" class="image-dropdown">
+                  <button type="submit" class="addfont" data-react-toolbox="button" th:text="${album?.name}">
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </td>
       </tr>

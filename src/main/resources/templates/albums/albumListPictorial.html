@@ -4,12 +4,9 @@
 
 <body>
 
-<h2>Albums</h2>
-
     <div class="col-sm-12 panemain" id="panemain" style="width:90%;">
       <div style="background:transparent;position:absolute;left:0em;right:0em;top:0em;bottom:0em;">
-
-
+        
       <div class="centerstage">
         <div class="techfont" id="div_centrestage" style="min-height:60px;">
           <div class="row">
@@ -29,20 +26,20 @@
         </div>
 
         <figure th:each="album : ${selections}" class="tt_base droppable techfont gallery justified" id="div_2__">
-          <figcaption th:text="${album.name}" class="desc">Unnamed</figcaption>
           <a id="@{piclink___${album.count}__}" th:href="${album.id}">
-            <section class="wrapper" id="file-number__">
-              <span class="tt_subject">
-                <img th:id="@{picture_${album.id}}"
-                     class="gallery_picture lazyloaded"
-                     th:src="${album.thumbnail.filename}"
-                     th:data-src="${album.thumbnail.filename}"
-                     th:alt="@{Contains __${#sets.size(album.pictureFiles)}__ shots}"
-                />
-              </span>
-            </section>
+            <figcaption th:text="${album.name}" class="desc">Unnamed</figcaption>
+              <section class="wrapper" id="file-number__">
+                <span class="tt_subject">
+                  <img th:id="@{picture-__${album.id}__}"
+                       class="gallery_picture lazyloaded"
+                       th:src="${album.thumbnail.filename}"
+                       th:data-src="${album.thumbnail.filename}"
+                       th:alt="@{Contains __${#sets.size(album.pictureFiles)}__ shots}"
+                  />
+                </span>
+              </section>
+            <figcaption th:text="@{Contains __${#sets.size(album.pictureFiles)}__ shots}" class="count">Empty</figcaption>
           </a>
-          <figcaption th:text="@{Contains __${#sets.size(album.pictureFiles)}__ shots}" class="count">Empty</figcaption>
         </figure>
       </div>
     </div>

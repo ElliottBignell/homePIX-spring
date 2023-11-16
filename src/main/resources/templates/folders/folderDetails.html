@@ -4,8 +4,48 @@
       th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
 
 <body>
+  
+  <h2 th:text="${folder.displayName}"></h2>
+  <div style="overflow-y: auto; max-height: 92vh;">
+  
+    <figure th:each="pictureFile : ${folder.pictureFiles}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
+      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.title}__}">
+        <section class="wrapper" th:id=" @{file-number_${pictureFile.id}}">
+              <span class="tt_subject">
+                <img th:id="@{picture__${pictureFile.id}__}"
+                     class="lazyload imageinlist imageresponsive"
+                     th:src="${pictureFile.filename}"
+                     th:data-src="${pictureFile.filename}"
+                     th:alt="${pictureFile.filename}"
+                >
+              </span>
+        </section>
+      </a>
+      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.title}__}">
+        <figcaption class="tt_edit">
+          <form id="editprops">
+            <fieldset>
+              <button type="button" class="tt_title imageresponsive_">
+                <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+              </button>
+            </fieldset>
+          </form>
+        </figcaption>
+      </a>
+      <div th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header">
+        <a class="tt_icon_anchor" th:href="@{./delete/__${folder.name}__/}">
+          <i class="material-icons tt_icon">
+            delete
+          </i>
+        </a>
+        <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+          <div th:id="@{header__${folder.name}__}" class="tt_lefttextnooff" th:value="${folder.name}">
+          </div>
+        </figcaption>
+      </div>
+    </figure>
+  </div>
 
-<h2 th:text="${folder.name}"></h2>
 </body>
 
 </html>

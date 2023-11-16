@@ -1,7 +1,49 @@
 .techfont{
   font-family: 'Russo One', sans-serif;
-  font-size: 1.2em;
   margin-bottom: 10px;
+}
+
+.titlefont{
+  position:absolute;
+  top:0%;
+  left:50%;
+  width:100%;
+  font-size:0.5em;
+  height:1.2em;
+  transform: translate(-50%, 50%);
+}
+
+.titlecontent {
+  font-weight     : bold;
+  font-size:0.25em;
+  margin-bottom   : 0px;
+  width:100%;
+}
+
+.propertyfont{
+  font-family: 'Russo One', sans-serif;
+  font-size:0.2em;
+  margin-bottom: 0.5em;
+}
+
+.buttonfont{
+  font-family: 'Russo One', sans-serif;
+  font-size:0.8em;
+  margin-bottom: 0.5em;
+}
+
+.addfont{
+  font-family: 'Russo One', sans-serif;
+  font-size:0.8em;
+  width:100%;
+  height:100%;
+  margin-bottom: 0.5em;
+}
+
+.commentfont{
+  font-family: 'Russo One', sans-serif;
+  font-size:0.8em;
+  margin-bottom: 0.5em;
 }
 
 .postdate{
@@ -40,7 +82,6 @@
 }
 
 .bigbrand{
-  font-size: 1.5em;
   font-weight: 600;
   border: 0px;
   position: absolute;
@@ -54,7 +95,7 @@
   border: 0px;
   position: absolute;
   top: 0em;
-  height:80px;
+  height:40px;
 }
 
 .glyphicon, .glyphicon-user
@@ -199,7 +240,7 @@ div.title {
 input.form-control {
   width: 11em;
   padding: 5px 15px 5px 5px;
-  font-size: 16px;
+  //font-size: 16px;
   border: 1px solid #CCC;
   height: 34px;
   -webkit-appearance: none;

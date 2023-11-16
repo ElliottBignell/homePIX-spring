@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.petclinic.model;
+package org.springframework.samples.homepix.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
