@@ -99,9 +99,9 @@ public class PictureFileController extends PaginationController {
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
 
-		PictureFile pictureFile = this.pictureFiles.findById(petId);
+		Optional<PictureFile> pictureFile = this.pictureFiles.findById(petId);
 
-		if (null != pictureFile) {
+		if (pictureFile.isPresent()) {
 			model.put("pictureFile", pictureFile);
 		}
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;

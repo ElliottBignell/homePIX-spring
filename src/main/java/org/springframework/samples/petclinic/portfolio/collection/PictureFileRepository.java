@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Michael Isvy
  * @author Elliott Bignell
  */
-public interface PictureFileRepository extends Repository<PictureFile, Integer> {
+public interface PictureFileRepository extends CrudRepository<PictureFile, Integer> {
 
 	/**
 	 * Retrieve all {@link PictureFileType}s from the data store.
@@ -44,12 +44,8 @@ public interface PictureFileRepository extends Repository<PictureFile, Integer> 
 	@Transactional(readOnly = true)
 	List<PictureFileType> findPictureFileTypes();
 
-	@Transactional(readOnly = true)
-	PictureFile findById(Integer id);
-
 	@Query("SELECT DISTINCT YEAR(taken_on) AS year FROM PictureFile picture_file ORDER BY year")
 	@Transactional(readOnly = true)
 	List<String> findYears();
 
-	void save(PictureFile pictureFile);
 }
