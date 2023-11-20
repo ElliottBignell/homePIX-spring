@@ -80,7 +80,7 @@ public class Calendar extends BaseEntity {
 		items = new ArrayList<>();
 
 		int year = 2002;
-		Date date = new Date(year, 0, 1);
+		LocalDate date = LocalDate.of(year, 0, 1);
 
 		for (int n = 0; n < 6; n++) {
 
@@ -161,7 +161,10 @@ public class Calendar extends BaseEntity {
 						dayOfMonth++;
 						days.add(newDay);
 
-						if (d.getMonth() != monthOfYear) {
+						java.util.Calendar cal = java.util.Calendar.getInstance();
+						cal.setTime(d);
+
+						if (cal.get(java.util.Calendar.MONTH) != monthOfYear) {
 
 							while (days.size() < 7) {
 
