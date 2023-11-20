@@ -5,11 +5,11 @@
     <envs>
       <env name="DBCONFIG" value="Debug" />
     </envs>
-    <option name="MAIN_CLASS_NAME" value="org.springframework.samples.petclinic.homePIXApplication" />
+    <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homePIX" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="org.springframework.samples.petclinic.*" />
+        <option name="PATTERN" value="org.springframework.samples.homepix.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
