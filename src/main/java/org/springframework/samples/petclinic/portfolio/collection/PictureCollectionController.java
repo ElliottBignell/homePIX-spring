@@ -100,8 +100,8 @@ class PictureCollectionController extends PaginationController {
 			return dtf.format(now);
 		};
 
-		String fromText = fromDate.isEmpty() || fromDate.get() == "" ? "1970-01-01" : fromDate.get();
-		String toText = toDate.isEmpty() || toDate.get() == "" ? today.get() : toDate.get();
+		String fromText = !fromDate.isPresent() || fromDate.get() == "" ? "1970-01-01" : fromDate.get();
+		String toText = !toDate.isPresent() || toDate.get() == "" ? today.get() : toDate.get();
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
@@ -130,7 +130,7 @@ class PictureCollectionController extends PaginationController {
 		String sortCriterion = "title";
 		Sort.Direction direction = Sort.Direction.ASC;
 
-		if (!sort.isEmpty()) {
+		if (sort.isPresent()) {
 
 			switch (sort.get()) {
 			case "Filename":
