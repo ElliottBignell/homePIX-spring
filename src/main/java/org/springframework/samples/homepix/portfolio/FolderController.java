@@ -88,7 +88,7 @@ class FolderController extends PaginationController {
 		if (folder.getName() == null) {
 
 			// String dir = "/mnt/homepix/jpegs/";
-			String dir = "/home/elliott/SpringFramweworkGuru/spring-petclinic-old/src/main/resources/static/resources/images/";
+			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/";
 
 			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
 					.map(File::getName).sorted().collect(Collectors.toList());

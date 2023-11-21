@@ -80,7 +80,7 @@ public class Calendar extends BaseEntity {
 		items = new ArrayList<>();
 
 		int year = 2002;
-		LocalDate date = LocalDate.of(year, 0, 1);
+		LocalDate date = LocalDate.of(year, 1, 1);
 
 		for (int n = 0; n < 6; n++) {
 

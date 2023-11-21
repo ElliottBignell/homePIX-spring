@@ -124,7 +124,7 @@ class AlbumContentController extends PaginationController {
 			Map<String, Object> model) {
 
 		Optional<Album> album = this.albums.findById(id);
-		List<PictureFile> pictureFiles = album.get().getPictureFileRepository();
+		List<PictureFile> pictureFiles = null;// album.get().getPictureFileRepository();
 
 		addParams(pictureId, "", pictureFiles, model, true);
 

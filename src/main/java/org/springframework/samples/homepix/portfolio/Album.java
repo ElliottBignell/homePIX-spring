@@ -15,22 +15,25 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 
 /**
  * Simple JavaBean domain object representing an album.
  *
  * @author Elliott Bignell
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "albums")
 public class Album extends BaseEntity {
@@ -41,7 +44,7 @@ public class Album extends BaseEntity {
 
 	@Column(name = "picture_count")
 	@NotEmpty
-	private int picture_count;
+	private int count;
 
 	@Column(name = "thumbnail_id")
 	@NotEmpty
@@ -49,37 +52,6 @@ public class Album extends BaseEntity {
 
 	@OneToMany(mappedBy = "album")
 	private List<AlbumContent> albumContent;
-
-	@Autowired
-	private final PictureFileRepository pictureFileRepository;
-
-	public Album(PictureFileRepository pictureFileRepository) {
-		this.pictureFileRepository = pictureFileRepository;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String address) {
-		this.name = address;
-	}
-
-	public int getPicture_count() {
-		return this.picture_count;
-	}
-
-	public void setPicture_count(int picture_count) {
-		this.picture_count = picture_count;
-	}
-
-	public int getThumbnailId() {
-		return this.thumbnail_id;
-	}
-
-	public void setThumbnailId(int thumbnail_id) {
-		this.thumbnail_id = thumbnail_id;
-	}
 
 	public PictureFile getThumbnail() {
 
@@ -136,6 +108,7 @@ public class Album extends BaseEntity {
 		if (null != existingFile) {
 			this.albumContent.removeIf(item -> item.getPictureFile().getId() == pictureFile.getId());
 		}
+		// pictureFile.setOwner(this);
 	}
 
 	/**

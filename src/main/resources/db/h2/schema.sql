@@ -15,11 +15,12 @@ CREATE INDEX types_name ON types (name);
 
 CREATE TABLE IF NOT EXISTS albums (
   id INTEGER IDENTITY PRIMARY KEY,
-  name VARCHAR(30),
+  name VARCHAR(200),
   picture_count INT(4) UNSIGNED NOT NULL,
   thumbnail_id INT(8) UNSIGNED NOT NULL
 );
 CREATE INDEX albums_name ON albums (name);
+
 
 CREATE TABLE IF NOT EXISTS folders (
   id INTEGER IDENTITY PRIMARY KEY AUTO_INCREMENT,

@@ -52,7 +52,7 @@ class AlbumController extends PaginationController {
 	@GetMapping("/albums/new")
 	public String initCreationForm(Map<String, Object> model) {
 
-		Album album = new Album(this.pictureFiles);
+		Album album = new Album();
 		model.put("album", album);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
@@ -70,7 +70,7 @@ class AlbumController extends PaginationController {
 
 	@GetMapping("/albums/find")
 	public String initFindForm(Map<String, Object> model) {
-		model.put("album", new Album(this.pictureFiles));
+		model.put("album", new Album());
 		return "albums/findAlbums";
 	}
 

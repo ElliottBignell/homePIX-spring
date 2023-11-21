@@ -46,4 +46,5 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query("SELECT DISTINCT YEAR(taken_on) AS year FROM PictureFile picture_file ORDER BY year")
 	@Transactional(readOnly = true)
 	List<String> findYears();
+
 }

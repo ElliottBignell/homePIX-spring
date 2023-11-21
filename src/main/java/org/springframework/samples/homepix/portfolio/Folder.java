@@ -106,7 +106,7 @@ public class Folder extends BaseEntity {
 
 			pictureFiles = new ArrayList<>();
 
-			String dir = "/home/elliott/SpringFramweworkGuru/spring-petclinic-old/src/main/resources/static/resources/images/"
+			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
 					+ this.name + "/jpegs";
 
 			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())

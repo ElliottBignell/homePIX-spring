@@ -4,12 +4,6 @@ INSERT INTO keywords VALUES(3,'barn,building,entrance,exterior,farm,graubuenden,
 INSERT INTO keywords VALUES(4,'graubünden,maienfeld,schweiz',3);
 INSERT INTO keywords VALUES(5,'alps,barn,blue sky,building,europe,exterior,graubuenden,graubünden,maienfeld,outdoors,quaint,rural,scenic,spring,street,sunshine,switzerland,town,village',19);
 
-INSERT INTO albums VALUES(1, 'Texture', 1, 7364);
-INSERT INTO albums VALUES(2, 'Aarburg', 1, 35002);
-INSERT INTO albums VALUES(3, 'Cats', 1, 7491);
-INSERT INTO albums VALUES(4, 'Wildlife', 1, 745);
-INSERT INTO albums VALUES(5, 'Slides', 1, 7506);
-
 INSERT INTO types VALUES (1, 'Switzerland');
 
 INSERT INTO picture_file (id,filename,title,last_modified,path_id,keywords_id,sortkey,added_on,taken_on,location,primary_category,secondary_category,hits)
@@ -21,6 +15,14 @@ INSERT INTO picture_file (id,filename,title,last_modified,path_id,keywords_id,so
            (745,'/resources/images/TestCamelCase/jpegs/Ammonites.jpg','Ammonite fossils in the paving stone of the Piazza Erbe in Verona','2020-05-25',1,1,1,'2020-05-25','2020-05-25',1,1,1,1),
            (7586,'/resources/images/TestCamelCase/jpegs/dsc_129571.jpg','Bettina in the Bodensee','2021-01-05',1,1,1,'2021-01-05','2021-01-05',1,1,1,1)
            ;
+
+INSERT INTO albums (id, name, picture_count, thumbnail_id)
+  VALUES (1, 'Texture', 1, 7364),
+         (2, 'Aarburg', 1, 35002),
+         (3, 'Cats', 1, 7491),
+         (4, 'Wildlife', 1, 745),
+         (5, 'Slides', 1, 7506)
+         ;
 
 INSERT INTO albumcontent VALUES(0,1,7364);
 INSERT INTO albumcontent VALUES(1,2,8700);
