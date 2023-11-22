@@ -85,7 +85,7 @@ public class PaginationController {
 	}
 
 	@ModelAttribute(name = "albums")
-	Collection<Album> findAllAlbums() {
+	Iterable<Album> findAllAlbums() {
 		return this.albums.findAll();
 	}
 

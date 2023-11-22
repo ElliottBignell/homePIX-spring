@@ -20,6 +20,8 @@ import java.util.List;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.AlbumContent;
@@ -32,6 +34,8 @@ import org.springframework.samples.homepix.portfolio.Keywords;
  * @author Juergen Hoeller
  * @author Sam Brannen
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "picture_file")
 public class PictureFile extends BaseEntity {
@@ -84,85 +88,4 @@ public class PictureFile extends BaseEntity {
 
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
-
-	public void setLast_modified(LocalDate last_modified) {
-		this.last_modified = last_modified;
-	}
-
-	public String getFilename() {
-		return this.filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
-
-	public String getTitle() {
-		return this.title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public LocalDate getLast_modified() {
-		return this.last_modified;
-	}
-
-	public PictureFileType getType() {
-		return this.path;
-	}
-
-	public void setType(PictureFileType type) {
-		this.path = type;
-	}
-
-	public PictureFileType getPrimaryCategory() {
-		return this.primaryCategory;
-	}
-
-	public void setPrimaryCategory(PictureFileType category) {
-		this.primaryCategory = category;
-	}
-
-	public PictureFileType getSecondaryCategory() {
-		return this.secondaryCategory;
-	}
-
-	public void setSecondaryCategory(PictureFileType category) {
-		this.secondaryCategory = category;
-	}
-
-	public int getHits() {
-		return this.hits;
-	}
-
-	public void setHits(int hits) {
-		this.hits = hits;
-	}
-
-	public LocalDate getTakenOn() {
-		return this.taken_on;
-	}
-
-	public void setTakenOn(LocalDate date) {
-		this.taken_on = date;
-	}
-
-	public PictureFileType getLocation() {
-		return this.location;
-	}
-
-	public void setLocation(PictureFileType type) {
-		this.location = location;
-	}
-
-	public void setKeywords(Keywords keywords) {
-		this.keywords = keywords;
-	}
-
-	public Keywords getKeywords() {
-		return this.keywords;
-	}
-
 }

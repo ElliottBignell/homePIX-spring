@@ -21,6 +21,13 @@ CREATE TABLE IF NOT EXISTS albums (
 );
 CREATE INDEX albums_name ON albums (name);
 
+INSERT INTO albums (id, name, picture_count, thumbnail_id)
+  VALUES (1, 'Texture', 1, 7364),
+         (2, 'Aarburg', 1, 35002),
+         (3, 'Cats', 1, 7491),
+         (4, 'Wildlife', 1, 745),
+         (5, 'Slides', 1, 7506)
+         ;
 
 CREATE TABLE IF NOT EXISTS folders (
   id INTEGER IDENTITY PRIMARY KEY AUTO_INCREMENT,

@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
@@ -35,6 +36,7 @@ class OrganiseController extends PaginationController {
 
 	private final OrganiseRepository organiseRepository;
 
+	@Autowired
 	public OrganiseController(OrganiseRepository organiseRepository, AlbumRepository albums, FolderRepository folders,
 			PictureFileRepository pictureFiles) {
 		super(albums, folders, pictureFiles);

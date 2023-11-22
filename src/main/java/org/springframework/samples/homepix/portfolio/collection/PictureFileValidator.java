@@ -43,7 +43,7 @@ public class PictureFileValidator implements Validator {
 		}
 
 		// type validation
-		if (pictureFile.isNew() && pictureFile.getType() == null) {
+		if (pictureFile.isNew() && pictureFile.getPrimaryCategory() == null) {
 			errors.rejectValue("type", REQUIRED, REQUIRED);
 		}
 

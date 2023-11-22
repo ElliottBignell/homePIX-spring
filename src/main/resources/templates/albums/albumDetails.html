@@ -9,39 +9,25 @@
 
     <div style="overflow-y: auto; max-height: 92vh;">
 
-      <figure th:each="pictureFile : ${album.pictureFiles}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-        <!-- <a id="piclink__${album.id}__}" href="{{ albumcontent.modpath }}/{{ albumcontent.file }"> -->
-        <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/albums/__${album.id}__/item/__${pictureFile.id}__/}">
-          <section class="wrapper" th:id=" @{file-number_${pictureFile.id}}">
+      <figure th:each="entry : ${content}" class="tt_base droppable draggable" th:id="@{div__${entry.pictureFile.id}__}">
+        <a th:id="@{picture__${entry.pictureFile.id}__}" th:href="@{/albums/__${entry.album.id}__/item/__${entry.pictureFile.id}__/}">
+          <section class="wrapper" th:id=" @{file-number_${entry.pictureFile.id}}">
             <span class="tt_subject">
-              <img th:id="@{picture__${pictureFile.id}__}"
+              <img th:id="@{picture__${entry.pictureFile.id}__}"
                    class="lazyload imageinlist imageresponsive"
-                   th:src="${pictureFile.filename}"
-                   th:data-src="${pictureFile.filename}"
-                   th:alt="${pictureFile.filename}"
+                   th:src="${entry.pictureFile.filename}"
+                   th:data-src="${entry.pictureFile.filename}"
+                   th:alt="${entry.pictureFile.filename}"
               >
-              <!--
-              <img th:id="@{picture__${pictureFile.id}__}"
-                   class="lazyload imageinlist imageresponsive"
-                   th:src="${pictureFile.filename}"
-                   th:data-src="${pictureFile.filename}"
-                   th:alt="${pictureFile.filename}"
-              >
-              -->
-            </span>
-          </section>
+
+            </span></section>
         </a>
-        <!--
-        <figcaption class="tt_text tt_bottom">
-          <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
-        </figcaption>
-        -->
-        <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/albums/__${album.id}__/item/__${pictureFile.id}__/}">
+        <a th:id="@{btn__${entry.pictureFile.id}__}" th:href="@{/albums/__${album.id}__/item/__${entry.pictureFile.id}__/}">
           <figcaption class="tt_edit">
             <form id="editprops">
               <fieldset>
                   <button type="button" class="tt_title imageresponsive_">
-                    <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+                    <span style="text-align:left;" th:text="${entry.pictureFile.title}"></span>
                   </button>
               </fieldset>
             </form>
@@ -68,7 +54,7 @@
               bedtime
             </i>
           </a>
-          <a class="tt_icon_anchor" th:href="@{./__${album.id}__/delete/__${pictureFile.id}__}">
+          <a class="tt_icon_anchor" th:href="@{./__${album.id}__/delete/__${entry.pictureFile.id}__}">
             <i class="material-icons tt_icon">
               delete
             </i>

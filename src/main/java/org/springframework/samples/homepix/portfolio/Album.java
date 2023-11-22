@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -50,27 +52,13 @@ public class Album extends BaseEntity {
 	@NotEmpty
 	private int thumbnail_id;
 
-	@OneToMany(mappedBy = "album")
-	private List<AlbumContent> albumContent;
-
-	public PictureFile getThumbnail() {
-
-		PictureFile thumbnail = this.albumContent.stream()
-				.filter(entry -> entry.getPictureFile().getId() == this.thumbnail_id).findAny().orElse(null)
-				.getPictureFile();
-
-		if (null == thumbnail) {
-			return new PictureFile();
-		}
-
-		return thumbnail;
-	}
+	private PictureFile thumbnail;
 
 	protected List<PictureFile> getPictureFilesInternal() {
 
-		List<PictureFile> pictureFiles = this.albumContent.stream()
+		List<PictureFile> pictureFiles = null; /*this.albumContent.stream()
 				.filter(entry -> entry.getPictureFile().getId() == this.thumbnail_id).map(AlbumContent::getPictureFile)
-				.collect(Collectors.toList());
+				.collect(Collectors.toList());*/
 
 		return pictureFiles;
 	}
@@ -101,13 +89,13 @@ public class Album extends BaseEntity {
 
 	public void deletePictureFile(PictureFile pictureFile) {
 
-		PictureFile existingFile = this.albumContent.stream()
+		/*PictureFile existingFile = this.albumContent.stream()
 				.filter(entry -> entry.getPictureFile().getId() == pictureFile.getId())
 				.map(AlbumContent::getPictureFile).findAny().orElse(null);
 
 		if (null != existingFile) {
 			this.albumContent.removeIf(item -> item.getPictureFile().getId() == pictureFile.getId());
-		}
+		}*/
 		// pictureFile.setOwner(this);
 	}
 

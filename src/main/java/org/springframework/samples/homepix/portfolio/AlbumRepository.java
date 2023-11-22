@@ -45,9 +45,4 @@ public interface AlbumRepository extends CrudRepository<Album, Integer> {
 	// WHERE album.name LIKE :name%")
 	@Transactional(readOnly = true)
 	Collection<Album> findByName(@Param("name") String name);
-
-	@Query("SELECT DISTINCT album FROM Album album")
-	@Transactional(readOnly = true)
-	Collection<Album> findAll();
-
 }

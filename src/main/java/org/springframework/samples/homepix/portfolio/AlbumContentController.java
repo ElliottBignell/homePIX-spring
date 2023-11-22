@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Juergen Hoeller
@@ -40,6 +42,7 @@ class AlbumContentController extends PaginationController {
 
 	private final AlbumContentRepository albumContent;
 
+	@Autowired
 	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders,
 			PictureFileRepository pictureFiles) {
 		super(albums, folders, pictureFiles);
@@ -124,7 +127,9 @@ class AlbumContentController extends PaginationController {
 			Map<String, Object> model) {
 
 		Optional<Album> album = this.albums.findById(id);
-		List<PictureFile> pictureFiles = null;// album.get().getPictureFileRepository();
+		Collection<PictureFile> pictureFiles = albumContent.findByAlbumId( id ).stream()
+			.map( item -> item.getPictureFile() )
+			.collect(Collectors.toList());
 
 		addParams(pictureId, "", pictureFiles, model, true);
 

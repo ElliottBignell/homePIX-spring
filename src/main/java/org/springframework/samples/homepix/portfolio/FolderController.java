@@ -234,7 +234,7 @@ class FolderController extends PaginationController {
 			model.put("baseLink", "/folders/" + name);
 			model.put("albums", this.albums.findAll());
 
-			Collection<Album> albums = this.albums.findAll();
+			Iterable<Album> albums = this.albums.findAll();
 
 			return "picture/pictureFile.html";
 		}
@@ -270,7 +270,7 @@ class FolderController extends PaginationController {
 	}
 
 	@ModelAttribute(name = "albums")
-	Collection<Album> findAllAlbums() {
+	Iterable<Album> findAllAlbums() {
 		return this.albums.findAll();
 	}
 

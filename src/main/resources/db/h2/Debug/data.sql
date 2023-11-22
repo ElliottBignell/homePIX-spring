@@ -25,7 +25,9 @@ INSERT INTO albums (id, name, picture_count, thumbnail_id)
          ;
 
 INSERT INTO albumcontent VALUES(0,1,7364);
-INSERT INTO albumcontent VALUES(1,2,8700);
-INSERT INTO albumcontent VALUES(2,3,35002);
-INSERT INTO albumcontent VALUES(3,4,7491);
-INSERT INTO albumcontent VALUES(4,5,7491);
+INSERT INTO albumcontent VALUES(1,1,745);
+INSERT INTO albumcontent VALUES(2,1,7586);
+INSERT INTO albumcontent VALUES(3,2,8700);
+INSERT INTO albumcontent VALUES(4,3,35002);
+INSERT INTO albumcontent VALUES(5,4,7491);
+INSERT INTO albumcontent VALUES(6,5,7491);

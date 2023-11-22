@@ -382,11 +382,11 @@ i             </div>
               </span>
               <br>
             </span>
-            <span th:if="${picture.takenOn}">
+            <span th:if="${picture.taken_on}">
               <span class="titletext propertyfont">
                 Taken on:
               </span>
-              <span id="datetime" class="titlecontent" th:text="${#temporals.format(picture.takenOn, 'dd-MMM-yyyy')}">
+              <span id="datetime" class="titlecontent" th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}">
                 {{ picture.taken_on|date:"d M, Y" }}
               </span>
             </span>

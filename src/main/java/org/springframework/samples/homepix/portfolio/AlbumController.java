@@ -16,6 +16,8 @@
 package org.springframework.samples.homepix.portfolio;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -35,13 +38,13 @@ import java.util.*;
 class AlbumController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "album/createOrUpdateOwnerForm";
+	private final AlbumContentRepository albumContent;
 
-	private final AlbumRepository albums;
-
+	@Autowired
 	public AlbumController(AlbumRepository albumService, AlbumRepository albums, FolderRepository folders,
-			PictureFileRepository pictureFiles) {
+						   PictureFileRepository pictureFiles, AlbumContentRepository albumContent) {
 		super(albums, folders, pictureFiles);
-		this.albums = albumService;
+		this.albumContent = albumContent;
 	}
 
 	@InitBinder
@@ -89,6 +92,7 @@ class AlbumController extends PaginationController {
 
 		// find albums by last name
 		Collection<Album> results = this.albums.findByName(album.getName());
+
 		if (results.isEmpty()) {
 			// no albums found
 			result.rejectValue("name", "notFound", "not found");
@@ -120,23 +124,33 @@ class AlbumController extends PaginationController {
 		}
 
 		// find albums by last name
-		Collection<Album> results = this.albums.findByName(album.getName());
+		Iterable<Album> results = this.albums.findAll();
+		Iterator<Album> iter = results.iterator();
 
-		if (results.isEmpty()) {
-			// no albums found
-			result.rejectValue("name", "notFound", "not found");
-			return "albums/findAlbums";
+		while (iter.hasNext()) {
+
+			Album nextAlbum = iter.next();
+
+			int id = nextAlbum.getId();
+
+			Collection<PictureFile> thumbnail = this.albumContent.findThumbnailIds( id );
+			int count = this.albumContent.findByAlbumId( id ).size();
+
+			if ( count != nextAlbum.getCount() ) {
+				nextAlbum.setCount( count );
+			}
+
+			nextAlbum.setThumbnail( thumbnail.iterator().next() );
+
+			/*List<PictureFile> files = contents.stream()
+				.filter( item -> item.getAlbum().getId() == id )
+				.map( item -> item.getPictureFile() )
+				.collect(Collectors.toList());*/
 		}
-		else if (results.size() == 1) {
-			// 1 album found
-			album = results.iterator().next();
-			return "redirect:/albums/" + album.getId();
-		}
-		else {
-			// multiple albums found
-			model.put("selections", results);
-			return "albums/albumListPictorial";
-		}
+
+		model.put("selections", results);
+
+		return "albums/albumListPictorial";
 	}
 
 	@GetMapping("/albums/{id}/edit")

@@ -54,4 +54,7 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Int
 	Collection<AlbumContent> findByAlbumIdAndEntryId(@Param("album_id") Integer album_id,
 			@Param("entry_id") Integer entry_id);
 
+	@Query("SELECT pictureFile FROM AlbumContent albumcontent WHERE albumcontent.album.id =:album_id ORDER BY pictureFile.id LIMIT 1")
+	@Transactional(readOnly = true)
+	Collection<PictureFile> findThumbnailIds(@Param("album_id") Integer album_id);
 }
