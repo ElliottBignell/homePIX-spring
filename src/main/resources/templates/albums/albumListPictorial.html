@@ -15,9 +15,13 @@
             </div>
             <div class="col-md-6">
             <span class="pull-right">
-              <form action="/albums_new/" method="get">
+              <form action="#" th:action="@{/albums/new/}" th:object="${album}" method="post">
                 <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
-                <input id="name" name="name" type="text" placeholder="Add new...">
+                <input id="name" th:field="*{name}" name="name" type="text" placeholder="Add new...">
+                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+                <input type="hidden" th:field="*{count}" name="count" value="0">
+                <input type="hidden" th:field="*{thumbnail_id}" name="thumbnail_id" value="7364">
+                <input type="submit" value="Add album...">
               </form>
               <br>Click on <span class="tou-node" id="tou-4-1bccd7d6-3bbe-4408-8f32-a630da59bc94" lang="it"></span> to  open the album
             </span>

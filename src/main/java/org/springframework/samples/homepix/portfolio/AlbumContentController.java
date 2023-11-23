@@ -61,7 +61,7 @@ class AlbumContentController extends PaginationController {
 	}
 
 	@GetMapping("/album/{id}/{ownerId}/edit")
-	public String initUpdateOwnerForm(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId,
+	public String initUpdateOwnerForm(@PathVariable("ownerId") long id, @PathVariable("ownerId") int ownerId,
 			Model model) {
 		// AlbumContent albumContent = this.albums.findById(ownerId);
 		// model.addAttribute(albumContent);
@@ -74,7 +74,7 @@ class AlbumContentController extends PaginationController {
 	 * @return a ModelMap with the model attributes for the view
 	 */
 	@GetMapping("/album/{id}/{ownerId}")
-	public ModelAndView showOwner(@PathVariable("ownerId") int id, @PathVariable("ownerId") int ownerId) {
+	public ModelAndView showOwner(@PathVariable("ownerId") long id, @PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
 		// AlbumContent albumContent = this.albums.findById(ownerId);
 		return mav;
@@ -86,44 +86,52 @@ class AlbumContentController extends PaginationController {
 	 * @return a ModelMap with the model attributes for the view
 	 */
 	@GetMapping("/album/{id}")
-	public ModelAndView showAlbum(@PathVariable("id") int id, Map<String, Object> model) {
+	public ModelAndView showAlbum(@PathVariable("id") long id, Map<String, Object> model) {
 
-		ModelAndView mav = new ModelAndView("albums/albumDetails");
-		Collection<AlbumContent> content = this.albumContent.findByAlbumId(id);
 		Optional<Album> album = this.albums.findById(id);
 
-		mav.addObject(album.get());
-		model.put("content", content);
-		model.put("link_params", "");
+		if (album.isPresent()) {
 
-		return mav;
+			ModelAndView mav = new ModelAndView("albums/albumDetails");
+			Collection<AlbumContent> content = this.albumContent.findByAlbumId(id);
+
+			mav.addObject(album.get());
+
+			model.put("content", content);
+			model.put("link_params", "");
+
+			return mav;
+		}
+		else {
+			return new ModelAndView("redirect:/album/");
+		}
 	}
 
 	@GetMapping("/albums/{id}")
-	public ModelAndView showAlbums(@PathVariable("id") int id, Map<String, Object> model) {
+	public ModelAndView showAlbums(@PathVariable("id") long id, Map<String, Object> model) {
 		return showAlbum(id, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}")
-	public String showElementById(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+	public String showElementById(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 		return showElement(id, pictureId, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}/")
-	public String showElementSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+	public String showElementSlash(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 		return showElement(id, pictureId, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}/")
-	public String showElementByIdSlash(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+	public String showElementByIdSlash(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 		return showElement(id, pictureId, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}")
-	public String showElement(@PathVariable("id") int id, @PathVariable("pictureId") int pictureId,
+	public String showElement(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 
 		Optional<Album> album = this.albums.findById(id);
@@ -140,28 +148,41 @@ class AlbumContentController extends PaginationController {
 	}
 
 	@GetMapping("/albums/{albumId}/add/{pictureId}")
-	public String addPictureToAlbum(@PathVariable("albumId") int albumId, @PathVariable("pictureId") int pictureId,
+	public String addPictureToAlbum(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 
-		Optional<Album> album = this.albums.findById(albumId);
+		Collection<AlbumContent> entry = this.albumContent.findByAlbumIdAndEntryId( albumId, pictureId );
 
-		if (album != null) {
+		if ( entry.isEmpty() ) {
 
-			/*
-			 * Optional<PictureFile> pictureFile = this.pictureFiles.findById(pictureId);
-			 *
-			 * if (pictureFile.isPresent()) {
-			 * album.get().addPictureFile(pictureFile.get()); }
-			 *
-			 * return "redirect:/albums/" + Integer.toString(albumId);
-			 */
+			AlbumContent content = new AlbumContent();
+			Optional<PictureFile> picture = this.pictureFiles.findById( pictureId );
+			Optional<Album> album = this.albums.findById( albumId );
+
+			if ( picture.isPresent() && album.isPresent() ) {
+
+				content.setPictureFile( picture.get() );
+				content.setAlbum( album.get() );
+
+				try {
+					this.albumContent.save( content );
+				}
+				catch (Exception ex) {
+
+					System.out.println(ex);
+					System.out.println(albumContent);
+					return "redirect:/albums/" + Long.toString( albumId );
+				}
+
+				return "redirect:/albums/" + Long.toString( albumId );
+			}
 		}
 
-		return "redirect:/albums/3";
+		return "redirect:/albums/";
 	}
 
 	@GetMapping("/albums/{albumId}/delete/{pictureId}")
-	public String deletePicture(@PathVariable("albumId") int albumId, @PathVariable("pictureId") int pictureId,
+	public String deletePicture(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 
 		// Collection<AlbumContent> content =

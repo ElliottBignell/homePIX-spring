@@ -20,6 +20,8 @@ import java.util.Collection;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -30,7 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Elliott Bignell
  */
-public interface AlbumRepository extends CrudRepository<Album, Integer> {
+@Repository
+public interface AlbumRepository extends CrudRepository<Album, Long> {
 
 	/**
 	 * Retrieve {@link Album}s from the data store by last name, returning all albums
@@ -41,8 +44,10 @@ public interface AlbumRepository extends CrudRepository<Album, Integer> {
 	 */
 
 	@Query("SELECT DISTINCT album FROM Album album WHERE album.name LIKE :name%")
-	// @Query("SELECT DISTINCT album FROM Album album left join fetch album.pictureFiles
-	// WHERE album.name LIKE :name%")
 	@Transactional(readOnly = true)
 	Collection<Album> findByName(@Param("name") String name);
+
+	@Query("SELECT DISTINCT album FROM Album album ORDER BY album.id DESC LIMIT 1")
+	@Transactional(readOnly = true)
+	Collection<Album> findLastAlbum();
 }

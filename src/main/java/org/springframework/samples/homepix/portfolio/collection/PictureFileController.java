@@ -54,7 +54,7 @@ public class PictureFileController extends PaginationController {
 	}
 
 	@ModelAttribute("album")
-	public Album findOwner(@PathVariable("albumId") int albumId) {
+	public Album findOwner(@PathVariable("albumId") long albumId) {
 		return this.albums.findById(albumId).get();
 	}
 

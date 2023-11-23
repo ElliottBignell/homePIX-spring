@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,18 +39,22 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 @Setter
 @Entity
 @Table(name = "albums")
-public class Album extends BaseEntity {
+public class Album {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private long id;
 
 	@Column(name = "name")
+	@NotBlank(message = "Album name is mandatory")
 	@NotEmpty
 	private String name;
 
 	@Column(name = "picture_count")
-	@NotEmpty
 	private int count;
 
 	@Column(name = "thumbnail_id")
-	@NotEmpty
 	private int thumbnail_id;
 
 	private PictureFile thumbnail;

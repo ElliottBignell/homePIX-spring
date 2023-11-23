@@ -17,6 +17,8 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.persistence.*;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -26,6 +28,8 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
  *
  * @author Elliottt Bignell
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "albumcontent")
 public class AlbumContent extends BaseEntity {
@@ -37,14 +41,6 @@ public class AlbumContent extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "entry_id")
 	private PictureFile pictureFile;
-
-	public PictureFile getPictureFile() {
-		return pictureFile;
-	}
-
-	public Album getAlbum() {
-		return album;
-	}
 
 	@Override
 	public String toString() {

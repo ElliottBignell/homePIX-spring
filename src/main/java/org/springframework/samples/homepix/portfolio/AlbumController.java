@@ -23,10 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,7 +38,7 @@ class AlbumController extends PaginationController {
 	private final AlbumContentRepository albumContent;
 
 	@Autowired
-	public AlbumController(AlbumRepository albumService, AlbumRepository albums, FolderRepository folders,
+	public AlbumController(AlbumRepository albums, FolderRepository folders,
 						   PictureFileRepository pictureFiles, AlbumContentRepository albumContent) {
 		super(albums, folders, pictureFiles);
 		this.albumContent = albumContent;
@@ -52,22 +49,38 @@ class AlbumController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
-	@GetMapping("/albums/new")
+	@GetMapping("/albums/new/")
 	public String initCreationForm(Map<String, Object> model) {
 
 		Album album = new Album();
+		album.setCount(0);
+		album.setName("Test");
+		this.albums.save(album);
+
 		model.put("album", album);
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+
+		return "redirect:/albums/" + album.getId();
 	}
 
-	@PostMapping("/albums/new")
-	public String processCreationForm(@Valid Album album, BindingResult result) {
+	@PostMapping("/albums/new/")
+	public String processCreationForm(@Valid Album album, BindingResult result, Model model) {
+
 		if (result.hasErrors()) {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
 		else {
-			this.albums.save(album);
-			return "redirect:/albums/" + album.getId();
+
+			try {
+				this.albums.save(album);
+			}
+			catch (Exception ex) {
+
+				System.out.println(ex);
+				System.out.println(album);
+				return "redirect:/album/";
+			}
+
+			return "redirect:/albums/" + Long.toString(album.getId());
 		}
 	}
 
@@ -131,7 +144,7 @@ class AlbumController extends PaginationController {
 
 			Album nextAlbum = iter.next();
 
-			int id = nextAlbum.getId();
+			long id = nextAlbum.getId();
 
 			Collection<PictureFile> thumbnail = this.albumContent.findThumbnailIds( id );
 			int count = this.albumContent.findByAlbumId( id ).size();
@@ -154,14 +167,14 @@ class AlbumController extends PaginationController {
 	}
 
 	@GetMapping("/albums/{id}/edit")
-	public String initUpdateOwnerForm(@PathVariable("id") int id, Model model) {
+	public String initUpdateOwnerForm(@PathVariable("id") long id, Model model) {
 		Optional<Album> album = this.albums.findById(id);
 		model.addAttribute(album);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
 	@PostMapping("/albums/{id}/edit")
-	public String processUpdateOwnerForm(@Valid Album album, BindingResult result, @PathVariable("id") int id) {
+	public String processUpdateOwnerForm(@Valid Album album, BindingResult result, @PathVariable("id") long id) {
 		if (result.hasErrors()) {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}

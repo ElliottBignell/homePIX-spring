@@ -1,11 +1,8 @@
-DROP TABLE vet_specialties IF EXISTS;
-DROP TABLE vets IF EXISTS;
 DROP TABLE specialties IF EXISTS;
 DROP TABLE visits IF EXISTS;
 DROP TABLE picture_file IF EXISTS;
 DROP TABLE types IF EXISTS;
 DROP TABLE albums IF EXISTS;
-
 
 CREATE TABLE types (
   id   INTEGER IDENTITY PRIMARY KEY,
@@ -14,20 +11,12 @@ CREATE TABLE types (
 CREATE INDEX types_name ON types (name);
 
 CREATE TABLE IF NOT EXISTS albums (
-  id INTEGER IDENTITY PRIMARY KEY,
+  id INTEGER IDENTITY PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(200),
   picture_count INT(4) UNSIGNED NOT NULL,
   thumbnail_id INT(8) UNSIGNED NOT NULL
 );
 CREATE INDEX albums_name ON albums (name);
-
-INSERT INTO albums (id, name, picture_count, thumbnail_id)
-  VALUES (1, 'Texture', 1, 7364),
-         (2, 'Aarburg', 1, 35002),
-         (3, 'Cats', 1, 7491),
-         (4, 'Wildlife', 1, 745),
-         (5, 'Slides', 1, 7506)
-         ;
 
 CREATE TABLE IF NOT EXISTS folders (
   id INTEGER IDENTITY PRIMARY KEY AUTO_INCREMENT,

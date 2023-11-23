@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Elliott Bignell
  */
-public interface AlbumContentRepository extends CrudRepository<AlbumContent, Integer> {
+public interface AlbumContentRepository extends CrudRepository<AlbumContent, Long> {
 
 	/**
 	 * Retrieve an {@link AlbumContent} from the data store by id.
@@ -40,7 +40,7 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Int
 	 */
 	@Query("SELECT albumcontent FROM AlbumContent albumcontent left join fetch albumcontent.pictureFile WHERE albumcontent.album.id =:album_id")
 	@Transactional(readOnly = true)
-	Collection<AlbumContent> findByAlbumId(@Param("album_id") Integer album_id);
+	Collection<AlbumContent> findByAlbumId(@Param("album_id") Long album_id);
 
 	/**
 	 * Retrieve an {@link AlbumContent} from the data store by id and {@link PictureFile }
@@ -51,10 +51,10 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Int
 	 */
 	@Query("SELECT albumcontent FROM AlbumContent albumcontent left join fetch albumcontent.pictureFile left join fetch albumcontent.album WHERE albumcontent.album.id =:album_id AND  albumcontent.pictureFile.id =:entry_id")
 	@Transactional(readOnly = true)
-	Collection<AlbumContent> findByAlbumIdAndEntryId(@Param("album_id") Integer album_id,
+	Collection<AlbumContent> findByAlbumIdAndEntryId(@Param("album_id") Long album_id,
 			@Param("entry_id") Integer entry_id);
 
 	@Query("SELECT pictureFile FROM AlbumContent albumcontent WHERE albumcontent.album.id =:album_id ORDER BY pictureFile.id LIMIT 1")
 	@Transactional(readOnly = true)
-	Collection<PictureFile> findThumbnailIds(@Param("album_id") Integer album_id);
+	Collection<PictureFile> findThumbnailIds(@Param("album_id") Long album_id);
 }
