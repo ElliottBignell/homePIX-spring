@@ -23,13 +23,21 @@ import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * Simple JavaBean domain object representing a folder.
@@ -109,8 +117,10 @@ public class Folder extends BaseEntity {
 			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
 					+ this.name + "/jpegs";
 
-			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
-					.map(File::getName).sorted().collect(Collectors.toList());
+			List<String> folderNames = Stream.of(new File(dir).listFiles())
+				.filter(file -> !file.isDirectory())
+				.filter(file -> file.getName().endsWith(".jpg"))
+				.map(File::getName).sorted().collect(Collectors.toList());
 
 			int index = 0;
 
@@ -120,7 +130,13 @@ public class Folder extends BaseEntity {
 
 				item.setId(index++);
 				item.setFilename("/resources/images/" + this.name + "/jpegs" + '/' + name);
-				item.setTitle(name);
+
+				try {
+					item.setTitle(getExifTitle( dir + "/" + name ));
+				}
+				catch (Exception ex) {
+					System.out.println(ex);
+				}
 
 				Keywords keywords = new Keywords();
 				keywords.setContent(this.name);
@@ -133,4 +149,38 @@ public class Folder extends BaseEntity {
 		return pictureFiles;
 	}
 
+	public static String getExifTitle(String path) throws IOException {
+
+		String title = "Untitled";
+
+		try {
+
+			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			XMLEventReader reader = xmlInputFactory.createXMLEventReader(new FileInputStream(path + ".exif"));
+
+			while (reader.hasNext()) {
+
+				XMLEvent nextEvent = reader.nextEvent();
+
+				if (nextEvent.isStartElement()) {
+
+					StartElement startElement = nextEvent.asStartElement();
+
+					if (startElement.getName().getLocalPart().equals("ImageDescription")) {
+
+						nextEvent = reader.nextEvent();
+						title = nextEvent.asCharacters().getData();
+						break;
+					}
+				}
+			}
+		}
+		catch (Exception ex) {
+
+			title = "Error getting EXIF data";
+			System.out.println(ex);
+		}
+
+		return title;
+	}
 }

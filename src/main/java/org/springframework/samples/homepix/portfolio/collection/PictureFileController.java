@@ -76,24 +76,6 @@ public class PictureFileController extends PaginationController {
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
 
-	@PostMapping("/pets/new")
-	public String processCreationForm(Album album, @Valid PictureFile pictureFile, BindingResult result,
-			ModelMap model) {
-		if (StringUtils.hasLength(pictureFile.getTitle()) && pictureFile.isNew()
-				&& album.getPictureFile(pictureFile.getTitle(), true) != null) {
-			result.rejectValue("name", "duplicate", "already exists");
-		}
-		album.addPictureFile(pictureFile);
-		if (result.hasErrors()) {
-			model.put("pictureFile", pictureFile);
-			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			this.pictureFiles.save(pictureFile);
-			return "redirect:/album/{ownerId}";
-		}
-	}
-
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
 

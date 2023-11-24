@@ -129,6 +129,11 @@
           <groupId>org.springframework.data</groupId>
           <artifactId>spring-data-commons</artifactId>
       </dependency>
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.4.01</version>
+    </dependency>
 
   </dependencies>
 

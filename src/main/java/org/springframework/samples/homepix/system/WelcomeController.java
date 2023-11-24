@@ -16,44 +16,52 @@
 
 package org.springframework.samples.homepix.system;
 
-import org.springframework.samples.homepix.portfolio.Album;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.portfolio.*;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
-class WelcomeController {
+class WelcomeController extends PaginationController {
 
-	private final AlbumRepository albums;
+	private final AlbumContentRepository albumContents;
 
-	public WelcomeController(AlbumRepository clinicService) {
-		this.albums = clinicService;
+	@Autowired
+	public WelcomeController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders, AlbumContentRepository albumContents) {
+		super(albums, folders, pictureFiles);
+		this.albumContents = albumContents;
 	}
 
 	@GetMapping("/")
 	public String welcome(Album album, BindingResult result, Map<String, Object> model) {
 
-		Collection<Album> results = this.albums.findByName("Slides");
-		if (results.isEmpty()) {
-			// no albums found
-			result.rejectValue("name", "notFound", "not found");
-			return "albums/findAlbums";
-		}
-		else if (results.size() == 1) {
-			// 1 album found
-			album = results.iterator().next();
-			model.put("selections", results.iterator().next());
-			return "welcome";
-		}
-		else {
-			// multiple albums found
-			model.put("selections", results);
-			return "albums/albumListPictorial";
-		}
-	}
+		long id = 0;
 
+		Collection<Album> results = this.albums.findByName("Slides");
+
+		if ( !results.isEmpty() ) {
+			id = results.iterator().next().getId();
+		}
+
+		Collection<AlbumContent> contents = this.albumContents.findByAlbumId( id );
+
+		if ( !contents.isEmpty() ) {
+
+			Collection<PictureFile> slides = contents.stream()
+				.map( item -> item.getPictureFile() )
+				.collect(Collectors.toList());
+
+			model.put("selections", slides);
+		}
+
+		// 1 album found
+		return "welcome";
+	}
 }

@@ -38,11 +38,11 @@
                        class="gallery_picture lazyloaded"
                        th:src="${album.thumbnail.filename}"
                        th:data-src="${album.thumbnail.filename}"
-                       th:alt="@{Contains __${#sets.size(album.count)}__ shots}"
+                       th:alt="@{Contains __${album.count}__ shots}"
                   />
                 </span>
               </section>
-            <figcaption th:text="@{Contains __${#sets.size(album.count)}__ shots}" class="count">Empty</figcaption>
+            <figcaption th:text="@{Contains __${album.count}__ shots}" class="count">Empty</figcaption>
           </a>
         </figure>
       </div>

@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -88,4 +89,10 @@ public class PictureFile extends BaseEntity {
 
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
+
+	public String fileNameOnly() {
+
+		File f = new File(this.filename );
+		return f.getName();
+	}
 }

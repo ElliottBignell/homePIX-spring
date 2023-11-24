@@ -135,9 +135,8 @@ class AlbumContentController extends PaginationController {
 			Map<String, Object> model) {
 
 		Optional<Album> album = this.albums.findById(id);
-		Collection<PictureFile> pictureFiles = albumContent.findByAlbumId( id ).stream()
-			.map( item -> item.getPictureFile() )
-			.collect(Collectors.toList());
+		Collection<PictureFile> pictureFiles = albumContent.findByAlbumId(id).stream()
+				.map(item -> item.getPictureFile()).collect(Collectors.toList());
 
 		addParams(pictureId, "", pictureFiles, model, true);
 
@@ -151,34 +150,34 @@ class AlbumContentController extends PaginationController {
 	public String addPictureToAlbum(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
 
-		Collection<AlbumContent> entry = this.albumContent.findByAlbumIdAndEntryId( albumId, pictureId );
+		Collection<AlbumContent> entry = this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
 
-		if ( entry.isEmpty() ) {
+		if (entry.isEmpty()) {
 
 			AlbumContent content = new AlbumContent();
-			Optional<PictureFile> picture = this.pictureFiles.findById( pictureId );
-			Optional<Album> album = this.albums.findById( albumId );
+			Optional<PictureFile> picture = this.pictureFiles.findById(pictureId);
+			Optional<Album> album = this.albums.findById(albumId);
 
-			if ( picture.isPresent() && album.isPresent() ) {
+			if (picture.isPresent() && album.isPresent()) {
 
-				content.setPictureFile( picture.get() );
-				content.setAlbum( album.get() );
+				content.setPictureFile(picture.get());
+				content.setAlbum(album.get());
 
 				try {
-					this.albumContent.save( content );
+					this.albumContent.save(content);
 				}
 				catch (Exception ex) {
 
 					System.out.println(ex);
 					System.out.println(albumContent);
-					return "redirect:/albums/" + Long.toString( albumId );
+					return "redirect:/albums/" + Long.toString(albumId);
 				}
 
-				return "redirect:/albums/" + Long.toString( albumId );
+				return "redirect:/albums/" + Long.toString(albumId);
 			}
 		}
 
-		return "redirect:/albums/";
+		return "redirect:/albums/" + Long.toString(albumId);
 	}
 
 	@GetMapping("/albums/{albumId}/delete/{pictureId}")

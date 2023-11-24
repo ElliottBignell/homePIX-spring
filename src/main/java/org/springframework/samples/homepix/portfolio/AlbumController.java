@@ -35,11 +35,12 @@ import java.util.stream.Collectors;
 class AlbumController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "album/createOrUpdateOwnerForm";
+
 	private final AlbumContentRepository albumContent;
 
 	@Autowired
-	public AlbumController(AlbumRepository albums, FolderRepository folders,
-						   PictureFileRepository pictureFiles, AlbumContentRepository albumContent) {
+	public AlbumController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
+			AlbumContentRepository albumContent) {
 		super(albums, folders, pictureFiles);
 		this.albumContent = albumContent;
 	}
@@ -119,7 +120,7 @@ class AlbumController extends PaginationController {
 		else {
 			// multiple albums found
 			model.put("selections", results);
-			return "albums/albumList";
+			return "redirect:/album";
 		}
 	}
 
@@ -146,19 +147,20 @@ class AlbumController extends PaginationController {
 
 			long id = nextAlbum.getId();
 
-			Collection<PictureFile> thumbnail = this.albumContent.findThumbnailIds( id );
-			int count = this.albumContent.findByAlbumId( id ).size();
+			Collection<PictureFile> thumbnail = this.albumContent.findThumbnailIds(id);
+			int count = this.albumContent.findByAlbumId(id).size();
 
-			if ( count != nextAlbum.getCount() ) {
-				nextAlbum.setCount( count );
+			if (count != nextAlbum.getCount()) {
+				nextAlbum.setCount(count);
 			}
 
-			nextAlbum.setThumbnail( thumbnail.iterator().next() );
+			nextAlbum.setThumbnail(thumbnail.iterator().next());
 
-			/*List<PictureFile> files = contents.stream()
-				.filter( item -> item.getAlbum().getId() == id )
-				.map( item -> item.getPictureFile() )
-				.collect(Collectors.toList());*/
+			/*
+			 * List<PictureFile> files = contents.stream() .filter( item ->
+			 * item.getAlbum().getId() == id ) .map( item -> item.getPictureFile() )
+			 * .collect(Collectors.toList());
+			 */
 		}
 
 		model.put("selections", results);

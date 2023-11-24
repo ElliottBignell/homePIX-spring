@@ -59,21 +59,8 @@ public class Album {
 
 	private PictureFile thumbnail;
 
-	protected List<PictureFile> getPictureFilesInternal() {
-
-		List<PictureFile> pictureFiles = null; /*this.albumContent.stream()
-				.filter(entry -> entry.getPictureFile().getId() == this.thumbnail_id).map(AlbumContent::getPictureFile)
-				.collect(Collectors.toList());*/
-
-		return pictureFiles;
-	}
-
 	protected void setPictureFilesInternal(List<PictureFile> pictureFiles) {
 		// this.pictureFiles = pictureFiles;
-	}
-
-	public List<PictureFile> getPictureFileRepository() {
-		return getPictureFilesInternal();
 	}
 
 	public void addPictureFile(PictureFile pictureFile) {
@@ -94,47 +81,19 @@ public class Album {
 
 	public void deletePictureFile(PictureFile pictureFile) {
 
-		/*PictureFile existingFile = this.albumContent.stream()
-				.filter(entry -> entry.getPictureFile().getId() == pictureFile.getId())
-				.map(AlbumContent::getPictureFile).findAny().orElse(null);
-
-		if (null != existingFile) {
-			this.albumContent.removeIf(item -> item.getPictureFile().getId() == pictureFile.getId());
-		}*/
+		/*
+		 * PictureFile existingFile = this.albumContent.stream() .filter(entry ->
+		 * entry.getPictureFile().getId() == pictureFile.getId())
+		 * .map(AlbumContent::getPictureFile).findAny().orElse(null);
+		 *
+		 * if (null != existingFile) { this.albumContent.removeIf(item ->
+		 * item.getPictureFile().getId() == pictureFile.getId()); }
+		 */
 		// pictureFile.setOwner(this);
-	}
-
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this Album.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
-	public PictureFile getPictureFile(String name) {
-		return getPictureFile(name, false);
-	}
-
-	/**
-	 * Return the PictureFile with the given name, or null if none found for this Album.
-	 * @param name to test
-	 * @return true if pet name is already in use
-	 */
-	public PictureFile getPictureFile(String name, boolean ignoreNew) {
-		name = name.toLowerCase();
-		for (PictureFile pictureFile : getPictureFilesInternal()) {
-			if (!ignoreNew || !pictureFile.isNew()) {
-				String compName = pictureFile.getTitle();
-				compName = compName.toLowerCase();
-				if (compName.equals(name)) {
-					return pictureFile;
-				}
-			}
-		}
-		return null;
 	}
 
 	@Override
 	public String toString() {
 		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
-
 }

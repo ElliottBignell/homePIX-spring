@@ -83,59 +83,13 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders")
 	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
-
-		// allow parameterless GET request for /folders to return all records
-		if (folder.getName() == null) {
-
-			// String dir = "/mnt/homepix/jpegs/";
-			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/";
-
-			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
-					.map(File::getName).sorted().collect(Collectors.toList());
-
-			folders.deleteAll();
-
-			for (String name : folderNames) {
-
-				Folder item = new Folder();
-
-				item.setName(name);
-				item.setThumbnailId(36860);
-
-				final Pattern JPEGS = Pattern.compile(".*jpg$");
-
-				long count = Stream.of(new File(dir + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
-						.filter(file -> JPEGS.matcher(file.getName()).find()).count();
-				item.setPicture_count((int) count);
-
-				folders.save(item);
-			}
-
-			folder.setName(""); // empty string signifies broadest possible search
-		}
-
-		// find folders by last name
-		Collection<Folder> results = this.folders.findByName(folder.getName());
-		if (results.isEmpty()) {
-			// no folders found
-			result.rejectValue("name", "notFound", "not found");
-			return "folders/findFolders";
-		}
-		else if (results.size() == 1) {
-			// 1 folder found
-			folder = results.iterator().next();
-			return "redirect:/folders/" + folder.getId();
-		}
-		else {
-			// multiple folders found
-			model.put("selections", results);
-			return "folders/folderList";
-		}
+		return loadFolders(folder, result, model);
 	}
+
 
 	@GetMapping("/folder/")
 	public String processFindFoldersSlash(Folder folder, BindingResult result, Map<String, Object> model) {
-		return processFindFolders(folder, result, model);
+		return loadFolders(folder, result, model);
 	}
 
 	@GetMapping("/folder")
@@ -185,13 +139,60 @@ class FolderController extends PaginationController {
 		}
 	}
 
+
+	@PostMapping("/folders/{name}/import/")
+	public String importPicturesFromFolder(@Valid Folder folder, BindingResult result) {
+
+		String folderName = folder.getName();
+		String dirName = "/resources/images/" + folderName + "/jpegs/";
+
+		String filename = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
+			+ folder.getName() + "/jpegs";
+
+		List<String> fileNames = Stream.of(new File(filename).listFiles())
+			.filter(file -> !file.isDirectory())
+			.filter(file -> file.getName().endsWith(".jpg"))
+			.map( file -> dirName + file.getName() )
+			.filter( file -> this.pictureFiles.findByFilename( file ).isEmpty())
+			.collect(Collectors.toList());
+
+		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/" + dirName ;
+
+		for (String name : fileNames) {
+
+			PictureFile item = new PictureFile();
+
+			item.setFilename(dirName + name);
+
+			try {
+				item.setTitle( Folder.getExifTitle( dir + "/" + name ));
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+			}
+
+			Keywords keywords = new Keywords();
+			keywords.setContent( folderName );
+			item.setKeywords(keywords);
+
+			try {
+				pictureFiles.save(item);
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+			}
+		}
+
+		return "redirect:/folders/{name}";
+	}
+
 	@GetMapping("/folder/{name}")
 	public String showFolder(@PathVariable("name") String name, Model model) {
 
 		Collection<Folder> folder = this.folders.findByName(name);
 
 		if (folder.isEmpty()) {
-			return "/folders";
+			return "redirect:/folders";
 		}
 		else {
 			model.addAttribute(folder.iterator().next());
@@ -247,7 +248,7 @@ class FolderController extends PaginationController {
 		Collection<Folder> folders = this.folders.findByName(name);
 
 		if (folders.isEmpty()) {
-			return "/folders/" + name + "/";
+			return "redirect:/folders/" + name + "/";
 		}
 		else {
 

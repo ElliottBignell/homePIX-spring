@@ -6,11 +6,15 @@
 <body>
   
   <h2 th:text="${folder.displayName}"></h2>
+  <form action="#" th:action="@{/folders/__${folder.name}__/import/}" th:object="${folder}" method="post">
+    <input type="submit" value="Scan folder...">
+  </form>
+
   <div style="overflow-y: auto; max-height: 92vh;">
-  
+
     <figure th:each="pictureFile : ${folder.pictureFiles}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.title}__}">
-        <section class="wrapper" th:id=" @{file-number_${pictureFile.id}}">
+      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
+        <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
                      class="lazyload imageinlist imageresponsive"
@@ -21,7 +25,7 @@
               </span>
         </section>
       </a>
-      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.title}__}">
+      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
         <figcaption class="tt_edit">
           <form id="editprops">
             <fieldset>

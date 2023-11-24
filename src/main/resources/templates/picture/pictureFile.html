@@ -476,7 +476,7 @@ i             </div>
                 <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:300px;"/>
               </form>
               <form th:each="album : ${albums}" th:action="@{/albums/__${album.id}__/add/__${ picture.id }__}" method="GET" style="font-size:0.3em;">
-                <div id="@{image-dropdown-__${album.id}__}" class="image-dropdown">
+                <div th:id="@{image-dropdown-__${album.id}__}" class="image-dropdown">
                   <button type="submit" class="addfont" data-react-toolbox="button" th:text="${album?.name}">
                   </button>
                 </div>

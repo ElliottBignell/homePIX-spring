@@ -42,7 +42,6 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 	 * @return a PictureCollection of matching {@link Album}s (or an empty
 	 * PictureCollection if none found)
 	 */
-
 	@Query("SELECT DISTINCT album FROM Album album WHERE album.name LIKE :name%")
 	@Transactional(readOnly = true)
 	Collection<Album> findByName(@Param("name") String name);
@@ -50,4 +49,5 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 	@Query("SELECT DISTINCT album FROM Album album ORDER BY album.id DESC LIMIT 1")
 	@Transactional(readOnly = true)
 	Collection<Album> findLastAlbum();
+
 }

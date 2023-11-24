@@ -4,9 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PaginationController {
 
@@ -91,7 +96,62 @@ public class PaginationController {
 
 	@ModelAttribute(name = "folders")
 	Collection<Folder> findAllFolders() {
+
+		load();
 		return this.folders.findAll();
 	}
+	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
+		// allow parameterless GET request for /folders to return all records
+		if (folder.getName() == null) {
+
+			load();
+			folder.setName(""); // empty string signifies broadest possible search
+		}
+
+		// find folders by last name
+		Collection<Folder> results = this.folders.findByName(folder.getName());
+		if (results.isEmpty()) {
+			// no folders found
+			result.rejectValue("name", "notFound", "not found");
+			return "folders/findFolders";
+		}
+		else if (results.size() == 1) {
+			// 1 folder found
+			folder = results.iterator().next();
+			return "redirect:/folders/" + folder.getId();
+		}
+		else {
+			// multiple folders found
+			model.put("selections", results);
+			return "folders/folderList";
+		}
+	}
+
+	private void load() {
+
+		// String dir = "/mnt/homepix/jpegs/";
+		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/";
+
+		List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
+			.map(File::getName).sorted().collect(Collectors.toList());
+
+		folders.deleteAll();
+
+		for (String name : folderNames) {
+
+			Folder item = new Folder();
+
+			item.setName(name);
+			item.setThumbnailId(36860);
+
+			final Pattern JPEGS = Pattern.compile(".*jpg$");
+
+			long count = Stream.of(new File(dir + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
+				.filter(file -> JPEGS.matcher(file.getName()).find()).count();
+			item.setPicture_count((int) count);
+
+			folders.save(item);
+		}
+	}
 }
