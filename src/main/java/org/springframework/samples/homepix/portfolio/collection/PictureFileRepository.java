@@ -51,4 +51,5 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename LIKE :filename%")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFilename(@Param("filename") String filename);
+
 }

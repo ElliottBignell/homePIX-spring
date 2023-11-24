@@ -92,7 +92,8 @@ public class PictureFile extends BaseEntity {
 
 	public String fileNameOnly() {
 
-		File f = new File(this.filename );
+		File f = new File(this.filename);
 		return f.getName();
 	}
+
 }

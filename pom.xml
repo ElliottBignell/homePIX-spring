@@ -10,7 +10,7 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.0.1</version>
   </parent>
-  <name>petclinic</name>
+  <name>homePIX</name>
 
   <properties>
 

@@ -117,10 +117,9 @@ public class Folder extends BaseEntity {
 			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
 					+ this.name + "/jpegs";
 
-			List<String> folderNames = Stream.of(new File(dir).listFiles())
-				.filter(file -> !file.isDirectory())
-				.filter(file -> file.getName().endsWith(".jpg"))
-				.map(File::getName).sorted().collect(Collectors.toList());
+			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
+					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()
+					.collect(Collectors.toList());
 
 			int index = 0;
 
@@ -132,7 +131,7 @@ public class Folder extends BaseEntity {
 				item.setFilename("/resources/images/" + this.name + "/jpegs" + '/' + name);
 
 				try {
-					item.setTitle(getExifTitle( dir + "/" + name ));
+					item.setTitle(getExifTitle(dir + "/" + name));
 				}
 				catch (Exception ex) {
 					System.out.println(ex);
@@ -183,4 +182,5 @@ public class Folder extends BaseEntity {
 
 		return title;
 	}
+
 }

@@ -86,7 +86,6 @@ class FolderController extends PaginationController {
 		return loadFolders(folder, result, model);
 	}
 
-
 	@GetMapping("/folder/")
 	public String processFindFoldersSlash(Folder folder, BindingResult result, Map<String, Object> model) {
 		return loadFolders(folder, result, model);
@@ -139,7 +138,6 @@ class FolderController extends PaginationController {
 		}
 	}
 
-
 	@PostMapping("/folders/{name}/import/")
 	public String importPicturesFromFolder(@Valid Folder folder, BindingResult result) {
 
@@ -147,16 +145,13 @@ class FolderController extends PaginationController {
 		String dirName = "/resources/images/" + folderName + "/jpegs/";
 
 		String filename = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
-			+ folder.getName() + "/jpegs";
+				+ folder.getName() + "/jpegs";
 
-		List<String> fileNames = Stream.of(new File(filename).listFiles())
-			.filter(file -> !file.isDirectory())
-			.filter(file -> file.getName().endsWith(".jpg"))
-			.map( file -> dirName + file.getName() )
-			.filter( file -> this.pictureFiles.findByFilename( file ).isEmpty())
-			.collect(Collectors.toList());
+		List<String> fileNames = Stream.of(new File(filename).listFiles()).filter(file -> !file.isDirectory())
+				.filter(file -> file.getName().endsWith(".jpg")).map(file -> dirName + file.getName())
+				.filter(file -> this.pictureFiles.findByFilename(file).isEmpty()).collect(Collectors.toList());
 
-		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/" + dirName ;
+		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/" + dirName;
 
 		for (String name : fileNames) {
 
@@ -165,14 +160,14 @@ class FolderController extends PaginationController {
 			item.setFilename(dirName + name);
 
 			try {
-				item.setTitle( Folder.getExifTitle( dir + "/" + name ));
+				item.setTitle(Folder.getExifTitle(dir + "/" + name));
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
 			}
 
 			Keywords keywords = new Keywords();
-			keywords.setContent( folderName );
+			keywords.setContent(folderName);
 			item.setKeywords(keywords);
 
 			try {

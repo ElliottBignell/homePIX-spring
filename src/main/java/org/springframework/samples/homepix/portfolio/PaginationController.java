@@ -100,6 +100,7 @@ public class PaginationController {
 		load();
 		return this.folders.findAll();
 	}
+
 	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
 		// allow parameterless GET request for /folders to return all records
@@ -134,7 +135,7 @@ public class PaginationController {
 		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/";
 
 		List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
-			.map(File::getName).sorted().collect(Collectors.toList());
+				.map(File::getName).sorted().collect(Collectors.toList());
 
 		folders.deleteAll();
 
@@ -148,10 +149,11 @@ public class PaginationController {
 			final Pattern JPEGS = Pattern.compile(".*jpg$");
 
 			long count = Stream.of(new File(dir + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
-				.filter(file -> JPEGS.matcher(file.getName()).find()).count();
+					.filter(file -> JPEGS.matcher(file.getName()).find()).count();
 			item.setPicture_count((int) count);
 
 			folders.save(item);
 		}
 	}
+
 }

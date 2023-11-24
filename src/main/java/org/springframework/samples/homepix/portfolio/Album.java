@@ -96,4 +96,5 @@ public class Album {
 	public String toString() {
 		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
+
 }

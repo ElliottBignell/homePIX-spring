@@ -34,7 +34,8 @@ class WelcomeController extends PaginationController {
 	private final AlbumContentRepository albumContents;
 
 	@Autowired
-	public WelcomeController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders, AlbumContentRepository albumContents) {
+	public WelcomeController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders,
+			AlbumContentRepository albumContents) {
 		super(albums, folders, pictureFiles);
 		this.albumContents = albumContents;
 	}
@@ -46,17 +47,16 @@ class WelcomeController extends PaginationController {
 
 		Collection<Album> results = this.albums.findByName("Slides");
 
-		if ( !results.isEmpty() ) {
+		if (!results.isEmpty()) {
 			id = results.iterator().next().getId();
 		}
 
-		Collection<AlbumContent> contents = this.albumContents.findByAlbumId( id );
+		Collection<AlbumContent> contents = this.albumContents.findByAlbumId(id);
 
-		if ( !contents.isEmpty() ) {
+		if (!contents.isEmpty()) {
 
-			Collection<PictureFile> slides = contents.stream()
-				.map( item -> item.getPictureFile() )
-				.collect(Collectors.toList());
+			Collection<PictureFile> slides = contents.stream().map(item -> item.getPictureFile())
+					.collect(Collectors.toList());
 
 			model.put("selections", slides);
 		}
@@ -64,4 +64,5 @@ class WelcomeController extends PaginationController {
 		// 1 album found
 		return "welcome";
 	}
+
 }
