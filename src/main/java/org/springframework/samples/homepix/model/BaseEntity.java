@@ -18,7 +18,7 @@ package org.springframework.samples.homepix.model;
 import java.io.Serializable;
 
 import jakarta.persistence.*;
-
+import org.springframework.beans.factory.annotation.Value;
 /**
  * Simple JavaBean domain object with an id property. Used as a base class for objects
  * needing this property.

@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
@@ -139,36 +140,43 @@ class FolderController extends PaginationController {
 	}
 
 	@PostMapping("/folders/{name}/import/")
-	public String importPicturesFromFolder(@Valid Folder folder, BindingResult result) {
+	public String importPicturesFromFolder(@Valid Folder folder, Map<String, Object> model) {
 
 		String folderName = folder.getName();
-		String dirName = "/resources/images/" + folderName + "/jpegs/";
-
-		String filename = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
-				+ folder.getName() + "/jpegs";
+		String filename = this.imagePath + folderName + "/jpegs";
+		String localName = "/resources/images/" + folderName + "/jpegs/";
 
 		List<String> fileNames = Stream.of(new File(filename).listFiles()).filter(file -> !file.isDirectory())
-				.filter(file -> file.getName().endsWith(".jpg")).map(file -> dirName + file.getName())
-				.filter(file -> this.pictureFiles.findByFilename(file).isEmpty()).collect(Collectors.toList());
-
-		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/" + dirName;
+			.filter(file -> file.getName().endsWith(".jpg"))
+			.map(File::getName)
+			.filter(file -> this.pictureFiles.findByFilename(file).isEmpty())
+			.sorted()
+			.collect(Collectors.toList());
+		List<PictureFile> pictures = new ArrayList<>();
 
 		for (String name : fileNames) {
 
 			PictureFile item = new PictureFile();
 
-			item.setFilename(dirName + name);
+			item.setFilename(localName + "/" + name);
 
 			try {
-				item.setTitle(Folder.getExifTitle(dir + "/" + name));
+				item.setTitle(Folder.getExifTitle(filename + "/" + name));
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
 			}
 
-			Keywords keywords = new Keywords();
+			/*Keywords keywords = new Keywords();
 			keywords.setContent(folderName);
 			item.setKeywords(keywords);
+
+			try {
+				keywordsRepository.save(item);
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+			}*/
 
 			try {
 				pictureFiles.save(item);
@@ -176,37 +184,48 @@ class FolderController extends PaginationController {
 			catch (Exception ex) {
 				System.out.println(ex);
 			}
+
+			pictures.add(item);
 		}
+
+		model.put("collection", pictures);
+		model.put("baseLink", "/folders/" + folderName);
+		model.put("albums", this.albums.findAll());
 
 		return "redirect:/folders/{name}";
 	}
 
 	@GetMapping("/folder/{name}")
-	public String showFolder(@PathVariable("name") String name, Model model) {
+	public String showFolder(@PathVariable("name") String name, Map<String, Object> model) {
 
-		Collection<Folder> folder = this.folders.findByName(name);
+		Collection<Folder> folders = this.folders.findByName(name);
 
-		if (folder.isEmpty()) {
+		if (folders.isEmpty()) {
 			return "redirect:/folders";
 		}
 		else {
-			model.addAttribute(folder.iterator().next());
+
+			Folder folder = folders.iterator().next();
+			model.put("folder", folder);
+			importPicturesFromFolder(folder, model);
+
 			return "folders/folderDetails";
 		}
 	}
 
 	@GetMapping("/folders/{name}")
-	public String showFolders(@PathVariable("name") String name, Model model) {
+	public String showFolders(@PathVariable("name") String name, Map<String, Object> model) {
 		return showFolder(name, model);
 	}
 
 	@GetMapping("/folders/{name}/")
-	public String showFoldersByName(@PathVariable("name") String name, Model model) {
+	public String showFoldersByName(@PathVariable("name") String name, Map<String, Object> model) {
 		return showFolder(name, model);
 	}
 
 	@GetMapping("/folders/{name}/file/{filename}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("filename") String filename,
+			@Value("${homepix.images.path}") String imagePath,
 			Map<String, Object> model) {
 
 		Collection<Folder> folders = this.folders.findByName(name);
@@ -219,7 +238,7 @@ class FolderController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = folders.iterator().next();
 
-			List<PictureFile> pictureFiles = folder.getPictureFiles();
+			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
 
 			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + filename, pictureFiles, model, false);
 
@@ -238,7 +257,8 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{name}/item/{id}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
-			Map<String, Object> model) {
+								  @Value("${homepix.images.path}") String imagePath,
+								  Map<String, Object> model) {
 
 		Collection<Folder> folders = this.folders.findByName(name);
 
@@ -250,7 +270,7 @@ class FolderController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = folders.iterator().next();
 
-			List<PictureFile> pictureFiles = folder.getPictureFiles();
+			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
 
 			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + pictureFiles.get(id).getTitle(), pictureFiles,
 					model, false);

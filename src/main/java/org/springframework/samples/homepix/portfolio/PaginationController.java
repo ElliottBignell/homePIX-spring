@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -24,6 +25,9 @@ public class PaginationController {
 	protected final FolderRepository folders;
 
 	protected final PictureFileRepository pictureFiles;
+
+	@Value( "${homepix.images.path}" )
+	protected String imagePath;
 
 	@Autowired
 	protected PaginationController(AlbumRepository albums, FolderRepository folders,
@@ -131,11 +135,11 @@ public class PaginationController {
 
 	private void load() {
 
-		// String dir = "/mnt/homepix/jpegs/";
-		String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/";
-
-		List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> file.isDirectory())
-				.map(File::getName).sorted().collect(Collectors.toList());
+		List<String> folderNames = Stream.of(new File(this.imagePath).listFiles())
+			.filter(file -> file.isDirectory())
+			.map(File::getName)
+			.sorted()
+			.collect(Collectors.toList());
 
 		folders.deleteAll();
 
@@ -148,7 +152,7 @@ public class PaginationController {
 
 			final Pattern JPEGS = Pattern.compile(".*jpg$");
 
-			long count = Stream.of(new File(dir + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
+			long count = Stream.of(new File(this.imagePath + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
 					.filter(file -> JPEGS.matcher(file.getName()).find()).count();
 			item.setPicture_count((int) count);
 

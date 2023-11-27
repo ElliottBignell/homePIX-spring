@@ -23,10 +23,8 @@ import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.File;
@@ -97,8 +95,8 @@ public class Folder extends BaseEntity {
 		this.thumbnail_id = thumbnail_id;
 	}
 
-	public List<PictureFile> getPictureFiles() {
-		return loadPictureFiles();
+	public List<PictureFile> getPictureFiles(String imagePath) {
+		return loadPictureFiles(imagePath);
 	}
 
 	@Override
@@ -106,7 +104,7 @@ public class Folder extends BaseEntity {
 		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
 
-	private List<PictureFile> loadPictureFiles() {
+	private List<PictureFile> loadPictureFiles(String imagePath) {
 
 		List<PictureFile> pictureFiles = null;
 
@@ -114,8 +112,7 @@ public class Folder extends BaseEntity {
 
 			pictureFiles = new ArrayList<>();
 
-			String dir = "/home/elliott/SpringFramweworkGuru/homePIX-spring/src/main/resources/static/resources/images/"
-					+ this.name + "/jpegs";
+			String dir = imagePath + this.name + "/jpegs";
 
 			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
 					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()

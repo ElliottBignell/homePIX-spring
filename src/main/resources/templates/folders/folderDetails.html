@@ -12,7 +12,7 @@
 
   <div style="overflow-y: auto; max-height: 92vh;">
 
-    <figure th:each="pictureFile : ${folder.pictureFiles}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
+    <figure th:each="pictureFile : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
       <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
