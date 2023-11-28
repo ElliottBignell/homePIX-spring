@@ -17,3 +17,5 @@ _site/
 !petclinic.css
 **/*.swp
 **/*.bak
+images/**
+src/main/resources/static/resources/images/**
