@@ -27,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -143,22 +146,19 @@ class FolderController extends PaginationController {
 	public String importPicturesFromFolder(@Valid Folder folder, Map<String, Object> model) {
 
 		String folderName = folder.getName();
-		String filename = this.imagePath + folderName + "/jpegs";
-		String localName = "/resources/images/" + folderName + "/jpegs/";
+		String filename = this.imagePath + folderName;
+		String localName = "/images/" + folderName + "/";
 
 		List<String> fileNames = Stream.of(new File(filename).listFiles()).filter(file -> !file.isDirectory())
-			.filter(file -> file.getName().endsWith(".jpg"))
-			.map(File::getName)
-			.filter(file -> this.pictureFiles.findByFilename(file).isEmpty())
-			.sorted()
-			.collect(Collectors.toList());
+				.filter(file -> file.getName().endsWith(".jpg")).map(File::getName)
+				.filter(file -> this.pictureFiles.findByFilename(file).isEmpty()).sorted().collect(Collectors.toList());
 		List<PictureFile> pictures = new ArrayList<>();
 
 		for (String name : fileNames) {
 
 			PictureFile item = new PictureFile();
 
-			item.setFilename(localName + "/" + name);
+			item.setFilename(localName + name);
 
 			try {
 				item.setTitle(Folder.getExifTitle(filename + "/" + name));
@@ -167,16 +167,13 @@ class FolderController extends PaginationController {
 				System.out.println(ex);
 			}
 
-			/*Keywords keywords = new Keywords();
-			keywords.setContent(folderName);
-			item.setKeywords(keywords);
-
-			try {
-				keywordsRepository.save(item);
-			}
-			catch (Exception ex) {
-				System.out.println(ex);
-			}*/
+			/*
+			 * Keywords keywords = new Keywords(); keywords.setContent(folderName);
+			 * item.setKeywords(keywords);
+			 *
+			 * try { keywordsRepository.save(item); } catch (Exception ex) {
+			 * System.out.println(ex); }
+			 */
 
 			try {
 				pictureFiles.save(item);
@@ -225,8 +222,9 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{name}/file/{filename}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("filename") String filename,
-			@Value("${homepix.images.path}") String imagePath,
-			Map<String, Object> model) {
+		/*@Value("${homepix.images.path}") String imagePath,*/ Map<String, Object> model) {
+
+		final String imagePath = System.getProperty("user.dir") + "/images/";
 
 		Collection<Folder> folders = this.folders.findByName(name);
 
@@ -240,7 +238,7 @@ class FolderController extends PaginationController {
 
 			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
 
-			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + filename, pictureFiles, model, false);
+			addParams(0, "/images/" + name + "/" + filename, pictureFiles, model, false);
 
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
@@ -257,8 +255,9 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{name}/item/{id}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
-								  @Value("${homepix.images.path}") String imagePath,
-								  Map<String, Object> model) {
+			/*@Value("${homepix.images.path}") String imagePath,*/ Map<String, Object> model) {
+
+		final String imagePath = System.getProperty("user.dir") + "/images/";
 
 		Collection<Folder> folders = this.folders.findByName(name);
 
@@ -272,7 +271,7 @@ class FolderController extends PaginationController {
 
 			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
 
-			addParams(0, "/resources/images/" + name + "/jpegs" + '/' + pictureFiles.get(id).getTitle(), pictureFiles,
+			addParams(0, "/images/" + name + "/" + pictureFiles.get(id).getTitle(), pictureFiles,
 					model, false);
 
 			mav.addObject(pictureFiles);
@@ -290,4 +289,22 @@ class FolderController extends PaginationController {
 		return this.albums.findAll();
 	}
 
+	@GetMapping(value = "/images/{folder}/{file}")
+	public @ResponseBody byte[] getImage(@PathVariable("folder") String folder, @PathVariable("file") String file) throws IOException {
+
+		try {
+
+			String filename = System.getProperty("user.dir") + "/images/" + folder + "/" + file;
+
+			File initialFile = new File(filename);
+			InputStream targetStream = new FileInputStream(initialFile);
+
+			return targetStream.readAllBytes();
+		}
+		catch (IOException ex) {
+
+			System.out.println(ex);
+			return null;
+		}
+	}
 }

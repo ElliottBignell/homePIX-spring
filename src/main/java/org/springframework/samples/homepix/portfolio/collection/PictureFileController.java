@@ -27,6 +27,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -99,5 +101,4 @@ public class PictureFileController extends PaginationController {
 			return "redirect:/albums/{albumId}";
 		}
 	}
-
 }

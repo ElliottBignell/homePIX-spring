@@ -112,7 +112,7 @@ public class Folder extends BaseEntity {
 
 			pictureFiles = new ArrayList<>();
 
-			String dir = imagePath + this.name + "/jpegs";
+			String dir = imagePath + this.name;
 
 			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
 					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()
@@ -125,7 +125,7 @@ public class Folder extends BaseEntity {
 				PictureFile item = new PictureFile();
 
 				item.setId(index++);
-				item.setFilename("/resources/images/" + this.name + "/jpegs" + '/' + name);
+				item.setFilename("/images/" + this.name + '/' + name);
 
 				try {
 					item.setTitle(getExifTitle(dir + "/" + name));

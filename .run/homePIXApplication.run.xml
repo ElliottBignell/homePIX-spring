@@ -6,7 +6,7 @@
       <env name="DBCONFIG" value="Debug" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
-    <module name="spring-homePIX" />
+    <module name="spring-homepix" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.springframework.samples.homepix.*" />

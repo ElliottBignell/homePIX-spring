@@ -26,8 +26,8 @@ public class PaginationController {
 
 	protected final PictureFileRepository pictureFiles;
 
-	@Value( "${homepix.images.path}" )
-	protected String imagePath;
+	//@Value("${homepix.images.path}")
+	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
 	@Autowired
 	protected PaginationController(AlbumRepository albums, FolderRepository folders,
@@ -135,28 +135,32 @@ public class PaginationController {
 
 	private void load() {
 
-		List<String> folderNames = Stream.of(new File(this.imagePath).listFiles())
-			.filter(file -> file.isDirectory())
-			.map(File::getName)
-			.sorted()
-			.collect(Collectors.toList());
+		try {
 
-		folders.deleteAll();
+			List<String> folderNames = Stream.of(Objects.requireNonNull(new File(this.imagePath).listFiles()))
+					.filter(File::isDirectory).map(File::getName).sorted().collect(Collectors.toList());
 
-		for (String name : folderNames) {
+			folders.deleteAll();
 
-			Folder item = new Folder();
+			for (String name : folderNames) {
 
-			item.setName(name);
-			item.setThumbnailId(36860);
+				Folder item = new Folder();
 
-			final Pattern JPEGS = Pattern.compile(".*jpg$");
+				item.setName(name);
+				item.setThumbnailId(36860);
 
-			long count = Stream.of(new File(this.imagePath + name + "/jpegs/").listFiles()).filter(file -> !file.isDirectory())
-					.filter(file -> JPEGS.matcher(file.getName()).find()).count();
-			item.setPicture_count((int) count);
+				final Pattern JPEGS = Pattern.compile(".*jpg$");
 
-			folders.save(item);
+				long count = Stream.of(new File(this.imagePath + name).listFiles())
+						.filter(file -> !file.isDirectory()).filter(file -> JPEGS.matcher(file.getName()).find())
+						.count();
+				item.setPicture_count((int) count);
+
+				folders.save(item);
+			}
+		}
+		catch (Exception ex) {
+			System.out.println(ex);
 		}
 	}
 

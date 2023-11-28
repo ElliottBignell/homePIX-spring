@@ -20,7 +20,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Elliott Bignell
@@ -41,6 +45,12 @@ class AboutController extends PaginationController {
 
 	@GetMapping("/about")
 	public String about(Album album, BindingResult result, Map<String, Object> model) {
+
+		List<String> dummies = Stream.of(new File("..").listFiles()).map(File::getName).sorted()
+				.collect(Collectors.toList());
+
+		String dir = System.getProperty("user.dir");
+		model.put("working_directory", dir);
 		return ABOUT_FORM;
 	}
 
