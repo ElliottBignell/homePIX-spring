@@ -101,4 +101,5 @@ public class PictureFileController extends PaginationController {
 			return "redirect:/albums/{albumId}";
 		}
 	}
+
 }

@@ -222,7 +222,7 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{name}/file/{filename}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("filename") String filename,
-		/*@Value("${homepix.images.path}") String imagePath,*/ Map<String, Object> model) {
+			/* @Value("${homepix.images.path}") String imagePath, */ Map<String, Object> model) {
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -255,7 +255,7 @@ class FolderController extends PaginationController {
 
 	@GetMapping("/folders/{name}/item/{id}")
 	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
-			/*@Value("${homepix.images.path}") String imagePath,*/ Map<String, Object> model) {
+			/* @Value("${homepix.images.path}") String imagePath, */ Map<String, Object> model) {
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -271,8 +271,7 @@ class FolderController extends PaginationController {
 
 			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
 
-			addParams(0, "/images/" + name + "/" + pictureFiles.get(id).getTitle(), pictureFiles,
-					model, false);
+			addParams(0, "/images/" + name + "/" + pictureFiles.get(id).getTitle(), pictureFiles, model, false);
 
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
@@ -290,7 +289,8 @@ class FolderController extends PaginationController {
 	}
 
 	@GetMapping(value = "/images/{folder}/{file}")
-	public @ResponseBody byte[] getImage(@PathVariable("folder") String folder, @PathVariable("file") String file) throws IOException {
+	public @ResponseBody byte[] getImage(@PathVariable("folder") String folder, @PathVariable("file") String file)
+			throws IOException {
 
 		try {
 
@@ -307,4 +307,5 @@ class FolderController extends PaginationController {
 			return null;
 		}
 	}
+
 }

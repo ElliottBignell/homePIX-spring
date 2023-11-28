@@ -26,7 +26,7 @@ public class PaginationController {
 
 	protected final PictureFileRepository pictureFiles;
 
-	//@Value("${homepix.images.path}")
+	// @Value("${homepix.images.path}")
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
 	@Autowired
@@ -151,9 +151,8 @@ public class PaginationController {
 
 				final Pattern JPEGS = Pattern.compile(".*jpg$");
 
-				long count = Stream.of(new File(this.imagePath + name).listFiles())
-						.filter(file -> !file.isDirectory()).filter(file -> JPEGS.matcher(file.getName()).find())
-						.count();
+				long count = Stream.of(new File(this.imagePath + name).listFiles()).filter(file -> !file.isDirectory())
+						.filter(file -> JPEGS.matcher(file.getName()).find()).count();
 				item.setPicture_count((int) count);
 
 				folders.save(item);
