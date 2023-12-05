@@ -165,6 +165,7 @@ class FolderController extends PaginationController {
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
+				ex.printStackTrace();
 			}
 
 			/*
@@ -180,6 +181,7 @@ class FolderController extends PaginationController {
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
+				ex.printStackTrace();
 			}
 
 			pictures.add(item);
@@ -304,6 +306,7 @@ class FolderController extends PaginationController {
 		catch (IOException ex) {
 
 			System.out.println(ex);
+			ex.printStackTrace();
 			return null;
 		}
 	}

@@ -1,14 +1,22 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 
 import java.io.File;
+import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +33,8 @@ public class PaginationController {
 	protected final FolderRepository folders;
 
 	protected final PictureFileRepository pictureFiles;
+
+	Collection<Folder> folderCache = null;
 
 	// @Value("${homepix.images.path}")
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
@@ -99,9 +109,12 @@ public class PaginationController {
 	}
 
 	@ModelAttribute(name = "folders")
-	Collection<Folder> findAllFolders() {
+	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
-		load();
+		if (null == folderCache) {
+			System.out.println("findAllFolders");
+			loadBuckets(folder, result, model);
+		}
 		return this.folders.findAll();
 	}
 
@@ -110,7 +123,8 @@ public class PaginationController {
 		// allow parameterless GET request for /folders to return all records
 		if (folder.getName() == null) {
 
-			load();
+			System.out.println("loadFolders");
+			loadBuckets(folder, result, model);
 			folder.setName(""); // empty string signifies broadest possible search
 		}
 
@@ -160,7 +174,110 @@ public class PaginationController {
 		}
 		catch (Exception ex) {
 			System.out.println(ex);
+			ex.printStackTrace();
 		}
+	}
+
+	/*
+	 * private void load() {
+	 *
+	 * try {
+	 *
+	 * List<String> folderNames = Stream.of(Objects.requireNonNull(new
+	 * File(this.imagePath).listFiles()))
+	 * .filter(File::isDirectory).map(File::getName).sorted().collect(Collectors.toList())
+	 * ;
+	 *
+	 * folders.deleteAll();
+	 *
+	 * for (String name : folderNames) {
+	 *
+	 * Folder item = new Folder();
+	 *
+	 * item.setName(name); item.setThumbnailId(36860);
+	 *
+	 * final Pattern JPEGS = Pattern.compile(".*jpg$");
+	 *
+	 * long count = Stream.of(new File(this.imagePath + name).listFiles()).filter(file ->
+	 * !file.isDirectory()) .filter(file -> JPEGS.matcher(file.getName()).find()).count();
+	 * item.setPicture_count((int) count);
+	 *
+	 * folders.save(item); } } catch (Exception ex) { System.out.println(ex);
+	 * ex.printStackTrace(); } }
+	 */
+
+	protected String loadBuckets(Folder folder, BindingResult result, Map<String, Object> model) {
+
+		try {
+
+			AwsCredentials awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
+					CredentialsRunner.getSecretKey());
+
+			S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+					.region(Region.of("ch-dk-2")).endpointOverride(URI.create("https://sos-ch-dk-2.exo.io")).build();
+
+			// Now you can use s3Client to interact with the Exoscale S3-compatible
+			// service
+			String bucketName = "picture-files";
+
+			System.out.println("Load buckets");
+
+			folderCache = listSubFolders(s3Client, bucketName, "jpegs");
+
+			// Don't forget to close the S3Client when you're done
+			s3Client.close();
+
+			if (folderCache.isEmpty()) {
+				// no folders found
+				result.rejectValue("name", "notFound", "not found");
+				return "folders/findFolders";
+			}
+			else if (folderCache.size() == 1) {
+				// 1 folder found
+				folder = folderCache.iterator().next();
+				return "redirect:/folders/" + folder.getId();
+			}
+			else {
+				// multiple folders found
+				model.put("selections", folderCache);
+				return "folders/folderList";
+			}
+		}
+		catch (Exception ex) {
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
+		return "folders/folderList";
+	}
+
+	protected List<Folder> listSubFolders(S3Client s3Client, String bucketName, String parentFolder) {
+
+		String prefix = parentFolder.endsWith("/") ? parentFolder : parentFolder + "/";
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+				.delimiter("/").build();
+
+		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+		List<Folder> results = new ArrayList<Folder>();
+
+		folders.deleteAll();
+
+		listObjectsResponse.commonPrefixes().forEach(subFolder -> {
+
+			Folder folder = new Folder();
+
+			String name = subFolder.prefix();
+			folder.setName(name.substring(parentFolder.length() + 1, name.length() - 1));
+			folder.setPicture_count(0);
+
+			results.add(folder);
+			folders.save(folder);
+
+			System.out.println("Sub-Folder: " + subFolder.prefix());
+		});
+
+		return results;
 	}
 
 }

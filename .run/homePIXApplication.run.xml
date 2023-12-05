@@ -3,6 +3,8 @@
     <option name="ALTERNATIVE_JRE_PATH" value="17" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <envs>
+      <env name="AWS_ACCESS_KEY_ID" value="EXO7fcb325260e0ca21fbabab95" />
+      <env name="AWS_SECRET_ACCESS_KEY" value="x3R7Je97rOn40Zpjj41UD0QmrdBZB_VUIS8bhM8hjOM" />
       <env name="DBCONFIG" value="Debug" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />

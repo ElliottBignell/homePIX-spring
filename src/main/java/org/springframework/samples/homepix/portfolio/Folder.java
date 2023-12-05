@@ -132,6 +132,7 @@ public class Folder extends BaseEntity {
 				}
 				catch (Exception ex) {
 					System.out.println(ex);
+					ex.printStackTrace();
 				}
 
 				Keywords keywords = new Keywords();
@@ -175,6 +176,7 @@ public class Folder extends BaseEntity {
 
 			title = "Error getting EXIF data";
 			System.out.println(ex);
+			ex.printStackTrace();
 		}
 
 		return title;

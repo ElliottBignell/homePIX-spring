@@ -92,7 +92,7 @@
 
           <ul class="navbar-nav mr-auto mt-2 mt-lg-0 sf-menu" style="white-space:nowrap;">
               <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;">
-                <a href="/folders/" class="navlink bigbrand">
+                <a href="/buckets/" class="navlink bigbrand">
                   <i class="large material-icons"
                      style="color:var( {{ request.get_full_path|current_background:'folders' }} );"
                   >
@@ -101,7 +101,7 @@
                 </a>
                 <ul class="drop-down-menu">
                   <li th:each="folder : ${folders}">
-                    <a th:href="@{/folders/__${folder.name}__}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
+                    <a th:href="@{/buckets/__${folder.name}__}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
                   </li>
                 </ul>
               </li>
