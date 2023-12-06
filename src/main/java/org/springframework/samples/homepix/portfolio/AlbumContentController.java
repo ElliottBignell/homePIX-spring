@@ -206,4 +206,9 @@ class AlbumContentController extends PaginationController {
 		return "redirect:/albums/3";
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

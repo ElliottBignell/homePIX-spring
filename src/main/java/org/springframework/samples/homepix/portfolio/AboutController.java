@@ -54,4 +54,9 @@ class AboutController extends PaginationController {
 		return ABOUT_FORM;
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

@@ -60,4 +60,9 @@ class OrganiseController extends PaginationController {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

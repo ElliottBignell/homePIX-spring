@@ -19,13 +19,11 @@ import org.springframework.samples.homepix.CredentialsRunner;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
@@ -37,19 +35,18 @@ import org.springframework.web.servlet.ModelAndView;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Pattern;
+import java.net.URI;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.net.URI;
-import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * @author Juergen Hoeller
@@ -62,6 +59,25 @@ import software.amazon.awssdk.services.s3.S3Client;
 class BucketController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
+
+	private AwsCredentials awsCredentials;
+
+	private S3Client s3Client;
+
+	@Override
+	public void close() throws Exception {
+
+		if (s3Client != null) {
+			s3Client.close();
+		}
+	}
+
+	@FunctionalInterface
+	interface BucketOp<One, Two, Three, Four> {
+
+		public Four apply(One one, Two two, Three three);
+
+	}
 
 	public BucketController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles) {
 		super(albums, folders, pictureFiles);
@@ -103,7 +119,6 @@ class BucketController extends PaginationController {
 
 	@GetMapping("/buckets")
 	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
-		System.out.println("processFindForm");
 		return loadBuckets(folder, result, model);
 	}
 
@@ -165,22 +180,18 @@ class BucketController extends PaginationController {
 
 		try {
 
-			AwsCredentials awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-					CredentialsRunner.getSecretKey());
+			if (s3Client == null) {
 
-			S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-					.region(Region.of("ch-dk-2")).endpointOverride(URI.create("https://sos-ch-dk-2.exo.io")).build();
+				awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
+						CredentialsRunner.getSecretKey());
+
+				s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+						.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+			}
 
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
-			String bucketName = "picture-files";
-
-			System.out.println("importPicturesFromBucket");
-
-			Collection<Folder> results = listSubFolders(s3Client, bucketName, "jpegs/" + name);
-
-			// Don't forget to close the S3Client when you're done
-			s3Client.close();
+			Collection<Folder> results = listSubFolders(s3Client, "jpegs/" + name);
 
 			if (results.isEmpty()) {
 				// no folders found
@@ -201,56 +212,26 @@ class BucketController extends PaginationController {
 			System.out.println(ex);
 			ex.printStackTrace();
 		}
-		return "folders/folderList";
 
-		/*
-		 * String folderName = folder.getName(); String filename = this.imagePath +
-		 * folderName; String localName = "/images/" + folderName + "/";
-		 *
-		 * List<String> fileNames = Stream.of(new File(filename).listFiles()).filter(file
-		 * -> !file.isDirectory()) .filter(file ->
-		 * file.getName().endsWith(".jpg")).map(File::getName) .filter(file ->
-		 * this.pictureFiles.findByFilename(file).isEmpty()).sorted().collect(Collectors.
-		 * toList()); List<PictureFile> pictures = new ArrayList<>();
-		 *
-		 * for (String name : fileNames) {
-		 *
-		 * PictureFile item = new PictureFile();
-		 *
-		 * item.setFilename(localName + name);
-		 *
-		 * try { item.setTitle(Folder.getExifTitle(filename + "/" + name)); } catch
-		 * (Exception ex) { System.out.println(ex); ex.printStackTrace(); }
-		 *
-		 * try { pictureFiles.save(item); } catch (Exception ex) { System.out.println(ex);
-		 * ex.printStackTrace(); }
-		 *
-		 * pictures.add(item); }
-		 *
-		 * model.put("collection", pictures); model.put("baseLink", "/buckets/" +
-		 * folderName); model.put("albums", this.albums.findAll());
-		 *
-		 * return "redirect:/buckets/{name}";
-		 */
+		return "folders/folderList";
 	}
 
 	@GetMapping("/bucket/{name}")
 	public String showFolder(@PathVariable("name") String name, Map<String, Object> model) {
 
-		AwsCredentials awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-				CredentialsRunner.getSecretKey());
+		if (s3Client == null) {
 
-		S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-				.region(Region.of("ch-dk-2")).endpointOverride(URI.create("https://sos-ch-dk-2.exo.io")).build();
+			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
+					CredentialsRunner.getSecretKey());
+
+			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+
+		}
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		String bucketName = "picture-files";
-
-		List<PictureFile> results = listFiles(s3Client, bucketName, "jpegs/" + name);
-
-		// Don't forget to close the S3Client when you're done
-		s3Client.close();
+		List<PictureFile> results = listFiles(s3Client, "jpegs/" + name);
 
 		Collection<Folder> buckets = this.folders.findByName(name);
 
@@ -293,7 +274,13 @@ class BucketController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = buckets.iterator().next();
 
-			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
+			System.out.println(imagePath);
+			System.out.println(folder.getName());
+
+			List<PictureFile> pictureFiles = loadPictureFiles(imagePath, folder.getName());
+
+			System.out.println(pictureFiles.size());
+			System.out.println(pictureFiles);
 
 			addParams(0, "/images/" + name + "/" + filename, pictureFiles, model, false);
 
@@ -326,7 +313,7 @@ class BucketController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = buckets.iterator().next();
 
-			List<PictureFile> pictureFiles = folder.getPictureFiles(imagePath);
+			List<PictureFile> pictureFiles = loadPictureFiles(imagePath, folder.getName());
 
 			addParams(0, "/images/" + name + "/" + pictureFiles.get(id).getTitle(), pictureFiles, model, false);
 
@@ -340,7 +327,7 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	private List<PictureFile> listFiles(S3Client s3Client, String bucketName, String subFolder) {
+	private List<PictureFile> listFiles(S3Client s3Client, String subFolder) {
 
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 
@@ -360,11 +347,13 @@ class BucketController extends PaginationController {
 
 				if (extension.equals(".jpg")) {
 
-					name = "/web-images" + name.substring(5, name.length());
+					String suffix = name.substring(5, name.length());
+					name = "/web-images" + suffix;
+					String exifName = "jpegs" + suffix;
 
 					PictureFile picture = new PictureFile();
 
-					picture.setTitle(name);
+					picture.setTitle(getExifTitle(exifName));
 					picture.setFilename(name);
 					this.pictureFiles.save(picture);
 
@@ -379,39 +368,81 @@ class BucketController extends PaginationController {
 		return results;
 	}
 
-	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
-	@GetMapping(value = "web-images/{directory}/{file}")
-	public @ResponseBody byte[] getFileFromBucket(@PathVariable("directory") String directory,
-			@PathVariable("file") String file) {
+	private List<String> listFileNames(S3Client s3Client, String subFolder) {
 
-		AwsCredentials awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-				CredentialsRunner.getSecretKey());
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 
-		S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-				.region(Region.of("ch-dk-2")).endpointOverride(URI.create("https://sos-ch-dk-2.exo.io")).build();
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+				.build();
+
+		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+		List<String> results = new ArrayList<>();
+
+		for (S3Object s3Object : listObjectsResponse.contents()) {
+
+			try {
+
+				String name = s3Object.key();
+				String extension = name.substring(name.length() - 4).toLowerCase();
+
+				if (extension.equals(".jpg")) {
+
+					String suffix = name.substring(5, name.length());
+					name = "/web-images" + suffix;
+
+					results.add(name);
+				}
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+			}
+		}
+
+		return results;
+	}
+
+	private byte[] hitBucket(BucketOp<S3Client, String, String, byte[]> op, String arg1, String arg2) {
+
+		if (s3Client == null) {
+
+			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
+					CredentialsRunner.getSecretKey());
+
+			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+		}
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		String bucketName = "picture-files";
-
 		try {
-
-			String key = "jpegs/" + directory + "/" + file;
-			System.out.println(key);
-			byte[] fileContent = downloadFile(s3Client, bucketName, key);
-			return fileContent;
+			return op.apply(s3Client, arg1, arg2);
 		}
-		catch (IOException e) {
-			System.err.println("Error downloading file: " + e.getMessage());
-		}
-		finally {
-			s3Client.close();
+		catch (Exception e) {
+			System.err.println("Error accessing bucket: " + e.getMessage());
 		}
 
 		return null;
 	}
 
-	private static byte[] downloadFile(S3Client s3Client, String bucketName, String objectKey) throws IOException {
+	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
+	@GetMapping(value = "web-images/{directory}/{file}")
+	public @ResponseBody byte[] getFileFromBucket(@PathVariable("directory") String directory,
+			@PathVariable("file") String file) {
+
+		return hitBucket((client, arg1, arg2) -> {
+
+			try {
+				return downloadFile("jpegs/" + arg1 + "/" + arg2);
+			}
+			catch (IOException e) {
+				System.err.println("Error downloading file: " + e.getMessage());
+				return null;
+			}
+		}, directory, file);
+	}
+
+	private byte[] downloadFile(String objectKey) throws IOException {
 
 		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
@@ -420,6 +451,91 @@ class BucketController extends PaginationController {
 		byte[] data = responseResponseBytes.asByteArray();
 
 		return data;
+	}
+
+	public String getExifTitle(String path) throws IOException {
+
+		String title = "Untitled";
+
+		try {
+
+			byte[] data = null;
+
+			try {
+				data = downloadFile(path + ".exif");
+			}
+			catch (NoSuchKeyException noKey) {
+				System.out.println("No EXIF data for " + path);
+				return path;
+			}
+
+			InputStream targetStream = new ByteArrayInputStream(data);
+
+			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			XMLEventReader reader = xmlInputFactory.createXMLEventReader(targetStream);
+
+			while (reader.hasNext()) {
+
+				XMLEvent nextEvent = reader.nextEvent();
+
+				if (nextEvent.isStartElement()) {
+
+					StartElement startElement = nextEvent.asStartElement();
+
+					if (startElement.getName().getLocalPart().equals("ImageDescription")) {
+
+						nextEvent = reader.nextEvent();
+						title = nextEvent.asCharacters().getData();
+						break;
+					}
+				}
+			}
+		}
+		catch (Exception ex) {
+
+			title = "Error getting EXIF data";
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
+
+		return title;
+	}
+
+	private List<PictureFile> loadPictureFiles(String imagePath, String name) {
+
+		List<PictureFile> pictureFiles = new ArrayList<>();
+
+		String dir = imagePath + name;
+
+		List<String> jpegNames = listFileNames(s3Client, "jpegs/" + name);
+
+		int index = 0;
+
+		for (String jpeg : jpegNames) {
+
+			PictureFile item = new PictureFile();
+
+			item.setId(index++);
+			item.setFilename(jpeg);
+
+			try {
+
+				String filename = "jpegs/" + name + "/" + jpeg.substring( 12, jpeg.length());
+				item.setTitle(getExifTitle(filename));
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+			}
+
+			Keywords keywords = new Keywords();
+			keywords.setContent(name);
+			item.setKeywords(keywords);
+
+			pictureFiles.add(item);
+		}
+
+		return pictureFiles;
 	}
 
 }

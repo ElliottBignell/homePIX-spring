@@ -13,7 +13,7 @@
   <div style="overflow-y: auto; max-height: 92vh;">
 
     <figure th:each="pictureFile : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
+      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
@@ -25,7 +25,7 @@
               </span>
         </section>
       </a>
-      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/folders/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
+      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
         <figcaption class="tt_edit">
           <form id="editprops">
             <fieldset>

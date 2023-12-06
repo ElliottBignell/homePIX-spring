@@ -102,4 +102,9 @@ public class PictureFileController extends PaginationController {
 		}
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

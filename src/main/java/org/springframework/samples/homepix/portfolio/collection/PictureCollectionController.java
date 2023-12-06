@@ -217,4 +217,9 @@ class PictureCollectionController extends PaginationController {
 		return showCollection(fromDate, toDate, id, model);
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

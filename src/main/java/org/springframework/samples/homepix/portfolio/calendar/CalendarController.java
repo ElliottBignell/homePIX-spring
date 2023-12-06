@@ -82,4 +82,9 @@ class CalendarController extends PaginationController {
 		return years;
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

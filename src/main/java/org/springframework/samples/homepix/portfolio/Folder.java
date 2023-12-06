@@ -114,13 +114,19 @@ public class Folder extends BaseEntity {
 
 			String dir = imagePath + this.name;
 
-			List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
+			List<String> jpegNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
 					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()
 					.collect(Collectors.toList());
 
+			// List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file
+			// -> !file.isDirectory())
+			// .filter(file ->
+			// file.getName().endsWith(".jpg")).map(File::getName).sorted()
+			// .collect(Collectors.toList());
+
 			int index = 0;
 
-			for (String name : folderNames) {
+			for (String name : jpegNames) {
 
 				PictureFile item = new PictureFile();
 

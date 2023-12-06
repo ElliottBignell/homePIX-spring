@@ -187,4 +187,9 @@ class AlbumController extends PaginationController {
 		}
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

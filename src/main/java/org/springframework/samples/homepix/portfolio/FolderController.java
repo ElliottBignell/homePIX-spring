@@ -311,4 +311,9 @@ class FolderController extends PaginationController {
 		}
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

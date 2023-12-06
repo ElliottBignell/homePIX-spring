@@ -65,4 +65,9 @@ class WelcomeController extends PaginationController {
 		return "welcome";
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
+
 }

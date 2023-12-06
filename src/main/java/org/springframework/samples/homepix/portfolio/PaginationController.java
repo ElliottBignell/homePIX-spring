@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PaginationController {
+public abstract class PaginationController implements AutoCloseable {
 
 	protected Pagination pagination;
 
@@ -33,6 +33,12 @@ public class PaginationController {
 	protected final FolderRepository folders;
 
 	protected final PictureFileRepository pictureFiles;
+
+	protected static final String bucketName = "picture-files";
+
+	protected static final String endpoint = "https://sos-ch-dk-2.exo.io";
+
+	protected static final String region = "ch-dk-2";
 
 	Collection<Folder> folderCache = null;
 
@@ -112,7 +118,6 @@ public class PaginationController {
 	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
 		if (null == folderCache) {
-			System.out.println("findAllFolders");
 			loadBuckets(folder, result, model);
 		}
 		return this.folders.findAll();
@@ -123,7 +128,6 @@ public class PaginationController {
 		// allow parameterless GET request for /folders to return all records
 		if (folder.getName() == null) {
 
-			System.out.println("loadFolders");
 			loadBuckets(folder, result, model);
 			folder.setName(""); // empty string signifies broadest possible search
 		}
@@ -214,15 +218,13 @@ public class PaginationController {
 					CredentialsRunner.getSecretKey());
 
 			S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-					.region(Region.of("ch-dk-2")).endpointOverride(URI.create("https://sos-ch-dk-2.exo.io")).build();
+					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
 
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
 			String bucketName = "picture-files";
 
-			System.out.println("Load buckets");
-
-			folderCache = listSubFolders(s3Client, bucketName, "jpegs");
+			folderCache = listSubFolders(s3Client, "jpegs");
 
 			// Don't forget to close the S3Client when you're done
 			s3Client.close();
@@ -250,7 +252,7 @@ public class PaginationController {
 		return "folders/folderList";
 	}
 
-	protected List<Folder> listSubFolders(S3Client s3Client, String bucketName, String parentFolder) {
+	protected List<Folder> listSubFolders(S3Client s3Client, String parentFolder) {
 
 		String prefix = parentFolder.endsWith("/") ? parentFolder : parentFolder + "/";
 
@@ -273,8 +275,6 @@ public class PaginationController {
 
 			results.add(folder);
 			folders.save(folder);
-
-			System.out.println("Sub-Folder: " + subFolder.prefix());
 		});
 
 		return results;
