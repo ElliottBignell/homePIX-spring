@@ -3,9 +3,32 @@
 <html xmlns:th="https://www.thymeleaf.org"
   th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
 
+  <head>
+    <script>
+      function showConfirmation() {
+          var result = confirm("Are you sure you want to delete this item?");
+          if (result) {
+              // User clicked "OK," perform the delete action
+              // You can make an Ajax call or redirect to a controller endpoint here
+              alert("Item deleted!"); // Replace this with your actual delete logic
+          } else {
+              // User clicked "Cancel," do nothing or handle accordingly
+              alert("Deletion canceled.");
+          }
+      }
+    </script>
+  </head>
   <body>
   
     <h2 th:text="${album.name}"></h2>
+
+    <form action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
+      <input type="submit" value="Curate...">
+    </form>
+
+    <form action="#" th:action="@{/album/__${album.id}__/delete/}" th:object="${album}" method="post">
+      <input type="submit" value="Delete Album">
+    </form>
 
     <div style="overflow-y: auto; max-height: 92vh;">
 
@@ -34,27 +57,27 @@
           </figcaption>
         </a>
         <div th:id="@{header_o__${album.id}__}" class="tt_left tt_text tt_header">
-          <a class="tt_icon_anchor" th:href="@{./make_thumbnail/${request.GET.ID}/__${album.id}__/}" style="color:black;height:1em;">
+          <a class="tt_icon tt_small_icon_anchor" th:href="@{./make_thumbnail/${request.GET.ID}/__${album.id}__/}" style="color:black;height:1em;">
             <i class="material-icons tt_icon">
               album
             </i>
           </a>
-          <a class="tt_icon_anchor" th:href="@{./move/__${album.id}__/-1/}">
+          <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/-1/}">
             <i class="material-icons tt_icon">
               keyboard_arrow_left
             </i>
           </a>
-          <a class="tt_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
+          <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
             <i class="material-icons tt_icon">
               keyboard_arrow_right
             </i>
           </a>
-          <a class="tt_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
+          <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
             <i class="material-icons tt_icon">
               bedtime
             </i>
           </a>
-          <a class="tt_icon_anchor" th:href="@{./__${album.id}__/delete/__${entry.pictureFile.id}__}">
+          <a class="tt_icon tt_small_icon_anchor" th:href="@{./__${album.id}__/delete/__${entry.pictureFile.id}__}">
             <i class="material-icons tt_icon">
               delete
             </i>

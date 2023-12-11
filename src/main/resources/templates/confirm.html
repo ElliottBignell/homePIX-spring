@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+
+<body>
+
+<div class="centerstage" style="height:100%;">
+  <div class="techfont" id="div_centrestage" style="min-height:4em;">
+    <div class="row">
+      <div class="col-md-6">
+
+        <h1 th:text="'Delete album ' + ${name}"></h1>
+        <form action="#" th:action="@{/album/__${id}__/delete/abort}" method="post">
+          <input type="submit" value="Abort! Abort! Abort!">
+        </form>
+        <form action="#" th:action="@{/album/__${id}__/delete/confirm}" method="post">
+          <input type="submit" value="Delete Album">
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

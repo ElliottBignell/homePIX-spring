@@ -15,7 +15,10 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
@@ -211,4 +215,117 @@ class AlbumContentController extends PaginationController {
 
 	}
 
+	@PostMapping("/albums/{name}/curate/")
+	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
+										   Map<String, Object> model) {
+		return "folders/folderList.html";
+	}
+
+	@PostMapping("/album/{id}/delete/")
+	public String deleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
+
+		Optional<Album> album = albums.findById(id);
+
+		if (album.isPresent()) {
+
+			model.put("id", id);
+			model.put("name", "Churches");//album.get().getName());
+			model.put("album", album);//album.get().getName());
+			return "confirm";
+		}
+
+		return "redirect:albums/albumList";
+	}
+
+	@PostMapping("/album/{id}/delete/confirm")
+	public String confirmDeleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
+
+		Optional<Album> album = albums.findById(id);
+
+		if (album.isPresent()) {
+
+			albums.delete(album.get());
+			return "redirect:albums/albumList";
+		}
+
+		return "redirect:/album/" + Long.toString(id);
+	}
+
+	@PostMapping("/album/{id}/delete/abort")
+	public String abortDeleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
+		return "redirect:/album/" + Long.toString(id);
+	}
+
+	@GetMapping("/album/{id}/curate")
+	public String curateAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
+		return postCurateAlbum(id, model);
+	}
+
+	@PostMapping("/album/{id}/curate")
+	public String postCurateAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
+
+		Optional<Album> album = albums.findById(id);
+
+		Comparator<Folder>  nameComparator = Comparator.comparing(Folder::getName);
+		Collection<Folder> folderList = folders.findAll().stream()
+			.sorted(nameComparator)
+			.collect(Collectors.toList());
+
+		if (album.isPresent() && !folderList.isEmpty()) {
+
+			Folder firstFolder = folderList.iterator().next();
+
+			model.put("id", id);
+			model.put("name", "Churches");//album.get().getName());
+			model.put("album", album);//album.get().getName());
+			model.put("folder", firstFolder);//album.get().getName());
+
+			List<PictureFile> results = listFiles(s3Client, "jpegs/" + firstFolder.getName());
+
+			Collection<Folder> buckets = this.folders.findByName(firstFolder.getName());
+
+			if (buckets.isEmpty()) {
+				return "redirect:albums/albumList";
+			}
+			else {
+
+				Folder folder = buckets.iterator().next();
+				model.put("collection", results);
+
+				return "albums/curateAlbum";
+			}
+		}
+
+		return "redirect:albums/albumList";
+	}
+
+	@PostMapping("/album/{id}/add/{pictureID}")
+	public ResponseEntity<String> ccurateAlbum(@PathVariable("id") Long id, @PathVariable("pictureID") Integer pictureID, Map<String, Object> model) {
+
+		Collection<AlbumContent> existing = albumContent.findByAlbumIdAndEntryId( id, pictureID);
+
+		if (existing.isEmpty()) {
+
+			Optional<Album> album = albums.findById(id);
+
+			if (album.isPresent()) {
+
+				Optional<PictureFile> picture = pictureFiles.findById(pictureID);
+
+				if (picture.isPresent()) {
+
+					AlbumContent newEntry = new AlbumContent();
+
+					newEntry.setAlbum(album.get());
+					newEntry.setPictureFile(picture.get());
+
+					albumContent.save(newEntry);
+
+					return ResponseEntity.ok("Added successfully");
+				}
+			}
+		}
+
+		return ResponseEntity.status(400).body("Already added or other error");
+	}
 }

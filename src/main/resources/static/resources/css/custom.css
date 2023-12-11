@@ -8418,6 +8418,11 @@ table {
         );
 }
 
+.tt_base .tt_big_header {
+    top:50px;
+    height:100px;
+}
+
 .tt_base:hover .tt_header {
     transition: opacity 0.5s;
 }

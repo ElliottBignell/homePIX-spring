@@ -63,12 +63,3 @@ CREATE TABLE albumcontent (
  );
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_album_id FOREIGN KEY (album_id) REFERENCES albums (id);
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_entry_id FOREIGN KEY (entry_id) REFERENCES picture_file (id);
-
-CREATE TABLE visits (
-  id          INTEGER IDENTITY PRIMARY KEY,
-  pet_id      INTEGER NOT NULL,
-  visit_date  DATE,
-  description VARCHAR(255)
-);
-ALTER TABLE visits ADD CONSTRAINT fk_visits_picture_file FOREIGN KEY (pet_id) REFERENCES picture_file (id);
-CREATE INDEX visits_pet_id ON visits (pet_id);

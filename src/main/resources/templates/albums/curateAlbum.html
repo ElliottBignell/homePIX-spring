@@ -4,11 +4,36 @@
       th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
 
 <body>
-  
-  <h2 th:text="${folder.displayName}"></h2>
-  <form action="#" th:action="@{/buckets/__${folder.name}__/import/}" th:object="${folder}" method="post">
-    <input type="submit" value="Scan folder...">
-  </form>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <script>
+    function handleAddClick(event, album, picture) {
+
+      event.preventDefault(); // Prevent the default form submission behavior
+
+      $.ajax({
+        url: '/album/' + album + '/add/' + picture,
+        method: 'POST',
+        dataType: 'text',
+        success: function(response) {
+          // Update the icon on success
+          if (response === 'Added successfully') {
+            $('#icon' + picture).text('remove');
+          } else {
+            // Handle other success cases if needed
+          }
+        },
+        error: function(error) {
+          console.error('Error:', error);
+        }
+      });
+    }
+  </script>
+
+  <h1 th:text="'Curate album ' + ${name} + ' using folder ' + ${folder.name}">Test</h1>
 
   <div style="overflow-y: auto; max-height: 92vh;">
 
@@ -36,10 +61,11 @@
           </form>
         </figcaption>
       </a>
-      <div th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header">
-        <a class="tt_icon_anchor" th:href="@{./delete/__${folder.name}__/}">
-          <i class="material-icons tt_icon">
-            delete
+      <div th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header tt_big_header">
+        <a class="tt_icon_anchor" href="#" th:onclick="@{handleAddClick( event, __${id}__, __${pictureFile.id}__ );}">
+           <!-- th:href="@{/album/__${id}__/add/__${pictureFile.id}__}" -->
+          <i th:id="@{icon__${pictureFile.id}__}" class="material-icons" style="font-size:96px;">
+            add
           </i>
         </a>
         <figcaption style="position:absolute;left:5px;top:5px;right:150px;">

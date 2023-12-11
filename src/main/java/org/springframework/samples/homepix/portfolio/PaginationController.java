@@ -10,12 +10,19 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.*;
 
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -42,6 +49,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	Collection<Folder> folderCache = null;
 
+	protected S3Client s3Client;
+	private AwsCredentials awsCredentials;
+
 	// @Value("${homepix.images.path}")
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -53,6 +63,14 @@ public abstract class PaginationController implements AutoCloseable {
 		this.pictureFiles = pictureFiles;
 		pagination = new Pagination();
 		calendar = new Calendar();
+	}
+
+	@Override
+	public void close() throws Exception {
+
+		if (s3Client != null) {
+			s3Client.close();
+		}
 	}
 
 	protected void addParams(int pictureId, String filename, Iterable<PictureFile> pictureFiles,
@@ -214,20 +232,13 @@ public abstract class PaginationController implements AutoCloseable {
 
 		try {
 
-			AwsCredentials awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-					CredentialsRunner.getSecretKey());
-
-			S3Client s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+			initialiseS3Client();
 
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
 			String bucketName = "picture-files";
 
 			folderCache = listSubFolders(s3Client, "jpegs");
-
-			// Don't forget to close the S3Client when you're done
-			s3Client.close();
 
 			if (folderCache.isEmpty()) {
 				// no folders found
@@ -280,4 +291,116 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
+	protected List<PictureFile> listFiles(S3Client s3Client, String subFolder) {
+
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+			.build();
+
+		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+		List<PictureFile> results = new ArrayList<>();
+
+		for (S3Object s3Object : listObjectsResponse.contents()) {
+
+			try {
+
+				String name = s3Object.key();
+				String extension = name.substring(name.length() - 4).toLowerCase();
+
+				if (extension.equals(".jpg")) {
+
+					String suffix = name.substring(5, name.length());
+					name = "/web-images" + suffix;
+					String exifName = "jpegs" + suffix;
+
+					PictureFile picture = new PictureFile();
+
+					picture.setTitle(getExifTitle(exifName));
+					picture.setFilename(name);
+					this.pictureFiles.save(picture);
+
+					results.add(picture);
+				}
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+			}
+		}
+
+		return results;
+	}
+
+	public String getExifTitle(String path) throws IOException {
+
+		String title = "Untitled";
+
+		try {
+
+			byte[] data = null;
+
+			try {
+				data = downloadFile(path + ".exif");
+			}
+			catch (NoSuchKeyException noKey) {
+				System.out.println("No EXIF data for " + path);
+				return path;
+			}
+
+			InputStream targetStream = new ByteArrayInputStream(data);
+
+			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			XMLEventReader reader = xmlInputFactory.createXMLEventReader(targetStream);
+
+			while (reader.hasNext()) {
+
+				XMLEvent nextEvent = reader.nextEvent();
+
+				if (nextEvent.isStartElement()) {
+
+					StartElement startElement = nextEvent.asStartElement();
+
+					if (startElement.getName().getLocalPart().equals("ImageDescription")) {
+
+						nextEvent = reader.nextEvent();
+						title = nextEvent.asCharacters().getData();
+						break;
+					}
+				}
+			}
+		}
+		catch (Exception ex) {
+
+			title = "Error getting EXIF data";
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
+
+		return title;
+	}
+
+	protected byte[] downloadFile(String objectKey) throws IOException {
+
+		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
+
+		ResponseBytes<GetObjectResponse> responseResponseBytes = s3Client.getObjectAsBytes(objectRequest);
+
+		byte[] data = responseResponseBytes.asByteArray();
+
+		return data;
+	}
+
+	protected void initialiseS3Client() {
+
+		if (s3Client == null) {
+
+			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
+				CredentialsRunner.getSecretKey());
+
+			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+				.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+
+		}
+	}
 }

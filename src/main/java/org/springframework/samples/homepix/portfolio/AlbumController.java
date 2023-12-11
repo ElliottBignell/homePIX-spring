@@ -154,7 +154,9 @@ class AlbumController extends PaginationController {
 				nextAlbum.setCount(count);
 			}
 
-			nextAlbum.setThumbnail(thumbnail.iterator().next());
+			if (thumbnail.iterator().hasNext()) {
+				nextAlbum.setThumbnail(thumbnail.iterator().next());
+			}
 
 			/*
 			 * List<PictureFile> files = contents.stream() .filter( item ->
