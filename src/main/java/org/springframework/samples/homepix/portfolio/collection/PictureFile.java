@@ -96,4 +96,26 @@ public class PictureFile extends BaseEntity {
 		return f.getName();
 	}
 
+	public String getMediumFilename() {
+
+		try {
+
+			String[] parts = this.filename.split("/");
+			String filename = parts[3];
+			String[] bodyAndExtension = filename.split("[\\.]");
+
+			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];
+
+			String result = "/" + parts[1] + "/" + parts[2] + "/200px/" + filename;
+			return result;
+		}
+		catch (Exception ex) {
+
+			System.out.println(ex);
+			ex.printStackTrace();
+
+			return this.filename;
+		}
+	}
+
 }

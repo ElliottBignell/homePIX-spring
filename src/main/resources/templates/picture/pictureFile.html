@@ -431,16 +431,18 @@ i             </div>
               <span class="titletext propertyfont">
                   Keywords:
               </span>
-              <span id="keywords" class="titlecontent" th:each="word : ${picture.keywords.getItems}">
-                <button type="button" class="buttonfont" data-react-toolbox="button">
-                  <span th:text="${word}"></span>
-                  <span>
-                    <a href="/remove">
-                      <i class='glyphicon glyphicon-remove'>
-                      </i>
-                    </a>
-                  </span>
-                </button>
+              <span th:if="${picture.keywords != null}">
+                <span id="keywords" class="titlecontent" th:each="word : ${picture.keywords.getItems}">
+                  <button type="button" class="buttonfont" data-react-toolbox="button">
+                    <span th:text="${word}"></span>
+                    <span>
+                      <a href="/remove">
+                        <i class='glyphicon glyphicon-remove'>
+                        </i>
+                      </a>
+                    </span>
+                  </button>
+                </span>
               </span>
               <form id="submit_keywords" action="" method="get" style="font-size:0.3em;padding-top:10px;">
                 <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->

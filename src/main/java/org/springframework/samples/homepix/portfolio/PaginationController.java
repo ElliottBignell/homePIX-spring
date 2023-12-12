@@ -50,6 +50,7 @@ public abstract class PaginationController implements AutoCloseable {
 	Collection<Folder> folderCache = null;
 
 	protected S3Client s3Client;
+
 	private AwsCredentials awsCredentials;
 
 	// @Value("${homepix.images.path}")
@@ -296,7 +297,7 @@ public abstract class PaginationController implements AutoCloseable {
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 
 		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-			.build();
+				.build();
 
 		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
 
@@ -311,21 +312,27 @@ public abstract class PaginationController implements AutoCloseable {
 
 				if (extension.equals(".jpg")) {
 
-					String suffix = name.substring(5, name.length());
-					name = "/web-images" + suffix;
-					String exifName = "jpegs" + suffix;
+					String sizePart = name.substring(name.length() - 9, name.length() - 4).toLowerCase();
 
-					PictureFile picture = new PictureFile();
+					if (!sizePart.equals("200px")) {
 
-					picture.setTitle(getExifTitle(exifName));
-					picture.setFilename(name);
-					this.pictureFiles.save(picture);
+						String suffix = name.substring(5, name.length());
+						name = "/web-images" + suffix;
+						String exifName = "jpegs" + suffix;
 
-					results.add(picture);
+						PictureFile picture = new PictureFile();
+
+						picture.setTitle(getExifTitle(exifName));
+						picture.setFilename(name);
+						this.pictureFiles.save(picture);
+
+						results.add(picture);
+					}
 				}
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
+				ex.printStackTrace();
 			}
 		}
 
@@ -396,11 +403,12 @@ public abstract class PaginationController implements AutoCloseable {
 		if (s3Client == null) {
 
 			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-				CredentialsRunner.getSecretKey());
+					CredentialsRunner.getSecretKey());
 
 			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-				.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
+					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
 
 		}
 	}
+
 }

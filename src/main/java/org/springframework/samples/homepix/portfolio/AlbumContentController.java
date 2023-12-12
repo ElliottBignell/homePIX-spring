@@ -184,30 +184,20 @@ class AlbumContentController extends PaginationController {
 		return "redirect:/albums/" + Long.toString(albumId);
 	}
 
-	@GetMapping("/albums/{albumId}/delete/{pictureId}")
-	public String deletePicture(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
-			Map<String, Object> model) {
+	@PostMapping("/album/{albumId}/delete/{pictureId}")
+	public ResponseEntity<String> deletePicture(@PathVariable("albumId") long albumId,
+			@PathVariable("pictureId") int pictureId, Map<String, Object> model) {
 
-		// Collection<AlbumContent> content =
-		// this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
-		Collection<AlbumContent> content = (Collection<AlbumContent>) this.albumContent.findAll();
+		Collection<AlbumContent> content = (Collection<AlbumContent>) this.albumContent.findByAlbumIdAndEntryId(albumId,
+				pictureId);
 
-		Optional<Album> album = this.albums.findById(albumId);
+		if (!content.isEmpty()) {
 
-		if (album != null) {
-
-			/*
-			 * Optional<PictureFile> pictureFile = this.pictureFiles.findById(pictureId);
-			 *
-			 * if (pictureFile.isPresent()) {
-			 * album.get().deletePictureFile(pictureFile.get());
-			 * this.albums.save(album.get()); }
-			 *
-			 * return "redirect:/albums/" + Integer.toString(albumId);
-			 */
+			albumContent.delete(content.iterator().next());
+			return ResponseEntity.ok("Deleted successfully");
 		}
 
-		return "redirect:/albums/3";
+		return ResponseEntity.ok("Delete failed");
 	}
 
 	@Override
@@ -217,7 +207,7 @@ class AlbumContentController extends PaginationController {
 
 	@PostMapping("/albums/{name}/curate/")
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
-										   Map<String, Object> model) {
+			Map<String, Object> model) {
 		return "folders/folderList.html";
 	}
 
@@ -229,8 +219,8 @@ class AlbumContentController extends PaginationController {
 		if (album.isPresent()) {
 
 			model.put("id", id);
-			model.put("name", "Churches");//album.get().getName());
-			model.put("album", album);//album.get().getName());
+			model.put("name", "Churches");// album.get().getName());
+			model.put("album", album);// album.get().getName());
 			return "confirm";
 		}
 
@@ -266,19 +256,17 @@ class AlbumContentController extends PaginationController {
 
 		Optional<Album> album = albums.findById(id);
 
-		Comparator<Folder>  nameComparator = Comparator.comparing(Folder::getName);
-		Collection<Folder> folderList = folders.findAll().stream()
-			.sorted(nameComparator)
-			.collect(Collectors.toList());
+		Comparator<Folder> nameComparator = Comparator.comparing(Folder::getName);
+		Collection<Folder> folderList = folders.findAll().stream().sorted(nameComparator).collect(Collectors.toList());
 
 		if (album.isPresent() && !folderList.isEmpty()) {
 
 			Folder firstFolder = folderList.iterator().next();
 
 			model.put("id", id);
-			model.put("name", "Churches");//album.get().getName());
-			model.put("album", album);//album.get().getName());
-			model.put("folder", firstFolder);//album.get().getName());
+			model.put("name", "Churches");// album.get().getName());
+			model.put("album", album);// album.get().getName());
+			model.put("folder", firstFolder);// album.get().getName());
 
 			List<PictureFile> results = listFiles(s3Client, "jpegs/" + firstFolder.getName());
 
@@ -300,9 +288,10 @@ class AlbumContentController extends PaginationController {
 	}
 
 	@PostMapping("/album/{id}/add/{pictureID}")
-	public ResponseEntity<String> ccurateAlbum(@PathVariable("id") Long id, @PathVariable("pictureID") Integer pictureID, Map<String, Object> model) {
+	public ResponseEntity<String> ccurateAlbum(@PathVariable("id") Long id,
+			@PathVariable("pictureID") Integer pictureID, Map<String, Object> model) {
 
-		Collection<AlbumContent> existing = albumContent.findByAlbumIdAndEntryId( id, pictureID);
+		Collection<AlbumContent> existing = albumContent.findByAlbumIdAndEntryId(id, pictureID);
 
 		if (existing.isEmpty()) {
 
@@ -328,4 +317,5 @@ class AlbumContentController extends PaginationController {
 
 		return ResponseEntity.status(400).body("Already added or other error");
 	}
+
 }

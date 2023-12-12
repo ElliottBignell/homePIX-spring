@@ -36,8 +36,8 @@
                 <span class="tt_subject">
                   <img th:id="@{picture-__${album.id}__}"
                        class="gallery_picture lazyloaded"
-                       th:src="${album.thumbnail.filename}"
-                       th:data-src="${album.thumbnail.filename}"
+                       th:src="${album.thumbnail.mediumFilename}"
+                       th:data-src="${album.thumbnail.mediumFilename}"
                        th:alt="@{Contains __${album.count}__ shots}"
                   />
                 </span>

@@ -200,11 +200,11 @@ class BucketController extends PaginationController {
 	@PostMapping("/buckets/{name}/import/")
 	@Transactional
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
-										   Map<String, Object> model) {
+			Map<String, Object> model) {
 
 		initialiseS3Client();
 
-		List<PictureFile> files = listFiles( s3Client, "jpegs/" + name );
+		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
 
 		for (PictureFile file : files) {
 
@@ -284,20 +284,26 @@ class BucketController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = buckets.iterator().next();
 
-			List<PictureFile> pictureFiles = loadPictureFiles(imagePath, folder.getName());
+			PictureFile picture = loadPictureFile(imagePath, folder.getName(), id);
 
-			addParams(0, "/images/" + name + "/" + pictureFiles.get(id).getTitle(), pictureFiles, model, false);
+			List<PictureFile> pictureFiles = new ArrayList<>();
 
-			mav.addObject(pictureFiles);
+			pictureFiles.add(picture);
+			pictureFiles.add(picture);
+			pictureFiles.add(picture);
+
+			addParams(id, "/images/" + name + "/" + picture.getTitle(), pictureFiles, model, false);
+
+			// mav.addObject(pictureFiles);
 			model.put("link_params", "");
 
+			model.put("picture", picture);
 			model.put("collection", pictureFiles);
 			model.put("baseLink", "/buckets/" + name);
 
 			return "picture/pictureFile.html";
 		}
 	}
-
 
 	private List<String> listFileNames(S3Client s3Client, String subFolder) {
 
@@ -333,6 +339,41 @@ class BucketController extends PaginationController {
 		return results;
 	}
 
+	private String getFileName(S3Client s3Client, String subFolder, int id) {
+
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+				.build();
+
+		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> object.key().endsWith(".jpg")).collect(Collectors.toList());
+
+		S3Object s3Object = filteredObjects.get(id);
+
+		try {
+
+			String name = s3Object.key();
+			String extension = name.substring(name.length() - 4).toLowerCase();
+
+			if (extension.equals(".jpg")) {
+
+				String suffix = name.substring(5, name.length());
+				name = "/web-images" + suffix;
+			}
+
+			return name;
+		}
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
+
+		return "Failed to get name";
+	}
+
 	private byte[] hitBucket(BucketOp<S3Client, String, String, byte[]> op, String arg1, String arg2) {
 
 		initialiseS3Client();
@@ -366,6 +407,22 @@ class BucketController extends PaginationController {
 		}, directory, file);
 	}
 
+	@GetMapping(value = "web-images/{directory}/200px/{file}")
+	public @ResponseBody byte[] getMediumFileFromBucket(@PathVariable("directory") String directory,
+			@PathVariable("file") String file) {
+
+		return hitBucket((client, arg1, arg2) -> {
+
+			try {
+				return downloadFile("jpegs/" + arg1 + "/200px/" + arg2);
+			}
+			catch (IOException e) {
+				System.err.println("Error downloading file: " + e.getMessage());
+				return null;
+			}
+		}, directory, file);
+	}
+
 	private List<PictureFile> loadPictureFiles(String imagePath, String name) {
 
 		List<PictureFile> pictureFiles = new ArrayList<>();
@@ -385,7 +442,7 @@ class BucketController extends PaginationController {
 
 			try {
 
-				String filename = "jpegs/" + name + "/" + jpeg.substring( 12, jpeg.length());
+				String filename = "jpegs/" + name + "/" + jpeg.substring(12, jpeg.length());
 				item.setTitle(getExifTitle(filename));
 			}
 			catch (Exception ex) {
@@ -401,6 +458,40 @@ class BucketController extends PaginationController {
 		}
 
 		return pictureFiles;
+	}
+
+	private PictureFile loadPictureFile(String imagePath, String name, int id) {
+
+		List<PictureFile> pictureFiles = new ArrayList<>();
+
+		String dir = imagePath + name;
+
+		String jpeg = getFileName(s3Client, "jpegs/" + name, id);
+
+		int index = 0;
+
+		PictureFile item = new PictureFile();
+
+		item.setId(index++);
+		item.setFilename(jpeg);
+
+		try {
+
+			String filename = "jpegs/" + name + "/" + jpeg.substring(12);
+			item.setTitle(getExifTitle(filename));
+		}
+		catch (Exception ex) {
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
+
+		Keywords keywords = new Keywords();
+		keywords.setContent(name);
+		item.setKeywords(keywords);
+
+		pictureFiles.add(item);
+
+		return item;
 	}
 
 }

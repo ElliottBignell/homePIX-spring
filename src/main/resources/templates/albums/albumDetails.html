@@ -19,7 +19,31 @@
     </script>
   </head>
   <body>
-  
+
+    <script>
+      function handleDeleteClick(event, album, picture) {
+
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        $.ajax({
+          url: '/album/' + album + '/delete/' + picture,
+          method: 'POST',
+          dataType: 'text',
+          success: function(response) {
+
+            if (response === 'Deleted successfully') {
+              $('#figure-' + picture).prop("hidden", true);
+            } else {
+              // Handle other success cases if needed
+            }
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
+      }
+    </script>
+
     <h2 th:text="${album.name}"></h2>
 
     <form action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
@@ -32,14 +56,14 @@
 
     <div style="overflow-y: auto; max-height: 92vh;">
 
-      <figure th:each="entry : ${content}" class="tt_base droppable draggable" th:id="@{div__${entry.pictureFile.id}__}">
+      <figure th:each="entry : ${content}" class="tt_base droppable draggable" th:id="@{figure-__${entry.pictureFile.id}__}">
         <a th:id="@{picture__${entry.pictureFile.id}__}" th:href="@{/albums/__${entry.album.id}__/item/__${entry.pictureFile.id}__/}">
           <section class="wrapper" th:id=" @{file-number_${entry.pictureFile.id}}">
             <span class="tt_subject">
               <img th:id="@{picture__${entry.pictureFile.id}__}"
                    class="lazyload imageinlist imageresponsive"
-                   th:src="${entry.pictureFile.filename}"
-                   th:data-src="${entry.pictureFile.filename}"
+                   th:src="${entry.pictureFile.mediumFilename}"
+                   th:data-src="${entry.pictureFile.mediumFilename}"
                    th:alt="${entry.pictureFile.filename}"
               >
 
@@ -77,7 +101,7 @@
               bedtime
             </i>
           </a>
-          <a class="tt_icon tt_small_icon_anchor" th:href="@{./__${album.id}__/delete/__${entry.pictureFile.id}__}">
+          <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.pictureFile.id}__ );}">
             <i class="material-icons tt_icon">
               delete
             </i>
