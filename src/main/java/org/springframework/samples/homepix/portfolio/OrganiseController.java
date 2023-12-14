@@ -38,8 +38,9 @@ class OrganiseController extends PaginationController {
 
 	@Autowired
 	public OrganiseController(OrganiseRepository organiseRepository, AlbumRepository albums, FolderRepository folders,
-			PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+			PictureFileRepository pictureFiles, KeywordsRepository keywords) {
+
+		super(albums, folders, pictureFiles, keywords);
 		this.organiseRepository = organiseRepository;
 	}
 

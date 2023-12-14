@@ -34,8 +34,9 @@ class AboutController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about";
 
-	AboutController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+	AboutController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
+			KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 	}
 
 	@GetMapping("/about/")

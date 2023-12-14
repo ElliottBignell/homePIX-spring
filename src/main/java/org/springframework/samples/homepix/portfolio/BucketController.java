@@ -16,14 +16,6 @@
 package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
-import org.springframework.samples.homepix.CredentialsRunner;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import jakarta.validation.Valid;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -33,21 +25,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import java.io.*;
+import java.io.IOException;
 import java.util.*;
-import java.net.URI;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Juergen Hoeller
@@ -68,8 +53,9 @@ class BucketController extends PaginationController {
 
 	}
 
-	public BucketController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+	public BucketController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles,
+			KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 	}
 
 	@InitBinder
@@ -229,8 +215,8 @@ class BucketController extends PaginationController {
 		return "redirect:/buckets/{name}";
 	}
 
-	@GetMapping("/buckets/{name}/file/{filename}")
-	public String showPictureFile(@PathVariable("name") String name, @PathVariable("filename") String filename,
+	@GetMapping("/buckets/{name}/item/{id}")
+	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") Integer id,
 			/* @Value("${homepix.images.path}") String imagePath, */ Map<String, Object> model) {
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
@@ -245,22 +231,25 @@ class BucketController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = buckets.iterator().next();
 
-			System.out.println(imagePath);
-			System.out.println(folder.getName());
+			// List<PictureFile> pictureFiles = loadPictureFiles(imagePath,
+			// folder.getName());
+			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename("/web-images/" + name + "/");
 
-			List<PictureFile> pictureFiles = loadPictureFiles(imagePath, folder.getName());
-
-			System.out.println(pictureFiles.size());
-			System.out.println(pictureFiles);
-
-			addParams(0, "/images/" + name + "/" + filename, pictureFiles, model, false);
+			// addParams(0, "/images/" + name + "/" + Long.toString(id), pictureFiles,
+			// model, false);
 
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
 
+			int count = pictureFiles.size();
+
+			model.put("picture", pictureFiles.get(id));
 			model.put("collection", pictureFiles);
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
+			model.put("id", id);
+			model.put("next", (id + 1) % count);
+			model.put("previous", (id + count - 1) % count);
 
 			Iterable<Album> albums = this.albums.findAll();
 
@@ -268,42 +257,36 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	@GetMapping("/buckets/{name}/item/{id}")
-	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
-			/* @Value("${homepix.images.path}") String imagePath, */ Map<String, Object> model) {
-
-		final String imagePath = System.getProperty("user.dir") + "/images/";
-
-		Collection<Folder> buckets = this.folders.findByName(name);
-
-		if (buckets.isEmpty()) {
-			return "redirect:/buckets/" + name + "/";
-		}
-		else {
-
-			ModelAndView mav = new ModelAndView("albums/albumDetails");
-			Folder folder = buckets.iterator().next();
-
-			PictureFile picture = loadPictureFile(imagePath, folder.getName(), id);
-
-			List<PictureFile> pictureFiles = new ArrayList<>();
-
-			pictureFiles.add(picture);
-			pictureFiles.add(picture);
-			pictureFiles.add(picture);
-
-			addParams(id, "/images/" + name + "/" + picture.getTitle(), pictureFiles, model, false);
-
-			// mav.addObject(pictureFiles);
-			model.put("link_params", "");
-
-			model.put("picture", picture);
-			model.put("collection", pictureFiles);
-			model.put("baseLink", "/buckets/" + name);
-
-			return "picture/pictureFile.html";
-		}
-	}
+	/*
+	 * @GetMapping("/buckets/{name}/file/{id}") public String
+	 * showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
+	 * Map<String, Object> model) { // @Value("${homepix.images.path}") String imagePath,
+	 *
+	 * final String imagePath = System.getProperty("user.dir") + "/images/";
+	 *
+	 * Collection<Folder> buckets = this.folders.findByName(name);
+	 *
+	 * if (buckets.isEmpty()) { return "redirect:/buckets/" + name + "/"; } else {
+	 *
+	 * ModelAndView mav = new ModelAndView("albums/albumDetails"); Folder folder =
+	 * buckets.iterator().next();
+	 *
+	 * PictureFile picture = loadPictureFile(imagePath, folder.getName(), id);
+	 *
+	 * List<PictureFile> pictureFiles = new ArrayList<>();
+	 *
+	 * pictureFiles.add(picture); pictureFiles.add(picture); pictureFiles.add(picture);
+	 *
+	 * addParams(id, "/images/" + name + "/" + picture.getTitle(), pictureFiles, model,
+	 * false);
+	 *
+	 * // mav.addObject(pictureFiles); model.put("link_params", "");
+	 *
+	 * model.put("picture", picture); model.put("collection", pictureFiles);
+	 * model.put("baseLink", "/buckets/" + name);
+	 *
+	 * return "picture/pictureFile.html"; } }
+	 */
 
 	private List<String> listFileNames(S3Client s3Client, String subFolder) {
 
@@ -314,9 +297,13 @@ class BucketController extends PaginationController {
 
 		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
 
+		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> object.key().endsWith(".jpg")).collect(Collectors.toList());
+
 		List<String> results = new ArrayList<>();
 
-		for (S3Object s3Object : listObjectsResponse.contents()) {
+		for (S3Object s3Object : filteredObjects) {
 
 			try {
 
@@ -442,8 +429,8 @@ class BucketController extends PaginationController {
 
 			try {
 
-				String filename = "jpegs/" + name + "/" + jpeg.substring(12, jpeg.length());
-				item.setTitle(getExifTitle(filename));
+				String filename = "jpegs/" + jpeg.substring(12, jpeg.length());
+				item.setTitle(getExifEntries(filename).get("title"));
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
@@ -478,7 +465,7 @@ class BucketController extends PaginationController {
 		try {
 
 			String filename = "jpegs/" + name + "/" + jpeg.substring(12);
-			item.setTitle(getExifTitle(filename));
+			item.setTitle(getExifEntries(filename).get("title"));
 		}
 		catch (Exception ex) {
 			System.out.println(ex);

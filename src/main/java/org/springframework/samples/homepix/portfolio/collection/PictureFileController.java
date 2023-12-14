@@ -16,10 +16,7 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import jakarta.validation.Valid;
-import org.springframework.samples.homepix.portfolio.Album;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
-import org.springframework.samples.homepix.portfolio.FolderRepository;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -46,8 +43,9 @@ public class PictureFileController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about.html";
 
-	public PictureFileController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders) {
-		super(albums, folders, pictureFiles);
+	public PictureFileController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders,
+			KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 	}
 
 	@ModelAttribute("types")

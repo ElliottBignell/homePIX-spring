@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -41,6 +44,8 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected final PictureFileRepository pictureFiles;
 
+	protected final KeywordsRepository keywords;
+
 	protected static final String bucketName = "picture-files";
 
 	protected static final String endpoint = "https://sos-ch-dk-2.exo.io";
@@ -57,11 +62,12 @@ public abstract class PaginationController implements AutoCloseable {
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
 	@Autowired
-	protected PaginationController(AlbumRepository albums, FolderRepository folders,
-			PictureFileRepository pictureFiles) {
+	protected PaginationController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
+			KeywordsRepository keywords) {
 		this.albums = albums;
 		this.folders = folders;
 		this.pictureFiles = pictureFiles;
+		this.keywords = keywords;
 		pagination = new Pagination();
 		calendar = new Calendar();
 	}
@@ -301,9 +307,13 @@ public abstract class PaginationController implements AutoCloseable {
 
 		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
 
+		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> object.key().endsWith(".jpg")).collect(Collectors.toList());
+
 		List<PictureFile> results = new ArrayList<>();
 
-		for (S3Object s3Object : listObjectsResponse.contents()) {
+		for (S3Object s3Object : filteredObjects) {
 
 			try {
 
@@ -314,19 +324,59 @@ public abstract class PaginationController implements AutoCloseable {
 
 					String sizePart = name.substring(name.length() - 9, name.length() - 4).toLowerCase();
 
-					if (!sizePart.equals("200px")) {
+					String suffix = name.substring(5, name.length());
+					name = "/web-images" + suffix;
+					String exifName = "jpegs" + suffix;
 
-						String suffix = name.substring(5, name.length());
-						name = "/web-images" + suffix;
-						String exifName = "jpegs" + suffix;
+					List<PictureFile> existingFile = this.pictureFiles.findByFilename(name);
+
+					if (existingFile.isEmpty()) {
 
 						PictureFile picture = new PictureFile();
 
-						picture.setTitle(getExifTitle(exifName));
+						Map<String, String> properties = getExifEntries(exifName);
+
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss",
+								Locale.ENGLISH);
+						String dateTimeString = properties.get("DateTimeOriginal");
+						LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+
+						picture.setTitle(properties.get("title"));
 						picture.setFilename(name);
+						picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
+						picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
+						picture.setTaken_on(dateTime);
+						picture.setAdded_on(java.time.LocalDate.now());
+						// picture.setLocation(properties.get("title")));
+						// picture.setPrimaryCategory(properties.get("title")));
+						// picture.setSecondaryCategory(properties.get("title")));
+
+						String iptcKeywords = properties.get("IPTC:Keywords");
+
+						if (null == iptcKeywords) {
+							iptcKeywords = subFolder.substring(6);
+						}
+
+						Collection<Keywords> keywords = this.keywords.findByContent(iptcKeywords);
+
+						if (keywords.isEmpty()) {
+
+							Keywords newKeywords = new Keywords();
+							newKeywords.setContent(iptcKeywords);
+							newKeywords.setKeyword_count(0);
+							this.keywords.save(newKeywords);
+							picture.setKeywords(newKeywords);
+						}
+						else {
+							picture.setKeywords(keywords.iterator().next());
+						}
+
 						this.pictureFiles.save(picture);
 
 						results.add(picture);
+					}
+					else {
+						results.add(existingFile.iterator().next());
 					}
 				}
 			}
@@ -339,9 +389,10 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
-	public String getExifTitle(String path) throws IOException {
+	public Map<String, String> getExifEntries(String path) throws IOException {
 
-		String title = "Untitled";
+		Map<String, String> results = new HashMap<>();
+		results.put("title", "Untitled");
 
 		try {
 
@@ -352,7 +403,7 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 			catch (NoSuchKeyException noKey) {
 				System.out.println("No EXIF data for " + path);
-				return path;
+				return results;
 			}
 
 			InputStream targetStream = new ByteArrayInputStream(data);
@@ -368,23 +419,44 @@ public abstract class PaginationController implements AutoCloseable {
 
 					StartElement startElement = nextEvent.asStartElement();
 
-					if (startElement.getName().getLocalPart().equals("ImageDescription")) {
+					String key = startElement.getName().getLocalPart();
+
+					if (key.equals("ImageDescription")) {
 
 						nextEvent = reader.nextEvent();
-						title = nextEvent.asCharacters().getData();
-						break;
+						results.put("title", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("ImageWidth")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("ImageWidth", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("ImageHeight")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("ImageHeight", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("DateTimeOriginal")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("DateTimeOriginal", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("IPTC:Keywords")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("IPTC:Keywords", nextEvent.asCharacters().getData());
 					}
 				}
 			}
 		}
 		catch (Exception ex) {
 
-			title = "Error getting EXIF data";
+			results.put("title", "Error getting EXIF data");
 			System.out.println(ex);
 			ex.printStackTrace();
 		}
 
-		return title;
+		return results;
 	}
 
 	protected byte[] downloadFile(String objectKey) throws IOException {

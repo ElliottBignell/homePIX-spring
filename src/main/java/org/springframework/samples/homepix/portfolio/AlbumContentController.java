@@ -48,8 +48,8 @@ class AlbumContentController extends PaginationController {
 
 	@Autowired
 	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders,
-			PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+			PictureFileRepository pictureFiles, KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 		this.albumContent = albumContent;
 	}
 

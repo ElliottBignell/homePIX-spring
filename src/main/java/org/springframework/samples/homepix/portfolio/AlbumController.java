@@ -40,9 +40,9 @@ class AlbumController extends PaginationController {
 
 	@Autowired
 	public AlbumController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
-			AlbumContentRepository albumContent) {
-		super(albums, folders, pictureFiles);
-		this.albumContent = albumContent;
+			AlbumContentRepository albumContents, KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
+		this.albumContent = albumContents;
 	}
 
 	@InitBinder

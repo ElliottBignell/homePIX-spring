@@ -47,8 +47,9 @@ class FolderController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
-	public FolderController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+	public FolderController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles,
+			KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 	}
 
 	@InitBinder

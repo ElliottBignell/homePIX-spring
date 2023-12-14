@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio.collection;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -41,7 +42,7 @@ import org.springframework.samples.homepix.portfolio.Keywords;
 @Table(name = "picture_file")
 public class PictureFile extends BaseEntity {
 
-	@Column(name = "filename")
+	@Column(name = "filename", unique = true)
 	@NotEmpty
 	private String filename;
 
@@ -57,6 +58,12 @@ public class PictureFile extends BaseEntity {
 	@JoinColumn(name = "path_id")
 	private PictureFileType path;
 
+	@Column(name = "width")
+	private Integer width;
+
+	@Column(name = "height")
+	private Integer height;
+
 	@ManyToOne
 	@JoinColumn(name = "keywords_id")
 	private Keywords keywords;
@@ -70,7 +77,7 @@ public class PictureFile extends BaseEntity {
 
 	@Column(name = "taken_on")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate taken_on;
+	private LocalDateTime taken_on;
 
 	@ManyToOne
 	@JoinColumn(name = "location")

@@ -10,10 +10,10 @@
     <input type="submit" value="Scan folder...">
   </form>
 
-  <div style="overflow-y: auto; max-height: 92vh;">
+  <div style="overflow-y: auto; max-height: 75vh;">
 
-    <figure th:each="pictureFile : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
+    <figure th:each="pictureFile,iterStat : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
+      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__}">
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
@@ -25,7 +25,7 @@
               </span>
         </section>
       </a>
-      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">
+      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__}">
         <figcaption class="tt_edit">
           <form id="editprops">
             <fieldset>

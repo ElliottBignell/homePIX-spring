@@ -6,7 +6,7 @@
 
 <h2 th:text="@{Collection from __${ #temporals.format( startDate, 'dd MMMM, YYYY' ) }__ to __${ #temporals.format( endDate, 'dd MMMM, YYYY' ) }__}">Collection</h2>
 
-<div style="overflow-y: auto; max-height: 92vh;">
+<div style="overflow-y: auto; max-height: 75vh;">
 
   <h3 th:if="${#lists.isEmpty(collection)}">
     No pictures from this date range

@@ -54,7 +54,7 @@
       <input type="submit" value="Delete Album">
     </form>
 
-    <div style="overflow-y: auto; max-height: 92vh;">
+    <div style="overflow-y: auto; max-height: 75vh;">
 
       <figure th:each="entry : ${content}" class="tt_base droppable draggable" th:id="@{figure-__${entry.pictureFile.id}__}">
         <a th:id="@{picture__${entry.pictureFile.id}__}" th:href="@{/albums/__${entry.album.id}__/item/__${entry.pictureFile.id}__/}">

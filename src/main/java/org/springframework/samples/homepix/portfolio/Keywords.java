@@ -19,6 +19,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 
@@ -31,6 +33,8 @@ import java.util.Set;
  * @author Elliott Bignell
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "keywords")
 public class Keywords extends BaseEntity {
 
@@ -38,25 +42,8 @@ public class Keywords extends BaseEntity {
 	@NotEmpty
 	private String content;
 
-	@Column(name = "count")
-	@NotEmpty
-	private int count;
-
-	public String getContent() {
-		return this.content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public int getCount() {
-		return this.count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
+	@Column(name = "keyword_count")
+	private int keyword_count;
 
 	@Override
 	public String toString() {

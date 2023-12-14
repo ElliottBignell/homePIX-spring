@@ -16,9 +16,7 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.data.domain.Sort;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
-import org.springframework.samples.homepix.portfolio.FolderRepository;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -42,8 +40,9 @@ class PictureCollectionController extends PaginationController {
 	private final PictureCollectionRepository pictures;
 
 	public PictureCollectionController(PictureFileRepository pictureFiles, PictureCollectionRepository pictures,
-			AlbumRepository albums, FolderRepository folders) {
-		super(albums, folders, pictureFiles);
+			AlbumRepository albums, FolderRepository folders, KeywordsRepository keywords) {
+
+		super(albums, folders, pictureFiles, keywords);
 		this.pictures = pictures;
 	}
 

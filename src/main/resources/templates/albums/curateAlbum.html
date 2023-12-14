@@ -35,7 +35,7 @@
 
   <h1 th:text="'Curate album ' + ${name} + ' using folder ' + ${folder.name}">Test</h1>
 
-  <div style="overflow-y: auto; max-height: 92vh;">
+  <div style="overflow-y: auto; max-height: 75vh;">
 
     <figure th:each="pictureFile : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
       <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/file/__${pictureFile.fileNameOnly()}__}">

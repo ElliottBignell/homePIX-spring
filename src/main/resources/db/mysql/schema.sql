@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS albums (
 CREATE INDEX albums_name ON albums (name);
 
 CREATE TABLE keywords (
-  id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(200),
-    count   INT(4) UNSIGNED NOT NULL
+  id              INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  content         VARCHAR(200),
+  keyword_count   INT(4) UNSIGNED NOT NULL
 );
 CREATE INDEX keywords_content ON keywords (content);
 
@@ -24,10 +24,12 @@ CREATE TABLE picture_file (
   title               VARCHAR(200),
   last_modified       DATE,
   path_id             INTEGER NOT NULL,
+  width               INTEGER NOT NULL,
+  height              INTEGER NOT NULL,
   keywords_id         INTEGER NOT NULL,
   sortkey             INTEGER NOT NULL,
   added_on            DATE,
-  taken_on            DATE,
+  taken_on            DATETIME,
   location            INTEGER NOT NULL,
   primary_category    INTEGER NOT NULL,
   secondary_category  INTEGER NOT NULL,
@@ -49,3 +51,17 @@ CREATE TABLE albumcontent (
  );
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_album_id FOREIGN KEY (album_id) REFERENCES albums (id);
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_entry_id FOREIGN KEY (entry_id) REFERENCES picture_file (id);
+
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    enabled BOOLEAN
+);
+
+CREATE TABLE authorities (
+    authority_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    authority VARCHAR(50) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);

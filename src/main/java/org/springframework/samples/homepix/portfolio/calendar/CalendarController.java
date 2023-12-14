@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.portfolio.KeywordsRepository;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.FolderRepository;
 import org.springframework.samples.homepix.portfolio.PaginationController;
@@ -41,8 +42,9 @@ class CalendarController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "calendar/createOrUpdateOwnerForm";
 
 	@Autowired
-	CalendarController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles) {
-		super(albums, folders, pictureFiles);
+	CalendarController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
+			KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 	}
 
 	@InitBinder

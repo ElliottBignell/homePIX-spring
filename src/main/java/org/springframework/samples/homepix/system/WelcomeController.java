@@ -35,8 +35,8 @@ class WelcomeController extends PaginationController {
 
 	@Autowired
 	public WelcomeController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders,
-			AlbumContentRepository albumContents) {
-		super(albums, folders, pictureFiles);
+			AlbumContentRepository albumContents, KeywordsRepository keywords) {
+		super(albums, folders, pictureFiles, keywords);
 		this.albumContents = albumContents;
 	}
 
@@ -68,6 +68,16 @@ class WelcomeController extends PaginationController {
 	@Override
 	public void close() throws Exception {
 
+	}
+
+	@GetMapping("/login")
+	public String login(Album album, BindingResult result, Map<String, Object> model) {
+		return "welcome";
+	}
+
+	@GetMapping("/logout")
+	public String logout(Album album, BindingResult result, Map<String, Object> model) {
+		return "welcome";
 	}
 
 }
