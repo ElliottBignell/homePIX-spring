@@ -10,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.samples.homepix.UserRepository;
+import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 
 @Configuration
 public class SecurityConfig {
@@ -40,18 +42,31 @@ public class SecurityConfig {
 
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
-			http.authorizeRequests().requestMatchers("/public/**").permitAll().anyRequest().authenticated().and()
-					.formLogin().loginPage("/login").successForwardUrl("/welcome") // Redirect
-																					// to
-																					// the
-																					// dashboard
-																					// after
-																					// successful
-																					// login
-					.permitAll().and().logout().logoutSuccessUrl("/login?logout").permitAll();
+			http
+				.authorizeRequests()
+				.requestMatchers("/", "/buckets/**", "/albums/**").permitAll() // Public pages
+				.anyRequest().authenticated() // All other pages require authentication
+				.and()
+				.authorizeRequests()
+				.requestMatchers("/static/**")
+				.permitAll()
+				.and()
+				.formLogin()
+				.loginPage("/login")
+				.permitAll()
+				.and()
+				.logout()
+				.permitAll();
+
 
 			// Add additional configuration if needed
 			http.addFilterBefore(new YourCustomAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+			// Log some information for debugging
+			http.authorizeRequests().and().exceptionHandling().accessDeniedHandler((request, response, e) -> {
+				// Log the exception or print some debug information
+				e.printStackTrace();
+			});
 		}
 
 		// Additional configuration methods can be added here
@@ -70,4 +85,8 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
+	@Bean
+	public SpringSecurityDialect springSecurityDialect() {
+		return new SpringSecurityDialect();
+	}
 }

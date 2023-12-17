@@ -34,6 +34,13 @@ CREATE TABLE picture_file (
   primary_category    INTEGER NOT NULL,
   secondary_category  INTEGER NOT NULL,
   hits                INTEGER NOT NULL
+	cameraModel         VARCHAR(32),
+	exposureTime        VARCHAR(8),
+	fNumber             VARCHAR(8),
+	exposureProgram     VARCHAR(32),
+	meteringMode        VARCHAR(32),
+	lightSource         VARCHAR(32),
+	focalLength         VARCHAR(16)
 ) ;
 
 ALTER TABLE picture_file ADD CONSTRAINT fk_picture_file_albums      FOREIGN KEY (album_id)           REFERENCES   albums (id);

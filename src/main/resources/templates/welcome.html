@@ -100,7 +100,7 @@
                          ></li>
                      </ol>
     
-                     <figure th:each="picture : ${selections}" class="carousel-inner" role="listbox" style="text-align:center;">
+                     <figure th:each="picture : ${slides}" class="carousel-inner" role="listbox" style="text-align:center;">
     
                        <div class="carousel-item active">
                          <img th:id="@{picture__${picture.id}__}"

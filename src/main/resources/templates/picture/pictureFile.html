@@ -378,7 +378,7 @@ i             </div>
               <span class="titletext propertyfont">
               Filename:
               </span>
-              <span id="filename" class="titlecontent" th:text="${ picture.filename }">
+              <span id="filename" class="titlecontent" th:text="${ picture.displayFilename }">
               </span>
               <br>
             </span>
@@ -394,7 +394,50 @@ i             </div>
             <span class="titletext propertyfont">
                 Dimensions:
             </span>
-            <span id="dimensions" class="titlecontent"> x <br> </span>
+            <span id="dimensions" class="titlecontent" th:text="@{__${picture.width}__ x __${picture.height}__}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                Camera Model:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.cameraModel}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                Exposure Time:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.exposureTime}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                F-Number:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.fNumber}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                Exposure Program:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.exposureProgram}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                Metering Mode:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.meteringMode}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                Light-Source:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.lightSource}"> x <br> </span>
+            <br>
+
+            <span class="titletext propertyfont">
+                FocalLength:
+            </span>
+            <span id="dimensions" class="titlecontent" th:text="${picture.focalLength}"> x <br> </span>
+            <br>
 
             <span th:if="false">
               <span id="megapixels" class="titlecontent"> ? <br></span>

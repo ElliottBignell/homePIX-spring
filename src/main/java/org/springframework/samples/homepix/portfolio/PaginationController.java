@@ -376,7 +376,24 @@ public abstract class PaginationController implements AutoCloseable {
 						results.add(picture);
 					}
 					else {
-						results.add(existingFile.iterator().next());
+
+						PictureFile picture = existingFile.iterator().next();
+
+						results.add(picture);
+
+						Map<String, String> properties = getExifEntries(exifName);
+
+						picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
+						picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
+						picture.setCameraModel(properties.get("CameraModel"));
+						picture.setExposureTime(properties.get("ExposureTime"));
+						picture.setFNumber(properties.get("FNumber"));
+						picture.setExposureProgram(properties.get("ExposureProgram"));
+						picture.setMeteringMode(properties.get("MeteringMode"));
+						picture.setLightSource(properties.get("LightSource"));
+						picture.setFocalLength(properties.get("FocalLength"));
+
+						this.pictureFiles.save(picture);
 					}
 				}
 			}
@@ -420,18 +437,19 @@ public abstract class PaginationController implements AutoCloseable {
 					StartElement startElement = nextEvent.asStartElement();
 
 					String key = startElement.getName().getLocalPart();
+					String parent = startElement.getName().getPrefix();
 
 					if (key.equals("ImageDescription")) {
 
 						nextEvent = reader.nextEvent();
 						results.put("title", nextEvent.asCharacters().getData());
 					}
-					else if (key.equals("ImageWidth")) {
+					else if (key.equals("ImageWidth") && parent.equals("File")) {
 
 						nextEvent = reader.nextEvent();
 						results.put("ImageWidth", nextEvent.asCharacters().getData());
 					}
-					else if (key.equals("ImageHeight")) {
+					else if (key.equals("ImageHeight") && parent.equals("File")) {
 
 						nextEvent = reader.nextEvent();
 						results.put("ImageHeight", nextEvent.asCharacters().getData());
@@ -445,6 +463,44 @@ public abstract class PaginationController implements AutoCloseable {
 
 						nextEvent = reader.nextEvent();
 						results.put("IPTC:Keywords", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("Model") && parent.equals("IFD0")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("CameraModel", nextEvent.asCharacters().getData());
+					}
+					else if (parent.equals("ExifIFD")) {
+
+						if (key.equals("ExposureTime")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("ExposureTime", nextEvent.asCharacters().getData());
+						}
+						else if (key.equals("FNumber")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("FNumber", nextEvent.asCharacters().getData());
+						}
+						else if (key.equals("ExposureProgram")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("ExposureProgram", nextEvent.asCharacters().getData());
+						}
+						else if (key.equals("MeteringMode")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("MeteringMode", nextEvent.asCharacters().getData());
+						}
+						else if (key.equals("LightSource")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("LightSource", nextEvent.asCharacters().getData());
+						}
+						else if (key.equals("FocalLength")) {
+
+							nextEvent = reader.nextEvent();
+							results.put("FocalLength", nextEvent.asCharacters().getData());
+						}
 					}
 				}
 			}

@@ -94,6 +94,27 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "hits")
 	private int hits;
 
+	@Column(name = "CameraModel")
+	private String cameraModel;
+
+	@Column(name = "ExposureTime")
+	private String exposureTime;
+
+	@Column(name = "FNumber")
+	private String fNumber;
+
+	@Column(name = "ExposureProgram")
+	private String exposureProgram;
+
+	@Column(name = "MeteringMode")
+	private String meteringMode;
+
+	@Column(name = "LightSource")
+	private String lightSource;
+
+	@Column(name = "FocalLength")
+	private String focalLength;
+
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
 
@@ -125,4 +146,30 @@ public class PictureFile extends BaseEntity {
 		}
 	}
 
+	public String getDisplayFilename() {
+
+		try {
+
+			String[] parts = this.filename.split("/");
+			String filename = parts[parts.length - 1];
+			return filename;
+		}
+		catch (Exception ex) {
+
+			System.out.println(ex);
+			ex.printStackTrace();
+
+			return this.filename;
+		}
+	}
+
+	public Integer getDisplayWidth() {
+
+		float aspectRratio = (float)width / (float)height;
+		return (int)(200.0 * aspectRratio);
+	}
+
+	public Integer getDisplayHeight() {
+		return 200;
+	}
 }

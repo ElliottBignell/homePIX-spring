@@ -235,14 +235,33 @@
                 <i class="large material-icons">create_new_folder </i>
               </a>
           </div>
+          <div th:if="${#authorization.expression('isAuthenticated()')}">
+            Authenticated
+          </div>
+          <div th:unless="${#authorization.expression('isAuthenticated()')}">
+            Not Authenticated
+          </div>
+          <div th:text="${#authorization.expression('isAuthenticated()')}"></div>
+          <div th:if="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+            <a href="/logout">
+              <i class="large material-icons">exit_to_app </i>
+            </a>
+          </div>
           -->
-          <div style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
-              <a href="/logout">
-                <i class="large material-icons">exit_to_app </i>
-              </a>
-            </ul>
+
+          <div th:unless="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+            <a href="/login">
+              <i class="large material-icons">login </i>
+            </a>
+          </div>
+
+          <div th:if="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+            <a href="/logout">
+              <i class="large material-icons">exit_to_app </i>
+            </a>
           </div>
         </div>
+
         <!--
           <div th:if="${not user_authenticated}">
             <ul>
