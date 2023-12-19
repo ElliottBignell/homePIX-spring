@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 @Configuration
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
 	UserRepository userRepository;
@@ -47,13 +49,17 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 		http.authorizeRequests().requestMatchers("/login").permitAll()
 			.requestMatchers("/", "/buckets/**", "/albums/**", "/web-images/**", "/resources/**", "/static/**", "/register").permitAll()
 			.anyRequest().authenticated()
-			.and().formLogin()
-				.usernameParameter("email")
+			.and()
+				.formLogin()
+				.usernameParameter("username")
+				.passwordParameter("password")
 				.permitAll()
 			.and()
-				.logout().permitAll()
+				.logout()
+				.permitAll()
 			.and()
-				.csrf().disable(); // For simplicity; handle CSRF properly in a production environment
+				.csrf()
+				.disable(); // For simplicity; handle CSRF properly in a production environment
 
 		http.headers().frameOptions().sameOrigin();
 

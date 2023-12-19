@@ -51,7 +51,12 @@ public class User implements UserDetails, CredentialsContainer {
 		String[] rolesArray = roles.split(",");
 
 		// Create SimpleGrantedAuthority for each role
-		return Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+		if (username.equals("elliottcb")) {
+			return Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+		}
+		else {
+			return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+		}
 	}
 
 	@Override

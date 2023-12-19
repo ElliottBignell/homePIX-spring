@@ -70,10 +70,9 @@ class WelcomeController extends PaginationController {
 
 	}
 
-
 	@GetMapping("/logout")
 	public String logout(Album album, BindingResult result, Map<String, Object> model) {
-		return "welcome";
+		return "redirect:/welcome";
 	}
 
 }

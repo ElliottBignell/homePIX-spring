@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,11 +50,13 @@ class OrganiseController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/organise/")
 	public String initCreationFormSLash(Map<String, Object> model) {
 		return initCreationForm(model);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/organise")
 	public String initCreationForm(Map<String, Object> model) {
 		Organise organise = new Organise();
