@@ -75,10 +75,21 @@ class CalendarController extends PaginationController {
 
 		for (String year : this.pictureFiles.findYears()) {
 
-			CalendarYear calendarYear = new CalendarYear(Integer.parseInt(year));
+			try {
 
-			calendar.populateYear(calendarYear);
-			years.add(calendarYear);
+				if (null != year) {
+
+					CalendarYear calendarYear = new CalendarYear(Integer.parseInt(year));
+
+					calendar.populateYear(calendarYear);
+					years.add(calendarYear);
+				}
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+			}
+
 		}
 
 		return years;

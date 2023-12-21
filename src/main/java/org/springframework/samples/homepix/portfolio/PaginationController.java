@@ -393,6 +393,13 @@ public abstract class PaginationController implements AutoCloseable {
 						picture.setLightSource(properties.get("LightSource"));
 						picture.setFocalLength(properties.get("FocalLength"));
 
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss",
+							Locale.ENGLISH);
+						String dateTimeString = properties.get("DateTimeOriginal");
+						LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+
+						picture.setTaken_on(dateTime);
+
 						this.pictureFiles.save(picture);
 					}
 				}

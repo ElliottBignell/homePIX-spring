@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -63,6 +64,7 @@ class BucketController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/buckets/new")
 	public String initCreationForm(Map<String, Object> model) {
 		Folder folder = new Folder();
@@ -70,6 +72,7 @@ class BucketController extends PaginationController {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/buckets/new")
 	public String processCreationForm(@Valid Folder folder, BindingResult result) {
 		if (result.hasErrors()) {
@@ -129,6 +132,7 @@ class BucketController extends PaginationController {
 		}
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/buckets/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
 		Optional<Folder> folder = this.folders.findById(ownerId);
@@ -136,6 +140,7 @@ class BucketController extends PaginationController {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/buckets/{ownerId}/edit")
 	public String processUpdateOwnerForm(@Valid Folder folder, BindingResult result,
 			@PathVariable("ownerId") int ownerId) {
@@ -183,6 +188,7 @@ class BucketController extends PaginationController {
 		return showFolder(name, model);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/buckets/{name}/import/")
 	@Transactional
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,

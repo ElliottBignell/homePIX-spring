@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -50,6 +51,7 @@ class AlbumController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/albums/new/")
 	public String initCreationForm(Map<String, Object> model) {
 
@@ -63,6 +65,7 @@ class AlbumController extends PaginationController {
 		return "redirect:/albums/" + album.getId();
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/albums/new/")
 	public String processCreationForm(@Valid Album album, BindingResult result, Model model) {
 
@@ -170,6 +173,7 @@ class AlbumController extends PaginationController {
 		return "albums/albumListPictorial";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/albums/{id}/edit")
 	public String initUpdateOwnerForm(@PathVariable("id") long id, Model model) {
 		Optional<Album> album = this.albums.findById(id);
@@ -177,6 +181,7 @@ class AlbumController extends PaginationController {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/albums/{id}/edit")
 	public String processUpdateOwnerForm(@Valid Album album, BindingResult result, @PathVariable("id") long id) {
 		if (result.hasErrors()) {

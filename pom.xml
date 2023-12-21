@@ -214,10 +214,11 @@
             <image>
               <name>elliottcb/homepix</name>
               <build>
+                <contextDir>${project.basedir}/src/main/docker
+                </contextDir>
+                <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
                 <assembly>
-                  <descriptorRef>
-                    artifact
-                  </descriptorRef>
+                  <descriptorRef>artifact</descriptorRef>
                 </assembly>
                 <dockerFile>Dockerfile</dockerFile>
                 <tags>

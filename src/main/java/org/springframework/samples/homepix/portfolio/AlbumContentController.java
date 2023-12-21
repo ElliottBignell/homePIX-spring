@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -64,6 +65,7 @@ class AlbumContentController extends PaginationController {
 		return "albums/findAlbums";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/album/{id}/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") long id, @PathVariable("ownerId") int ownerId,
 			Model model) {
@@ -150,6 +152,7 @@ class AlbumContentController extends PaginationController {
 		return "picture/pictureFile.html";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/albums/{albumId}/add/{pictureId}")
 	public String addPictureToAlbum(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
 			Map<String, Object> model) {
@@ -184,6 +187,7 @@ class AlbumContentController extends PaginationController {
 		return "redirect:/albums/" + Long.toString(albumId);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{albumId}/delete/{pictureId}")
 	public ResponseEntity<String> deletePicture(@PathVariable("albumId") long albumId,
 			@PathVariable("pictureId") int pictureId, Map<String, Object> model) {
@@ -205,12 +209,14 @@ class AlbumContentController extends PaginationController {
 
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/albums/{name}/curate/")
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
 			Map<String, Object> model) {
 		return "folders/folderList.html";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{id}/delete/")
 	public String deleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
 
@@ -227,6 +233,7 @@ class AlbumContentController extends PaginationController {
 		return "redirect:albums/albumList";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{id}/delete/confirm")
 	public String confirmDeleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
 
@@ -241,16 +248,19 @@ class AlbumContentController extends PaginationController {
 		return "redirect:/album/" + Long.toString(id);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{id}/delete/abort")
 	public String abortDeleteAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
 		return "redirect:/album/" + Long.toString(id);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/album/{id}/curate")
 	public String curateAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
 		return postCurateAlbum(id, model);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{id}/curate")
 	public String postCurateAlbum(@PathVariable("id") Long id, Map<String, Object> model) {
 
@@ -287,6 +297,7 @@ class AlbumContentController extends PaginationController {
 		return "redirect:albums/albumList";
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/album/{id}/add/{pictureID}")
 	public ResponseEntity<String> ccurateAlbum(@PathVariable("id") Long id,
 			@PathVariable("pictureID") Integer pictureID, Map<String, Object> model) {

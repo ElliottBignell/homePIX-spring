@@ -63,43 +63,6 @@ public class PictureFileController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
-	@InitBinder("pet")
-	public void initPictureFileBinder(WebDataBinder dataBinder) {
-		dataBinder.setValidator(new PictureFileValidator());
-	}
-
-	@GetMapping("/pets/new")
-	public String initCreationForm(Album album, ModelMap model) {
-		PictureFile pictureFile = new PictureFile();
-		album.addPictureFile(pictureFile);
-		model.put("pictureFile", pictureFile);
-		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-	}
-
-	@GetMapping("/pets/{petId}/edit")
-	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
-
-		Optional<PictureFile> pictureFile = this.pictureFiles.findById(petId);
-
-		if (pictureFile.isPresent()) {
-			model.put("pictureFile", pictureFile);
-		}
-		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-	}
-
-	@PostMapping("/pets/{petId}/edit")
-	public String processUpdateForm(@Valid PictureFile pictureFile, BindingResult result, Album album, ModelMap model) {
-		if (result.hasErrors()) {
-			model.put("pictureFile", pictureFile);
-			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			album.addPictureFile(pictureFile);
-			this.pictureFiles.save(pictureFile);
-			return "redirect:/albums/{albumId}";
-		}
-	}
-
 	@Override
 	public void close() throws Exception {
 

@@ -46,11 +46,11 @@
 
     <h2 th:text="${album.name}"></h2>
 
-    <form action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
+    <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
       <input type="submit" value="Curate...">
     </form>
 
-    <form action="#" th:action="@{/album/__${album.id}__/delete/}" th:object="${album}" method="post">
+    <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/album/__${album.id}__/delete/}" th:object="${album}" method="post">
       <input type="submit" value="Delete Album">
     </form>
 

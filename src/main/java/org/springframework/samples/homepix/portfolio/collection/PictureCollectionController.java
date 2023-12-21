@@ -25,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -153,7 +154,10 @@ class PictureCollectionController extends PaginationController {
 		Sort sorter = Sort.by(direction, sortCriterion);
 
 		if (datesValid) {
-			model.put("collection", this.pictures.findByDates(startDate, endDate, sorter));
+
+			LocalDate start = startDate;
+			LocalDate end = endDate.atTime(LocalTime.MAX).toLocalDate();;
+			model.put("collection", this.pictures.findByDates(start, end, sorter));
 		}
 		else {
 			model.put("collection", this.pictures.findAll());

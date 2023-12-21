@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -57,6 +58,7 @@ class FolderController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/folders/new")
 	public String initCreationForm(Map<String, Object> model) {
 		Folder folder = new Folder();
@@ -130,6 +132,7 @@ class FolderController extends PaginationController {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/folders/{ownerId}/edit")
 	public String processUpdateOwnerForm(@Valid Folder folder, BindingResult result,
 			@PathVariable("ownerId") int ownerId) {
@@ -143,6 +146,7 @@ class FolderController extends PaginationController {
 		}
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/folders/{name}/import/")
 	public String importPicturesFromFolder(@Valid Folder folder, Map<String, Object> model) {
 
