@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.samples.homepix.portfolio.collection;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
@@ -52,4 +54,5 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFilename(@Param("filename") String filename);
 
+	List<PictureFile> findAll(Specification<PictureFile> spec, Sort sort);
 }

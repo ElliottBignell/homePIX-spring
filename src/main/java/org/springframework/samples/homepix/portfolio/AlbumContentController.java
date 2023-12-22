@@ -19,16 +19,14 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
@@ -92,16 +90,30 @@ class AlbumContentController extends PaginationController {
 	 * @return a ModelMap with the model attributes for the view
 	 */
 	@GetMapping("/album/{id}")
-	public ModelAndView showAlbum(@PathVariable("id") long id, Map<String, Object> model) {
+	public ModelAndView showAlbum(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("id") long id,
+								  Map<String, Object> model
+	) {
 
 		Optional<Album> album = this.albums.findById(id);
 
 		if (album.isPresent()) {
 
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
-			Collection<AlbumContent> content = this.albumContent.findByAlbumId(id);
+
+			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+			Collection<AlbumContent> content = this.albumContent.findByAlbumId(id).stream()
+				.filter( item -> item.getPictureFile().getTitle().contains(requestDTO.getSearch()))
+				.sorted( (item1, item2 ) -> orderBy.compare(item1.getPictureFile(), item2.getPictureFile()) )
+				.collect(Collectors.toList());
 
 			mav.addObject(album.get());
+
+			model.put("startDate", requestDTO.getFromDate());
+			model.put("endDate", requestDTO.getToDate());
+			model.put("sort", requestDTO.getSort());
+			model.put("search", requestDTO.getSearch());
 
 			model.put("content", content);
 			model.put("link_params", "");
@@ -114,8 +126,11 @@ class AlbumContentController extends PaginationController {
 	}
 
 	@GetMapping("/albums/{id}")
-	public ModelAndView showAlbums(@PathVariable("id") long id, Map<String, Object> model) {
-		return showAlbum(id, model);
+	public ModelAndView showAlbums(@ModelAttribute CollectionRequestDTO requestDTO,
+								   @PathVariable("id") long id,
+								   Map<String, Object> model
+	) {
+		return showAlbum(requestDTO, id, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}")

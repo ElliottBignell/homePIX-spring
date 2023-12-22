@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -155,13 +156,18 @@ class BucketController extends PaginationController {
 	}
 
 	@GetMapping("/bucket/{name}")
-	public String showFolder(@PathVariable("name") String name, Map<String, Object> model) {
+	public String showFolder(CollectionRequestDTO requestDTO, @PathVariable("name") String name, Map<String, Object> model) {
 
 		initialiseS3Client();
 
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		List<PictureFile> results = listFiles(s3Client, "jpegs/" + name);
+		List<PictureFile> results = listFiles(s3Client, "jpegs/" + name).stream()
+			.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
+			.sorted( orderBy )
+			.collect(Collectors.toList());
 
 		Collection<Folder> buckets = this.folders.findByName(name);
 
@@ -169,6 +175,11 @@ class BucketController extends PaginationController {
 			return "redirect:/buckets";
 		}
 		else {
+
+			model.put("startDate", requestDTO.getFromDate());
+			model.put("endDate", requestDTO.getToDate());
+			model.put("sort", requestDTO.getSort());
+			model.put("search", requestDTO.getSearch());
 
 			Folder folder = buckets.iterator().next();
 			model.put("collection", results);
@@ -179,13 +190,19 @@ class BucketController extends PaginationController {
 	}
 
 	@GetMapping("/buckets/{name}")
-	public String showbuckets(@PathVariable("name") String name, Map<String, Object> model) {
-		return showFolder(name, model);
+	public String showbuckets(@ModelAttribute CollectionRequestDTO requestDTO,
+							  @PathVariable("name") String name,
+							  Map<String, Object> model
+	) {
+		return showFolder(requestDTO, name, model);
 	}
 
 	@GetMapping("/buckets/{name}/")
-	public String showbucketsByName(@PathVariable("name") String name, Map<String, Object> model) {
-		return showFolder(name, model);
+	public String showbucketsByName(@ModelAttribute CollectionRequestDTO requestDTO,
+									@PathVariable("name") String name,
+									Map<String, Object> model
+	) {
+		return showFolder(requestDTO, name, model);
 	}
 
 	@Secured("ROLE_ADMIN")

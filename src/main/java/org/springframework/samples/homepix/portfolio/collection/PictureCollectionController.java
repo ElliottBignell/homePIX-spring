@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -29,6 +30,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -76,16 +78,20 @@ class PictureCollectionController extends PaginationController {
 	}
 
 	@GetMapping("/collection/")
-	public String processFindCollectionsSlash(@RequestParam Optional<String> fromDate,
-			@RequestParam Optional<String> toDate, @RequestParam Optional<String> sort,
-			PictureCollection pictureCollection, BindingResult result, Map<String, Object> model) {
-		return processFindCollections(fromDate, toDate, sort, pictureCollection, result, model);
+	public String processFindCollectionsSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+											  PictureCollection pictureCollection,
+											  BindingResult result,
+											  Map<String, Object> model) {
+
+		return processFindCollections(requestDTO, pictureCollection, result, model);
 	}
 
 	@GetMapping("/collection")
-	public String processFindCollections(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@RequestParam Optional<String> sort, PictureCollection pictureCollection, BindingResult result,
-			Map<String, Object> model) {
+	public String processFindCollections(@ModelAttribute CollectionRequestDTO requestDTO,
+										 PictureCollection pictureCollection,
+										 BindingResult result,
+										 Map<String, Object> model) {
+
 		// allow parameterless GET request for /collections to return all records
 		if (pictureCollection.getName() == null) {
 			pictureCollection.setName(""); // empty string signifies broadest possible
@@ -100,71 +106,33 @@ class PictureCollectionController extends PaginationController {
 			return dtf.format(now);
 		};
 
-		String fromText = !fromDate.isPresent() || fromDate.get() == "" ? "1970-01-01" : fromDate.get();
-		String toText = !toDate.isPresent() || toDate.get() == "" ? today.get() : toDate.get();
-
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
-		LocalDate startDate = LocalDate.of(2022, 10, 10);
-		LocalDate endDate = LocalDateTime.now().toLocalDate();
+		LocalDate startDate = LocalDate.parse(requestDTO.getFromDate(), formatter);
+		LocalDate endDate = LocalDate.parse(requestDTO.getToDate(), formatter);
 
-		boolean datesValid = true;
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
-		try {
-			LocalDate from = LocalDate.parse(fromText, formatter);
-			startDate = from;
-		}
-		catch (Exception ex) {
-			startDate = LocalDate.parse("1970-01-01", formatter);
-			datesValid = false;
-		}
+		List<PictureFile> files = null;
 
-		try {
-			endDate = LocalDate.parse(toText, formatter);
-		}
-		catch (Exception ex) {
-			endDate = LocalDate.parse(today.get(), formatter);
-			datesValid = false;
+		LocalDate start = startDate;
+		LocalDate end = endDate.atTime(LocalTime.MAX).toLocalDate();;
+		files = this.pictures.findByDates(start, end);
+
+		if (null != requestDTO.getSearch()) {
+
+			files = files.stream()
+				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
+				.sorted( orderBy )
+				.collect(Collectors.toList());
 		}
 
-		String sortCriterion = "title";
-		Sort.Direction direction = Sort.Direction.ASC;
+		model.put("collection", files);
 
-		if (sort.isPresent()) {
-
-			switch (sort.get()) {
-			case "Filename":
-				sortCriterion = "filename";
-				break;
-			case "Date":
-				sortCriterion = "taken_on";
-				break;
-			case "Size":
-				sortCriterion = "filename";
-				break;
-			case "Aspect Ratio":
-				sortCriterion = "sortkey";
-				break;
-			case "Saved Order":
-				sortCriterion = "sortkey";
-				break;
-			}
-		}
-
-		Sort sorter = Sort.by(direction, sortCriterion);
-
-		if (datesValid) {
-
-			LocalDate start = startDate;
-			LocalDate end = endDate.atTime(LocalTime.MAX).toLocalDate();;
-			model.put("collection", this.pictures.findByDates(start, end, sorter));
-		}
-		else {
-			model.put("collection", this.pictures.findAll());
-		}
-
-		model.put("startDate", startDate);
-		model.put("endDate", endDate);
+		model.put("startDate", requestDTO.getFromDate());
+		model.put("endDate", requestDTO.getToDate());
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
 
 		return "collections/collection";
 	}

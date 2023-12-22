@@ -173,4 +173,7 @@ public class PictureFile extends BaseEntity {
 		return 200;
 	}
 
+	public float getAspectRatio() {
+		return (float)this.width / (float)this.height;
+	}
 }

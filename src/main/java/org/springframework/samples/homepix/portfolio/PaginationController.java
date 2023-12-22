@@ -1,6 +1,8 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -546,4 +548,34 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 	}
 
+	protected Comparator<PictureFile> getOrderComparator(CollectionRequestDTO requestDTO) {
+
+		String sortCriterion = "title";
+		Sort.Direction direction = Sort.Direction.ASC;
+
+		Comparator<PictureFile> orderBy = (item1, item2 ) -> { return item1.getTitle().compareTo(item2.getTitle()); };
+
+		if (null != requestDTO.getSort()) {
+
+			switch (requestDTO.getSort()) {
+				case "Filename":
+					orderBy = (item1, item2 ) -> { return item1.getFilename().compareTo(item2.getFilename()); };
+					break;
+				case "Date":
+					orderBy = (item1, item2 ) -> { return item1.getTaken_on().compareTo(item2.getTaken_on()); };
+					break;
+				case "Size":
+					orderBy = (item1, item2 ) -> { return item1.getWidth() * item1.getWidth() - item2.getWidth() * item2.getWidth(); };
+					break;
+				case "Aspect Ratio":
+					orderBy = (item1, item2 ) -> { return (int)(1000 * (item1.getAspectRatio() - item2.getAspectRatio())); };
+					break;
+				case "Saved Order":
+					orderBy = (item1, item2 ) -> { return item1.getAdded_on().compareTo(item2.getAdded_on()); };
+					break;
+			}
+		}
+
+		return orderBy;
+	}
 }

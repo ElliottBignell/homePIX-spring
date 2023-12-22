@@ -91,6 +91,15 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent1">
 
           <ul class="navbar-nav mr-auto mt-2 mt-lg-0 sf-menu" style="white-space:nowrap;">
+            <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;">
+              <a href="/" class="navlink bigbrand">
+                <i class="large material-icons"
+                   style="color:var( {{ request.get_full_path|current_background:'folders' }} );"
+                >
+                  home
+                </i>
+              </a>
+            </li>
               <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;">
                 <a href="/buckets/" class="navlink bigbrand">
                   <i class="large material-icons"
@@ -161,18 +170,18 @@
               </li>
 
               <li class="nav-item" style="display: inline-block;">
-                <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;margin:0px;position:relative;top:-0.34em;height:5em;width:39em;">
+                <form class="form-inline" th:action="${ '/collection/' }" method="get" style="left-margin:12px;margin:0px;position:relative;top:-0.34em;height:5em;width:39em;">
                   <span class="bigbrand"  th:if="${pagination}" style="color:var( --homepix-bg );position:absolute;top:10pt;left:0pt;">From...</span>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }"
-                        th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }"
+                  <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${startDate}"
+                        th:value="${startDate}"
                         class="form-control mr-sm-2 date-when-start-end"
                         style="position:absolute;left:30pt;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
                         onmousemove="this.style.backgroundColor='var( --homepix-alarm )'; this.style.color='var( --homepix-dark );';"
                         onmouseout=" this.style.backgroundColor='var( --homepix-dark  )'; this.style.color='var( --homepix-bg   );';"
                         >
                   <span class="bigbrand" th:if="${pagination}"  style="color:var( --homepix-bg );position:absolute;top:10pt;left:130pt;">...to...</span>
-                  <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }"
-                        th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }"
+                  <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${endDate}"
+                        th:value="${endDate}"
                         class="form-control mr-sm-2 date-when-start-end"
                         style="position:absolute;left:160pt;top:0.5em;background:var( --homepix-dark );this.style.color='var( --homepix-bglight );"
                         onmousemove="this.style.backgroundColor='var( --homepix-alarm )'; this.style.color='var( --homepix-dark );';"
@@ -197,8 +206,8 @@
                   <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:8.4em;height:1.5em;">
                     <i class="medium material-icons">sort </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
-                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${startDate}" style="visibility:hidden;width:0em;">
+                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
                   <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
                   <input name="search"   type="text" th:placeholder="${ param.search }" th:value="${ param.search }" style="visibility:hidden;width:0em;">
@@ -215,8 +224,8 @@
                   <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:8em;height:1.5em;">
                     <i class="medium material-icons">search </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${ #temporals.format( startDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
-                    <input name="toDate"   type="date" th:if="${pagination}" th:value="${ #temporals.format( endDate, 'YYYY-MM-dd' ) }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${startDate}" style="visibility:hidden;width:0em;">
+                    <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
                   <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
                   <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
