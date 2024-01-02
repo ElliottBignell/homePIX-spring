@@ -11,12 +11,12 @@ public class Pagination {
 
 		sortOptions = new ArrayList<>();
 
-		sortOptions.add("Default");
-		sortOptions.add("Title");
-		sortOptions.add("Filename");
-		sortOptions.add("Date");
-		sortOptions.add("Size");
-		sortOptions.add("Aspect Ratio");
+		sortOptions.add("Default Sort");
+		sortOptions.add("Sort by Title");
+		sortOptions.add("Sort by Filename");
+		sortOptions.add("Sort by Date");
+		sortOptions.add("Sort by Size");
+		sortOptions.add("Sort by Aspect Ratio");
 	}
 
 	public boolean hasNext() {

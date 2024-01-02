@@ -5,7 +5,7 @@
 
 <body>
   
-  <h2 th:text="${folder.displayName}"></h2>
+  <h2 th:text="${folder.displayName + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h2>
   <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/buckets/__${folder.name}__/import/}" th:object="${folder}" method="post">
     <input type="submit" value="Scan folder...">
   </form>
@@ -13,7 +13,7 @@
   <div style="overflow-y: auto; max-height: 75vh;">
 
     <figure th:each="pictureFile,iterStat : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__}">
+      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
@@ -27,7 +27,7 @@
               </span>
         </section>
       </a>
-      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__}">
+      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
         <figcaption class="tt_edit">
           <form id="editprops">
             <fieldset>

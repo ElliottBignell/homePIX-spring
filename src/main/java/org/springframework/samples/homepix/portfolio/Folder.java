@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 @Table(name = "folders")
 public class Folder extends BaseEntity {
 
-	@Column(name = "name")
+	@Column(name = "name", unique = true)
 	@NotEmpty
 	private String name;
 

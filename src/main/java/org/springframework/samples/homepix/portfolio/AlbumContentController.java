@@ -84,6 +84,37 @@ class AlbumContentController extends PaginationController {
 		return mav;
 	}
 
+	private ModelAndView showAlbumContent(Album album,
+										  @ModelAttribute CollectionRequestDTO requestDTO,
+										  @PathVariable("id") long id,
+										  Map<String, Object> model,
+										  String template
+	) {
+
+		ModelAndView mav = new ModelAndView(template);
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		Collection<PictureFile> content = this.albumContent.findByAlbumId(id).stream()
+			.filter( item -> item.getPictureFile().getTitle().contains(requestDTO.getSearch()))
+			.sorted( (item1, item2 ) -> orderBy.compare(item1.getPictureFile(), item2.getPictureFile()) )
+			.map(AlbumContent::getPictureFile)
+			.collect(Collectors.toList());
+
+		mav.addObject(album);
+
+		model.put("id", album.getId());
+		model.put("startDate", requestDTO.getFromDate());
+		model.put("endDate", requestDTO.getToDate());
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
+
+		model.put("collection", content);
+		model.put("link_params", "");
+
+		return mav;
+	}
+
 	/**
 	 * Custom handler for displaying an album.
 	 * @param id the ID of the album to display
@@ -98,27 +129,7 @@ class AlbumContentController extends PaginationController {
 		Optional<Album> album = this.albums.findById(id);
 
 		if (album.isPresent()) {
-
-			ModelAndView mav = new ModelAndView("albums/albumDetails");
-
-			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
-
-			Collection<AlbumContent> content = this.albumContent.findByAlbumId(id).stream()
-				.filter( item -> item.getPictureFile().getTitle().contains(requestDTO.getSearch()))
-				.sorted( (item1, item2 ) -> orderBy.compare(item1.getPictureFile(), item2.getPictureFile()) )
-				.collect(Collectors.toList());
-
-			mav.addObject(album.get());
-
-			model.put("startDate", requestDTO.getFromDate());
-			model.put("endDate", requestDTO.getToDate());
-			model.put("sort", requestDTO.getSort());
-			model.put("search", requestDTO.getSearch());
-
-			model.put("content", content);
-			model.put("link_params", "");
-
-			return mav;
+			return showAlbumContent(album.get(), requestDTO, id, model,"albums/albumDetails");
 		}
 		else {
 			return new ModelAndView("redirect:/album/");
@@ -133,27 +144,68 @@ class AlbumContentController extends PaginationController {
 		return showAlbum(requestDTO, id, model);
 	}
 
+	/**
+	 * Custom handler for displaying an album.
+	 * @param id the ID of the album to display
+	 * @return a ModelMap with the model attributes for the view
+	 */
+	@GetMapping("/album/{id}/slideshow/")
+	public ModelAndView showAlbumSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("id") long id,
+								  Map<String, Object> model
+	) {
+
+		Optional<Album> album = this.albums.findById(id);
+
+		if (album.isPresent()) {
+			return showAlbumContent(album.get(), requestDTO, id, model, "welcome");
+		}
+		else {
+			return new ModelAndView("redirect:/album/");
+		}
+	}
+
+	@GetMapping("/albums/{id}/slideshow")
+	public ModelAndView showAlbumsSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
+								   @PathVariable("id") long id,
+								   Map<String, Object> model
+	) {
+		return showAlbumSlideshow(requestDTO, id, model);
+	}
+
 	@GetMapping("/album/{id}/item/{pictureId}")
-	public String showElementById(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
-			Map<String, Object> model) {
-		return showElement(id, pictureId, model);
+	public String showElementById(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("id") long id,
+								  @PathVariable("pictureId") int pictureId,
+								  Map<String, Object> model
+	) {
+		return showElement(requestDTO, id, pictureId, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}/")
-	public String showElementSlash(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
-			Map<String, Object> model) {
-		return showElement(id, pictureId, model);
+	public String showElementSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+								   @PathVariable("id") long id,
+								   @PathVariable("pictureId") int pictureId,
+								   Map<String, Object> model
+	) {
+		return showElement(requestDTO, id, pictureId, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}/")
-	public String showElementByIdSlash(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
-			Map<String, Object> model) {
-		return showElement(id, pictureId, model);
+	public String showElementByIdSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+									   @PathVariable("id") long id,
+									   @PathVariable("pictureId") int pictureId,
+									   Map<String, Object> model
+	) {
+		return showElement(requestDTO, id, pictureId, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}")
-	public String showElement(@PathVariable("id") long id, @PathVariable("pictureId") int pictureId,
-			Map<String, Object> model) {
+	public String showElement(@ModelAttribute CollectionRequestDTO requestDTO,
+							  @PathVariable("id") long id,
+							  @PathVariable("pictureId") int pictureId,
+							  Map<String, Object> model
+	) {
 
 		Optional<Album> album = this.albums.findById(id);
 		Collection<PictureFile> pictureFiles = albumContent.findByAlbumId(id).stream()

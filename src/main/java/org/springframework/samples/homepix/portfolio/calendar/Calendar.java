@@ -15,14 +15,14 @@
  */
 package org.springframework.samples.homepix.portfolio.calendar;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+
 import java.util.Date;
 
 /**
@@ -31,8 +31,6 @@ import java.util.Date;
 public class Calendar extends BaseEntity {
 
 	java.util.Calendar c = java.util.Calendar.getInstance();
-
-	PictureFile thumbnail = new PictureFile();
 
 	private String name;
 
@@ -46,6 +44,8 @@ public class Calendar extends BaseEntity {
 			"Dec" };
 
 	public final String dayNames[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+
+	PictureFileRepository pictureFiles;
 
 	private int valueOfDay(DayOfWeek dow) {
 
@@ -73,9 +73,9 @@ public class Calendar extends BaseEntity {
 		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 
-	public Calendar() {
+	public Calendar(PictureFileRepository pictureFiles) {
 
-		thumbnail.setFilename("https://drive.google.com/uc?export=view&id=1JMOyeB6aNetfKhLCYFiPVD7H-nwoEPpH");
+		this.pictureFiles = pictureFiles;
 
 		items = new ArrayList<>();
 
@@ -101,105 +101,151 @@ public class Calendar extends BaseEntity {
 
 	public void populateYear(CalendarYear calendarYear) {
 
-		c.set(calendarYear.getYear(), 0, 1);
-		Date dd = c.getTime();
+		try {
 
-		List<CalendarQuarter> quarters = new ArrayList<>();
+			c.set(calendarYear.getYear(), 0, 1);
+			Date dd = c.getTime();
 
-		int monthIndex = 0;
+			List<CalendarQuarter> quarters = new ArrayList<>();
 
-		for (int quarter = 0; quarter < 4; quarter++) {
+			Map<LocalDateTime, Long> objectsOnDates = this.pictureFiles.getCountByTakenOn();
 
-			List<CalendarMonth> months = new ArrayList<>();
+			int monthIndex = 0;
 
-			for (int monthNo = 0; monthNo < 3; monthNo++) {
+			for (int quarter = 0; quarter < 4; quarter++) {
 
-				int monthOfYeae = quarter * 4 + monthNo;
+				List<CalendarMonth> months = new ArrayList<>();
 
-				CalendarMonth month = new CalendarMonth(monthIndex, this.monthNames[monthIndex++], monthNo + 1);
-				months.add(month);
-			}
+				for (int monthNo = 0; monthNo < 3; monthNo++) {
 
-			for (int monthNo = 0; monthNo < 3; monthNo++) {
+					int monthOfYeae = quarter * 4 + monthNo;
 
-				int monthOfYear = quarter * 3 + monthNo;
-				int dayOfMonth = 1;
+					CalendarMonth month = new CalendarMonth(monthIndex, this.monthNames[monthIndex++], monthNo + 1);
+					months.add(month);
+				}
 
-				List<CalendarWeek> weeks = new ArrayList<>();
+				for (int monthNo = 0; monthNo < 3; monthNo++) {
 
-				weekLoop: for (int weekNo = 0; weekNo < 6; weekNo++) {
+					int monthOfYear = quarter * 3 + monthNo;
+					int dayOfMonth = 1;
 
-					Date d = c.getTime();
-					DayOfWeek dayOfWeek = convertToLocalDateViaInstant(d).getDayOfWeek();
-					int day = valueOfDay(DayOfWeek.MONDAY);
+					List<CalendarWeek> weeks = new ArrayList<>();
 
-					List<CalendarDay> days = new ArrayList<>();
+					weekLoop:
+					for (int weekNo = 0; weekNo < 6; weekNo++) {
 
-					for (; day < valueOfDay(dayOfWeek); day++) {
+						Date d = c.getTime();
+						DayOfWeek dayOfWeek = convertToLocalDateViaInstant(d).getDayOfWeek();
+						int day = valueOfDay(DayOfWeek.MONDAY);
 
-						CalendarDay newDay = new CalendarDay(this.dayNames[day], null);
-						days.add(newDay);
-					}
+						List<CalendarDay> days = new ArrayList<>();
 
-					for (; day <= valueOfDay(DayOfWeek.SUNDAY); day++) {
+						for (; day < valueOfDay(dayOfWeek); day++) {
 
-						d = c.getTime();
-
-						dayOfWeek = convertToLocalDateViaInstant(d).getDayOfWeek();
-
-						CalendarDay newDay;
-
-						if (dayOfMonth <= convertToLocalDateViaInstant(d).lengthOfMonth()) {
-
-							newDay = new CalendarDay(this.dayNames[day], thumbnail);
-							newDay.setDayOfMonth(dayOfMonth);
-							c.add(java.util.Calendar.DAY_OF_YEAR, 1);
+							CalendarDay newDay = new CalendarDay(this.dayNames[day], null);
+							days.add(newDay);
 						}
-						else
-							newDay = new CalendarDay(this.dayNames[day], null);
 
-						dayOfMonth++;
-						days.add(newDay);
+						for (; day <= valueOfDay(DayOfWeek.SUNDAY); day++) {
 
-						java.util.Calendar cal = java.util.Calendar.getInstance();
-						cal.setTime(d);
+							d = c.getTime();
 
-						if (cal.get(java.util.Calendar.MONTH) != monthOfYear) {
+							dayOfWeek = convertToLocalDateViaInstant(d).getDayOfWeek();
 
-							while (days.size() < 7) {
+							CalendarDay newDay;
 
+							if (dayOfMonth < convertToLocalDateViaInstant(d).lengthOfMonth()) {
+
+								PictureFile thumbnail = null;
+
+								LocalDateTime date = LocalDateTime.of(calendarYear.getYear(), monthOfYear + 1, dayOfMonth, 0, 0, 0);
+
+								if (objectsOnDates.containsKey(date)) {
+
+									Long pictureCount = objectsOnDates.get(date);
+
+									if (pictureCount > 0) {
+
+										List<PictureFile> pictures = this.pictureFiles.findByDate(LocalDate.of(
+											date.getYear(),
+											date.getMonth(),
+											date.getDayOfMonth()
+										));
+
+										if (!pictures.isEmpty()) {
+											thumbnail = pictures.get(0);
+										}
+									}
+								}
+
+								/*try {
+
+									LocalDate date = LocalDate.of(calendarYear.getYear(), monthOfYear + 1, dayOfMonth);
+
+									List<PictureFile> pictures = this.pictureFiles.findByDate(date);
+
+									if (!pictures.isEmpty()) {
+										thumbnail = pictures.get(0);
+									}
+								}
+								catch (DateTimeException ex) {
+									System.out.println(ex);
+								}*/
+
+								newDay = new CalendarDay(this.dayNames[day], thumbnail);
+								newDay.setDayOfMonth(dayOfMonth);
+								c.add(java.util.Calendar.DAY_OF_YEAR, 1);
+							} else
 								newDay = new CalendarDay(this.dayNames[day], null);
-								days.add(newDay);
-							}
-							addWeek(days, weeks);
-							break weekLoop;
+
+							dayOfMonth++;
+							days.add(newDay);
+
+							java.util.Calendar cal = java.util.Calendar.getInstance();
+							cal.setTime(d);
+
+							/*if (cal.get(java.util.Calendar.MONTH) != monthOfYear) {
+
+								while (days.size() < 7) {
+
+									newDay = new CalendarDay(this.dayNames[day], null);
+									days.add(newDay);
+								}
+								addWeek(days, weeks);
+								break weekLoop;
+							}*/
 						}
+
+						addWeek(days, weeks);
 					}
 
-					addWeek(days, weeks);
-				}
+					while (weeks.size() < 6) {
 
-				while (weeks.size() < 6) {
+						List<CalendarDay> days = new ArrayList<>();
 
-					List<CalendarDay> days = new ArrayList<>();
+						for (int day = 0; day < 7; day++) {
 
-					for (int day = 0; day < 7; day++) {
+							CalendarDay newDay = new CalendarDay(this.dayNames[day], null);
+							days.add(newDay);
+						}
 
-						CalendarDay newDay = new CalendarDay(this.dayNames[day], null);
-						days.add(newDay);
+						addWeek(days, weeks);
 					}
 
-					addWeek(days, weeks);
+					months.get(monthNo).setWeeks(weeks);
 				}
 
-				months.get(monthNo).setWeeks(weeks);
+				CalendarQuarter calendarQuarter = new CalendarQuarter(months);
+				quarters.add(calendarQuarter);
 			}
 
-			CalendarQuarter calendarQuarter = new CalendarQuarter(months);
-			quarters.add(calendarQuarter);
+			calendarYear.setQuarters(quarters);
 		}
+		catch (Exception ex) {
 
-		calendarYear.setQuarters(quarters);
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
 	}
 
 	void addWeek(List<CalendarDay> days, List<CalendarWeek> weeks) {

@@ -91,30 +91,30 @@
              </tr>
              <tr colspan=4 style="height:calc(100%-4em);">
     
-                 <td style="width:calc(100%-9em);">
+                 <td style="width:calc(100%-9em);height:75vh;">
                    <div id="carousel" class="carousel slide" data-ride="carousel">
 
-                     <ol th:each="picture : ${slides}" class="carousel-indicators">
+                     <ol th:each="picture : ${collection}" class="carousel-indicators">
                          <li data-target="#carousel" data-slide-to="{{ forloop.counter0 }}"
                            class="active"
                          ></li>
                      </ol>
     
-                     <figure th:each="picture : ${slides}" class="carousel-inner" role="listbox" style="text-align:center;">
+                     <figure th:each="picture : ${collection}" class="carousel-inner mySlides" role="listbox" style="text-align:center;">
     
-                       <div class="carousel-item active">
+                       <div class="carousel-item active" style="height:45vw;">
                          <img th:id="@{picture__${picture.id}__}"
                               class="lazyload imageinlist imageresponsive"
                               th:src="${picture.filename}"
                               th:data-src="${picture.filename}"
                               th:alt="${picture.filename}"
-                              style="height:30vw;object-fit:contain;"
+                              style="top:0px;height:80%;object-fit:contain;"
                          >
 
                          </img>
-                         <div class="carousel-caption">
-                           <h3 thtext="${ picture.title }">Title</h3>
-                           <p th:text="${ picture.location }">Location</p>
+                         <div class="carousel-caption" style="top:2vw;height:45vw;width:45vw;text-align:center;">
+                           <h3 th:text="${ picture.title }" style="width:100%;text-align:center;">Title</h3>
+                           <h3 th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}" style="width;bottom:100%;text-align:center;">Taken on</h3>
                          </div>
                        </div>
     
@@ -218,11 +218,7 @@
             var i;
             var x = document.getElementsByClassName("mySlides");
 
-            console.log( "Elements: " + x + " " + x.length );
-
             for (i = 0; i < x.length; i++) {
-
-                console.log( "Element: " + x[ i ] );
                 x[i].style.display = "none";
             }
 
@@ -232,12 +228,9 @@
                 slideIndex = 1;
             }
 
-            console.log( "Index: " + slideIndex );
-            console.log( "Object: " + x[ slideIndex - 1 ] );
-
             x[ slideIndex - 1 ].style.display = "block";
 
-            setTimeout(carousel, 2000); // Change image every 2 seconds
+            setTimeout(carousel, 4000); // Change image every 2 seconds
         }
 
     </script> </body>

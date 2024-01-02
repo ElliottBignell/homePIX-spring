@@ -44,7 +44,8 @@
       }
     </script>
 
-    <h2 th:text="${album.name}"></h2>
+    <h2 th:text="${album.name + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h2>
+
 
     <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
       <input type="submit" value="Curate...">
@@ -56,25 +57,31 @@
 
     <div style="overflow-y: auto; max-height: 75vh;">
 
-      <figure th:each="entry : ${content}" class="tt_base droppable draggable" th:id="@{figure-__${entry.pictureFile.id}__}">
-        <a th:id="@{picture__${entry.pictureFile.id}__}" th:href="@{/albums/__${entry.album.id}__/item/__${entry.pictureFile.id}__/}">
-          <section class="wrapper" th:id=" @{file-number_${entry.pictureFile.id}}">
+      <figure th:each="entry : ${collection}" class="tt_base droppable draggable" th:id="@{figure-__${entry.id}__}">
+        <a th:id="@{picture__${entry.id}__}"
+           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+        >
+          <section class="wrapper" th:id=" @{file-number_${entry.id}}">
             <span class="tt_subject">
-              <img th:id="@{picture__${entry.pictureFile.id}__}"
+              <img th:id="@{picture__${entry.id}__}"
                    class="lazyload imageinlist imageresponsive"
-                   th:src="${entry.pictureFile.mediumFilename}"
-                   th:data-src="${entry.pictureFile.mediumFilename}"
-                   th:alt="${entry.pictureFile.filename}"
+                   th:width="${entry.displayWidth}"
+                   th:height="${entry.displayHeight}"
+                   th:src="${entry.mediumFilename}"
+                   th:data-src="${entry.mediumFilename}"
+                   th:alt="${entry.filename}"
               >
 
             </span></section>
         </a>
-        <a th:id="@{btn__${entry.pictureFile.id}__}" th:href="@{/albums/__${album.id}__/item/__${entry.pictureFile.id}__/}">
+        <a th:id="@{btn__${entry.id}__}"
+           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+        >
           <figcaption class="tt_edit">
             <form id="editprops">
               <fieldset>
                   <button type="button" class="tt_title imageresponsive_">
-                    <span style="text-align:left;" th:text="${entry.pictureFile.title}"></span>
+                    <span style="text-align:left;" th:text="${entry.title}"></span>
                   </button>
               </fieldset>
             </form>
@@ -101,7 +108,7 @@
               bedtime
             </i>
           </a>
-          <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.pictureFile.id}__ );}">
+          <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.id}__ );}">
             <i class="material-icons tt_icon">
               delete
             </i>

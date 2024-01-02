@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -98,6 +99,8 @@ class BucketController extends PaginationController {
 
 	@GetMapping("/buckets")
 	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
+
+		folderCache = null;
 		return loadBuckets(folder, result, model);
 	}
 
@@ -155,8 +158,40 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	@GetMapping("/bucket/{name}")
-	public String showFolder(CollectionRequestDTO requestDTO, @PathVariable("name") String name, Map<String, Object> model) {
+	public String showFolder(
+		CollectionRequestDTO requestDTO,
+		String name,
+		Map<String, Object> model,
+		boolean reload
+	) {
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		if (reload) {
+
+			initialiseS3Client();
+
+			// Now you can use s3Client to interact with the Exoscale S3-compatible
+			// service
+			List<PictureFile> results = listFiles(s3Client, "jpegs/" + name).stream()
+				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
+				.sorted( orderBy )
+				.collect(Collectors.toList());
+
+			return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+		}
+		else {
+
+			List<PictureFile> results = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
+				.sorted( orderBy )
+				.collect(Collectors.toList());
+
+			return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+		}
+	}
+
+	public String showFolderSlideshow(CollectionRequestDTO requestDTO, @PathVariable("name") String name, Map<String, Object> model) {
 
 		initialiseS3Client();
 
@@ -164,29 +199,14 @@ class BucketController extends PaginationController {
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		List<PictureFile> results = listFiles(s3Client, "jpegs/" + name).stream()
+		List<PictureFile> results = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
 			.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 			.sorted( orderBy )
 			.collect(Collectors.toList());
 
 		Collection<Folder> buckets = this.folders.findByName(name);
 
-		if (buckets.isEmpty()) {
-			return "redirect:/buckets";
-		}
-		else {
-
-			model.put("startDate", requestDTO.getFromDate());
-			model.put("endDate", requestDTO.getToDate());
-			model.put("sort", requestDTO.getSort());
-			model.put("search", requestDTO.getSearch());
-
-			Folder folder = buckets.iterator().next();
-			model.put("collection", results);
-			model.put("folder", folder);
-
-			return "folders/folderDetails";
-		}
+		return setModel(requestDTO, model, this.folders.findByName(name), results, "welcome");
 	}
 
 	@GetMapping("/buckets/{name}")
@@ -194,7 +214,7 @@ class BucketController extends PaginationController {
 							  @PathVariable("name") String name,
 							  Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model);
+		return showFolder(requestDTO, name, model, false);
 	}
 
 	@GetMapping("/buckets/{name}/")
@@ -202,14 +222,30 @@ class BucketController extends PaginationController {
 									@PathVariable("name") String name,
 									Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model);
+		return showFolder(requestDTO, name, model, false);
+	}
+
+	@GetMapping("/buckets/{name}/slideshow")
+	public String showbucketsSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
+							  @PathVariable("name") String name,
+							  Map<String, Object> model
+	) {
+		return showFolderSlideshow(requestDTO, name, model);
+	}
+
+	@GetMapping("/buckets/{name}/slideshow/")
+	public String showbucketsByNameSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
+									@PathVariable("name") String name,
+									Map<String, Object> model
+	) {
+		return showFolderSlideshow(requestDTO, name, model);
 	}
 
 	@Secured("ROLE_ADMIN")
 	@PostMapping("/buckets/{name}/import/")
 	@Transactional
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
-			Map<String, Object> model) {
+										   Map<String, Object> model) {
 
 		initialiseS3Client();
 
@@ -238,9 +274,61 @@ class BucketController extends PaginationController {
 		return "redirect:/buckets/{name}";
 	}
 
+	@Secured("ROLE_ADMIN")
+	@PostMapping("/buckets/{name}/import_async/")
+	@Transactional
+	public ResponseEntity<Map<String, Object>> importPicturesFromBucketAsync(@Valid Folder folder, @PathVariable("name") String name,
+																			 Map<String, Object> model) {
+
+		initialiseS3Client();
+
+		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
+
+		for (PictureFile file : files) {
+
+			try {
+
+				List<PictureFile> existingFile = pictureFiles.findByFilename(file.getFilename());
+
+				if (existingFile.isEmpty()) {
+					pictureFiles.save(file);
+				}
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+			}
+		}
+
+		model.put("collection", files);
+		model.put("baseLink", "/folders/" + name);
+		model.put("albums", this.albums.findAll());
+
+		Collection<Folder> folders = this.folders.findByName(name);
+
+		Map<String, Object> responseData = new HashMap<>();
+
+		if (!folders.isEmpty()) {
+
+			// Assuming you have the picture count in the folder object
+			int pictureCount = folders.iterator().next().getPicture_count() + 1;
+
+			// Create a new map to hold the response data
+			responseData.put("newPictureCount", pictureCount);
+
+			// Return the response data with a success status code
+		}
+
+		return ResponseEntity.ok(responseData);
+	}
+
 	@GetMapping("/buckets/{name}/item/{id}")
-	public String showPictureFile(@PathVariable("name") String name, @PathVariable("id") Integer id,
-			/* @Value("${homepix.images.path}") String imagePath, */ Map<String, Object> model) {
+	public String showPictureFile(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("name") String name,
+								  @PathVariable("id") Integer id,
+			/* @Value("${homepix.images.path}") String imagePath, */
+								  Map<String, Object> model
+	) {
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -254,9 +342,14 @@ class BucketController extends PaginationController {
 			ModelAndView mav = new ModelAndView("albums/albumDetails");
 			Folder folder = buckets.iterator().next();
 
+			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
 			// List<PictureFile> pictureFiles = loadPictureFiles(imagePath,
 			// folder.getName());
-			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename("/web-images/" + name + "/");
+			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
+				.sorted( orderBy )
+				.collect(Collectors.toList());
 
 			// addParams(0, "/images/" + name + "/" + Long.toString(id), pictureFiles,
 			// model, false);
@@ -267,7 +360,6 @@ class BucketController extends PaginationController {
 			int count = pictureFiles.size();
 
 			model.put("picture", pictureFiles.get(id));
-			model.put("collection", pictureFiles);
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
 			model.put("id", id);
@@ -276,7 +368,7 @@ class BucketController extends PaginationController {
 
 			Iterable<Album> albums = this.albums.findAll();
 
-			return "picture/pictureFile.html";
+			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
 	}
 

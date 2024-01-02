@@ -17,7 +17,11 @@ package org.springframework.samples.homepix.portfolio.collection;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -53,6 +57,23 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename LIKE :filename%")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFilename(@Param("filename") String filename);
+
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE DATE(picture_file.taken_on) = :date")
+	@Transactional(readOnly = true)
+	List<PictureFile> findByDate(@Param("date") LocalDate date);
+
+	@Query("SELECT p.taken_on, COUNT(p) FROM PictureFile p GROUP BY p.taken_on")
+	List<Object[]> countByTakenOn();
+
+	default Map<LocalDateTime, Long> getCountByTakenOn() {
+		List<Object[]> result = countByTakenOn();
+
+		return result.stream()
+			.collect(Collectors.toMap(
+				entry -> (LocalDateTime) entry[0],
+				entry -> (Long) entry[1]
+			));
+	}
 
 	List<PictureFile> findAll(Specification<PictureFile> spec, Sort sort);
 }

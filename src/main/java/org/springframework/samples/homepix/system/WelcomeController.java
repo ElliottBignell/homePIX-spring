@@ -58,7 +58,7 @@ class WelcomeController extends PaginationController {
 			Collection<PictureFile> slides = contents.stream().map(item -> item.getPictureFile())
 					.collect(Collectors.toList());
 
-			model.put("slides", slides);
+			model.put("collection", slides);
 		}
 
 		// 1 album found

@@ -129,7 +129,7 @@ public class PictureFile extends BaseEntity {
 		try {
 
 			String[] parts = this.filename.split("/");
-			String filename = parts[3];
+			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 
 			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];

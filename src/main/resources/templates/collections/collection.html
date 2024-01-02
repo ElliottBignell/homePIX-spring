@@ -4,7 +4,12 @@
 
 <body>
 
-<h2 th:text="${'Collection from ' + startDate + ' to ' + endDate + ' (' + (collection?.size() ?: 0) + ' Photos)'}">Collection</h2>
+<c th:if="${startDate} eq ${endDate}">
+  <h2 th:text="${'Collection from ' + startDate + ' (' + (collection?.size() ?: 0) + ' Photos)'}">Collection</h2>
+</c>
+<c th:unless="${startDate} eq ${endDate}">
+  <h2 th:text="${'Collection from ' + startDate + ' to ' + endDate + ' (' + (collection?.size() ?: 0) + ' Photos)'}">Collection</h2>
+</c>
 
 <div style="overflow-y: auto; max-height: 75vh;">
 
@@ -18,6 +23,8 @@
           <span class="tt_subject">
             <img th:id="@{picture__${pictureFile.id}__}"
                  class="lazyload imageinlist imageresponsive"
+                 th:width="${pictureFile.displayWidth}"
+                 th:height="${pictureFile.displayHeight}"
                  th:src="${pictureFile.filename}"
                  th:data-src="${pictureFile.filename}"
                  th:alt="${pictureFile.filename}"

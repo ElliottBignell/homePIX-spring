@@ -1,38 +1,100 @@
 <!DOCTYPE html>
 
-<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
 
 <body>
 
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"
+        integrity="sha256-oP6HI/tfWTTI5Io6mD1OdM5zO/ff3Cp1MU1xm9t9GSs="
+        crossorigin="anonymous"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  function performAjaxCall(folderName) {
+
+      var button = $('#scanButton-' + folderName);
+      var pictureCountElement = $('#pictureCount-' + folderName);
+      var originalText = button.val();
+
+      // Display loading animation
+      button.val('Scanning...');
+
+      $.ajax({
+          type: 'POST',
+          url: '/buckets/' + folderName + '/import_async/',
+          success: function (data) {
+              // Display success animation (green tick)
+              button.val('✓');
+              button.css('color', 'green');
+              pictureCountElement.html(
+                '<a th:href="@{/buckets/__' + folderName + '__}" style="color:black;">' + data.newPictureCount + ' ✓</a>'
+                );
+          },
+          error: function () {
+              // Display error animation (red X)
+              button.val('✗');
+              button.css('color', 'red');
+          },
+          complete: function () {
+              // Restore original button text after a short delay
+              setTimeout(function () {
+                  button.val("Scanned");
+                  button.css('color', 'black');
+              }, 60000);
+          }
+      });
+  }
+
+  /*]]>*/
+</script>
+
 <h2>Folders</h2>
 
-<table id="folders" class="table table-striped">
-  <thead>
-  <tr>
-    <th style="width: 150px;"></th>
-    <th style="width: 200px;">Name</th>
-    <th></th>
-    <th style="width: 120px"></th>
-    <th>Picture Count</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="folder : ${selections}">
-    <td>
-    </td>
-    <td>
-      <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder name</a>
-    </td>
-    <td>
-    </td>
-    <td>
-    </td>
-    <td>
-      <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.picture_count}" style="color:black;">File count</a>
-    </td>
-  </tr>
-  </tbody>
-</table>
+<div style="overflow-y: auto; max-height: 75vh;">
+  <table id="folders" class="table table-striped">
+    <thead>
+    <tr>
+      <th style="width: 150px;"></th>
+      <th style="width: 150px;">Name</th>
+      <th></th>
+      <th style="width: 100px"></th>
+      <th>Picture Count</th>
+      <th></th>
+      <th style="width: 100px"></th>
+      <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Reload</th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr th:each="folder : ${selections}">
+        <td></td>
+        <td>
+          <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder
+            name</a>
+        </td>
+        <td></td>
+        <td></td>
+        <td th:id="@{pictureCount-__${folder.name}__}">
+          <a th:href="@{/buckets/__${folder.name}__}"
+             th:text="${folder.picture_count}"
+             style="color:black;">
+            File count
+          </a>
+        </td>
+        <td></td>
+        <td></td>
+        <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+          <form th:method="post">
+            <input th:id="@{scanButton-__${folder.name}__}" type="button" value="Scan folder..."
+                   th:onclick="'performAjaxCall(\'' + __${folder.name}__ + '\')'"
+            />
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 </body>
 </html>

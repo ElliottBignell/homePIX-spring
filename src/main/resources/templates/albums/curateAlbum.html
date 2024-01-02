@@ -43,6 +43,8 @@
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
                      class="lazyload imageinlist imageresponsive"
+                     th:width="${pictureFile.displayWidth}"
+                     th:height="${pictureFile.displayHeight}"
                      th:src="${pictureFile.filename}"
                      th:data-src="${pictureFile.filename}"
                      th:alt="${pictureFile.filename}"

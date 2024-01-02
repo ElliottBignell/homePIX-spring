@@ -71,7 +71,7 @@ public abstract class PaginationController implements AutoCloseable {
 		this.pictureFiles = pictureFiles;
 		this.keywords = keywords;
 		pagination = new Pagination();
-		calendar = new Calendar();
+		calendar = new Calendar(pictureFiles);
 	}
 
 	@Override
@@ -144,10 +144,14 @@ public abstract class PaginationController implements AutoCloseable {
 	@ModelAttribute(name = "folders")
 	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
+		folderCache = this.folders.findAll();
+
 		if (null == folderCache) {
+
 			loadBuckets(folder, result, model);
+			folderCache = this.folders.findAll();
 		}
-		return this.folders.findAll();
+		return folderCache;
 	}
 
 	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
@@ -247,7 +251,9 @@ public abstract class PaginationController implements AutoCloseable {
 			// service
 			String bucketName = "picture-files";
 
-			folderCache = listSubFolders(s3Client, "jpegs");
+			if (null == folderCache) {
+				folderCache = listSubFolders(s3Client, "jpegs");
+			}
 
 			if (folderCache.isEmpty()) {
 				// no folders found
@@ -283,18 +289,26 @@ public abstract class PaginationController implements AutoCloseable {
 
 		List<Folder> results = new ArrayList<Folder>();
 
-		folders.deleteAll();
-
 		listObjectsResponse.commonPrefixes().forEach(subFolder -> {
 
-			Folder folder = new Folder();
-
 			String name = subFolder.prefix();
-			folder.setName(name.substring(parentFolder.length() + 1, name.length() - 1));
-			folder.setPicture_count(0);
+			String folderName = name.substring(parentFolder.length() + 1, name.length() - 1);
 
-			results.add(folder);
-			folders.save(folder);
+			Collection<Folder> folders = this.folders.findByName(folderName);
+
+			if (folders.isEmpty()) {
+
+				Folder folder = new Folder();
+
+				folder.setName(folderName);
+				folder.setPicture_count(0);
+
+				results.add(folder);
+				this.folders.save(folder);
+			}
+			else {
+				results.add(folders.iterator().next());
+			}
 		});
 
 		return results;
@@ -304,16 +318,31 @@ public abstract class PaginationController implements AutoCloseable {
 
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 
-		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-				.build();
-
-		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
-
-		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
-				.filter(object -> !object.key().startsWith(prefix + "200px/"))
-				.filter(object -> object.key().endsWith(".jpg")).collect(Collectors.toList());
-
 		List<PictureFile> results = new ArrayList<>();
+
+		List<S3Object> filteredObjects = new ArrayList<>();
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+
+		ListObjectsV2Response listObjectsResponse;
+
+		do {
+			listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+			filteredObjects.addAll(listObjectsResponse.contents().stream()
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> object.key().endsWith(".jpg"))
+				.collect(Collectors.toList()));
+
+			listObjectsRequest = ListObjectsV2Request.builder()
+				.bucket(bucketName)
+				.prefix(prefix)
+				.continuationToken(listObjectsResponse.nextContinuationToken())
+				.build();
+		} while (listObjectsResponse.isTruncated());
 
 		for (S3Object s3Object : filteredObjects) {
 
@@ -338,16 +367,12 @@ public abstract class PaginationController implements AutoCloseable {
 
 						Map<String, String> properties = getExifEntries(exifName);
 
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss",
-								Locale.ENGLISH);
-						String dateTimeString = properties.get("DateTimeOriginal");
-						LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+						setDate(picture, properties);
 
 						picture.setTitle(properties.get("title"));
 						picture.setFilename(name);
 						picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
 						picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
-						picture.setTaken_on(dateTime);
 						picture.setAdded_on(java.time.LocalDate.now());
 						// picture.setLocation(properties.get("title")));
 						// picture.setPrimaryCategory(properties.get("title")));
@@ -395,12 +420,7 @@ public abstract class PaginationController implements AutoCloseable {
 						picture.setLightSource(properties.get("LightSource"));
 						picture.setFocalLength(properties.get("FocalLength"));
 
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss",
-							Locale.ENGLISH);
-						String dateTimeString = properties.get("DateTimeOriginal");
-						LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
-
-						picture.setTaken_on(dateTime);
+						setDate(picture, properties);
 
 						this.pictureFiles.save(picture);
 					}
@@ -412,7 +432,67 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 		}
 
+		try {
+
+			String folderName = subFolder.substring(6);
+			Collection<Folder> folders = this.folders.findByName(folderName);
+
+			if (!folders.isEmpty()) {
+
+				Folder folder = folders.iterator().next();
+
+				folder.setPicture_count(filteredObjects.size());
+				this.folders.save(folder);
+
+				folderCache = null;
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
 		return results;
+	}
+
+	private void setDate(PictureFile picture, Map<String, String> properties) {
+
+		try {
+
+			final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+				"yyyy:MM:dd HH:mm:ss",
+				Locale.ENGLISH
+			);
+
+			String dateTimeString = properties.get("DateTimeOriginal");
+
+			if (null != dateTimeString) {
+
+				final String plus = "[+]";
+
+				if (dateTimeString.contains("+")) {
+
+					String[] parts = dateTimeString.split(plus);
+					dateTimeString = parts[0];
+				}
+
+				final String minus = "[-]";
+
+				if (dateTimeString.contains("+")) {
+
+					String[] parts = dateTimeString.split(minus);
+					dateTimeString = parts[0];
+				}
+
+				if (null != dateTimeString) {
+
+					LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+					picture.setTaken_on(dateTime);
+				}
+			}
+		}
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
 	}
 
 	public Map<String, String> getExifEntries(String path) throws IOException {
@@ -558,19 +638,19 @@ public abstract class PaginationController implements AutoCloseable {
 		if (null != requestDTO.getSort()) {
 
 			switch (requestDTO.getSort()) {
-				case "Filename":
+				case "Sort by Filename":
 					orderBy = (item1, item2 ) -> { return item1.getFilename().compareTo(item2.getFilename()); };
 					break;
-				case "Date":
+				case "Sort by Date":
 					orderBy = (item1, item2 ) -> { return item1.getTaken_on().compareTo(item2.getTaken_on()); };
 					break;
-				case "Size":
+				case "Sort by Size":
 					orderBy = (item1, item2 ) -> { return item1.getWidth() * item1.getWidth() - item2.getWidth() * item2.getWidth(); };
 					break;
-				case "Aspect Ratio":
+				case "Sort by Aspect Ratio":
 					orderBy = (item1, item2 ) -> { return (int)(1000 * (item1.getAspectRatio() - item2.getAspectRatio())); };
 					break;
-				case "Saved Order":
+				case "Sort by Saved Order":
 					orderBy = (item1, item2 ) -> { return item1.getAdded_on().compareTo(item2.getAdded_on()); };
 					break;
 			}
@@ -578,4 +658,28 @@ public abstract class PaginationController implements AutoCloseable {
 
 		return orderBy;
 	}
-}
+
+	protected String setModel(CollectionRequestDTO requestDTO,
+							  Map<String, Object> model,
+							  Collection<Folder> buckets,
+							  List<PictureFile> results,
+							  String template
+	) {
+
+		if (buckets.isEmpty()) {
+			return "redirect:/buckets";
+		}
+		else {
+
+			model.put("startDate", requestDTO.getFromDate());
+			model.put("endDate", requestDTO.getToDate());
+			model.put("sort", requestDTO.getSort());
+			model.put("search", requestDTO.getSearch());
+
+			Folder folder = buckets.iterator().next();
+			model.put("collection", results);
+			model.put("folder", folder);
+
+			return template;
+		}
+	}}

@@ -217,7 +217,8 @@
       <tr th:id="@{div_${picture.id}}" colspan=4 style="height:100%;">
         <td style="width:1em;vertical-align:middle;">
           <a id="back"
-             th:href="@{__${baseLink}__/item/__${ previous }__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+             th:href="@{__${baseLink}__/item/__${ previous }__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+          >
             <span class="glyphicon glyphicon-chevron-left"></span>
           </a>
           <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
@@ -293,7 +294,8 @@ i             </div>
         </td>
         <td style="width:1em;vertical-align:middle;">
           <a id="forth"
-             th:href="@{__${baseLink}__/item/__${ next }__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+             th:href="@{__${baseLink}__/item/__${ next }__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+          >
               <span class="glyphicon glyphicon-chevron-right"></span>
           </a>
           <!--th:href="../{{ next.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-right"></span></a>-->

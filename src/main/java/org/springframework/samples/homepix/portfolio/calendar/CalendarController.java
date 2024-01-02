@@ -20,6 +20,7 @@ import org.springframework.samples.homepix.portfolio.KeywordsRepository;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.FolderRepository;
 import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,7 +73,7 @@ class CalendarController extends PaginationController {
 	public List<CalendarYear> populateYears() {
 
 		List<CalendarYear> years = new ArrayList<CalendarYear>();
-		Calendar calendar = new Calendar();
+		Calendar calendar = new Calendar(this.pictureFiles);
 
 		for (String year : this.pictureFiles.findYears()) {
 
@@ -98,6 +100,10 @@ class CalendarController extends PaginationController {
 	@Override
 	public void close() throws Exception {
 
+	}
+
+	public List<PictureFile> findByDate(LocalDate date) {
+		return this.pictureFiles.findByDate(date);
 	}
 
 }
