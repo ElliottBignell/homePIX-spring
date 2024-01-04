@@ -4,16 +4,108 @@
       th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
 
 <body>
-  
+
+  <style>
+    .scary {
+      visibility: hidden;
+    }
+    .show_button {
+      display: none;
+    }
+    .hide_button {
+      display: inline;
+    }
+  </style>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    function hidePicture(pictureId) {
+
+        var elementId = "div" + pictureId;
+
+        if ($(".scary").is(":visible")) {
+          $('#' + elementId).hide();
+        }
+        else {
+          $('#' + elementId).show();
+        }
+
+        // Implement logic to send a request to the server to update the visibility of the picture
+        // You can use AJAX to send a request to the server
+        // Example using jQuery:
+        $.post('/restrict/' + pictureId, function(response) {
+
+            elementId = "hide-" + pictureId;
+            $('#' + elementId).addClass('show_button');
+            $('#' + elementId).removeClass('hide_button');
+
+            elementId = "show-" + pictureId;
+            $('#' + elementId).addClass('hide_button');
+            $('#' + elementId).removeClass('show_button');
+
+            var elementId = "div" + pictureId;
+            $('#' + elementId).addClass('scary');
+        });
+    }
+
+    function showPicture(pictureId) {
+        // Implement logic to send a request to the server to update the visibility of the picture
+        // You can use AJAX to send a request to the server
+        // Example using jQuery:
+        $.post('/derestrict/' + pictureId, function(response) {
+
+            elementId = "hide-" + pictureId;
+            $('#' + elementId).addClass('hide_button');
+            $('#' + elementId).removeClass('show_button');
+
+            elementId = "show-" + pictureId;
+            $('#' + elementId).addClass('show_button');
+            $('#' + elementId).removeClass('hide_button');
+
+            var elementId = "div" + pictureId;
+            $('#' + elementId).removeClass('scary');
+
+            console.log("Showing " + pictureId);
+        });
+    }
+
+    function toggleRestricted() {
+
+      if ($("#toggle_scary").prop("checked")) {
+        $(".scary").show();
+      } else {
+        $(".scary").hide();
+      }
+    }
+    /*]]>*/
+  </script>
+
   <h2 th:text="${folder.displayName + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h2>
-  <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/buckets/__${folder.name}__/import/}" th:object="${folder}" method="post">
+  <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+        action="#"
+        th:action="@{/buckets/__${folder.name}__/import/}"
+        th:object="${folder}"
+        method="post"
+  >
     <input type="submit" value="Scan folder...">
   </form>
 
+  <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+  >
+    <!-- th:if="${#authorization.expression('hasRole(''ADMIN'')')}"-->
+    <label>Show Restricted Pictures</label>
+    <input id="toggle_scary" onClick="toggleRestricted();" type="checkbox" name="showScary" th:checked="${showScary}" />
+  </div>
+
   <div style="overflow-y: auto; max-height: 75vh;">
 
-    <figure th:each="pictureFile,iterStat : ${collection}" class="tt_base droppable draggable" th:id="@{div__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+    <figure th:each="pictureFile,iterStat : ${collection}"
+            th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+            th:id="@{div__${pictureFile.id}__}"
+    >
+      <a th:id="@{picture__${pictureFile.id}__}"
+         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+      >
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
               <span class="tt_subject">
                 <img th:id="@{picture__${pictureFile.id}__}"
@@ -39,7 +131,30 @@
         </figcaption>
       </a>
       <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header">
-        <a class="tt_icon_anchor" th:href="@{./delete/__${folder.name}__/}">
+        <a href="#"
+           th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor hide_button' : 'tt_icon_anchor show_button'}"
+           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+           th:onclick="'showPicture(\'' + ${pictureFile.id} + '\')'"
+           th:id="@{show-__${pictureFile.id}__}"
+        >
+          <i th:id="@{add_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+            add
+          </i>
+        </a>
+        <a href="#"
+           th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor show_button' : 'tt_icon_anchor hide_button'}"
+           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+           th:onclick="'hidePicture(\'' + ${pictureFile.id} + '\')'"
+           th:id="@{hide-__${pictureFile.id}__}"
+        >
+          <i th:id="@{remove_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+            remove
+          </i>
+        </a>
+        <a class="tt_icon_anchor"
+           th:href="@{./delete/__${folder.name}__/}"
+           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+        >
           <i class="material-icons tt_icon">
             delete
           </i>

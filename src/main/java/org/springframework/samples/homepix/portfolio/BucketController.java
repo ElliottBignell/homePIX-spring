@@ -22,6 +22,7 @@ import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -162,10 +163,13 @@ class BucketController extends PaginationController {
 		CollectionRequestDTO requestDTO,
 		String name,
 		Map<String, Object> model,
+		Authentication authentication,
 		boolean reload
 	) {
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		model.put("showScary", true);
 
 		if (reload) {
 
@@ -174,6 +178,7 @@ class BucketController extends PaginationController {
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
 			List<PictureFile> results = listFiles(s3Client, "jpegs/" + name).stream()
+				.filter(item -> isAuthorised(item, authentication))
 				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 				.sorted( orderBy )
 				.collect(Collectors.toList());
@@ -183,6 +188,7 @@ class BucketController extends PaginationController {
 		else {
 
 			List<PictureFile> results = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+				.filter(item -> isAuthorised(item, authentication))
 				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 				.sorted( orderBy )
 				.collect(Collectors.toList());
@@ -191,7 +197,13 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	public String showFolderSlideshow(CollectionRequestDTO requestDTO, @PathVariable("name") String name, Map<String, Object> model) {
+	public String showFolderSlideshow(
+		CollectionRequestDTO requestDTO,
+		@PathVariable("name")
+		String name,
+		Authentication authentication,
+		Map<String, Object> model
+	) {
 
 		initialiseS3Client();
 
@@ -209,36 +221,51 @@ class BucketController extends PaginationController {
 		return setModel(requestDTO, model, this.folders.findByName(name), results, "welcome");
 	}
 
+	private boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
+
+		if (authentication != null && authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"))) {
+			return true;
+		} else {
+			// Non-admin logic, filter pictures based on your criteria
+			// For example, don't show pictures with scary content to non-admin users
+			String roles = pictureFile.getRoles();
+			return roles.equals("ROLE_USER") || roles.equals("");
+		}
+	}
 	@GetMapping("/buckets/{name}")
 	public String showbuckets(@ModelAttribute CollectionRequestDTO requestDTO,
 							  @PathVariable("name") String name,
+							  Authentication authentication,
 							  Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model, false);
+		return showFolder(requestDTO, name, model, authentication,false);
 	}
 
 	@GetMapping("/buckets/{name}/")
 	public String showbucketsByName(@ModelAttribute CollectionRequestDTO requestDTO,
 									@PathVariable("name") String name,
+									Authentication authentication,
 									Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model, false);
+		return showFolder(requestDTO, name, model, authentication, false);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow")
 	public String showbucketsSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
 							  @PathVariable("name") String name,
+							  Authentication authentication,
 							  Map<String, Object> model
 	) {
-		return showFolderSlideshow(requestDTO, name, model);
+		return showFolderSlideshow(requestDTO, name, authentication, model);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow/")
 	public String showbucketsByNameSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
 									@PathVariable("name") String name,
+									Authentication authentication,
 									Map<String, Object> model
 	) {
-		return showFolderSlideshow(requestDTO, name, model);
+		return showFolderSlideshow(requestDTO, name, authentication, model);
 	}
 
 	@Secured("ROLE_ADMIN")

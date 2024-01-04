@@ -8,7 +8,7 @@ import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -38,7 +38,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected Pagination pagination;
 
-	protected Calendar calendar;
+	protected Calendar calendar = null;
 
 	protected final AlbumRepository albums;
 
@@ -71,7 +71,6 @@ public abstract class PaginationController implements AutoCloseable {
 		this.pictureFiles = pictureFiles;
 		this.keywords = keywords;
 		pagination = new Pagination();
-		calendar = new Calendar(pictureFiles);
 	}
 
 	@Override
@@ -141,7 +140,17 @@ public abstract class PaginationController implements AutoCloseable {
 		return this.albums.findAll();
 	}
 
-	@ModelAttribute(name = "folders")
+	@ModelAttribute(name = "/folders/import")
+	Collection<Folder> importFolders(Folder folder, BindingResult result, Map<String, Object> model) {
+
+		folderCache = null;
+		loadBuckets(folder, result, model);
+		folderCache = this.folders.findAll();
+
+		return folderCache;
+	}
+
+	@ModelAttribute(name = "/folders")
 	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
 		folderCache = this.folders.findAll();
@@ -164,7 +173,11 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 
 		// find folders by last name
-		Collection<Folder> results = this.folders.findByName(folder.getName());
+		Collection<Folder> results = this.folders.findByName(folder.getName())
+			.stream()
+			.sorted((item1, item2 ) -> {return item1.getName().compareTo(item2.getName());})
+			.collect(Collectors.toList());
+
 		if (results.isEmpty()) {
 			// no folders found
 			result.rejectValue("name", "notFound", "not found");
@@ -177,7 +190,7 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		else {
 			// multiple folders found
-			model.put("selections", results);
+			model.put("folders", results);
 			return "folders/folderList";
 		}
 	}
@@ -267,7 +280,7 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 			else {
 				// multiple folders found
-				model.put("selections", folderCache);
+				model.put("folders", folderCache);
 				return "folders/folderList";
 			}
 		}
@@ -398,6 +411,10 @@ public abstract class PaginationController implements AutoCloseable {
 							picture.setKeywords(keywords.iterator().next());
 						}
 
+						if (picture.getRoles() == null || picture.getRoles().equals("")) {
+							picture.setRoles("ROLE_USER");
+						}
+
 						this.pictureFiles.save(picture);
 
 						results.add(picture);
@@ -419,6 +436,10 @@ public abstract class PaginationController implements AutoCloseable {
 						picture.setMeteringMode(properties.get("MeteringMode"));
 						picture.setLightSource(properties.get("LightSource"));
 						picture.setFocalLength(properties.get("FocalLength"));
+
+						if (picture.getRoles() == null || picture.getRoles().equals("")) {
+							picture.setRoles("ROLE_USER");
+						}
 
 						setDate(picture, properties);
 
@@ -682,4 +703,5 @@ public abstract class PaginationController implements AutoCloseable {
 
 			return template;
 		}
-	}}
+	}
+}

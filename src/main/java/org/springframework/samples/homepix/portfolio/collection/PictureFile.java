@@ -115,6 +115,9 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "FocalLength")
 	private String focalLength;
 
+	@Column(name = "Roles")
+	private String roles;
+
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
 
@@ -175,5 +178,19 @@ public class PictureFile extends BaseEntity {
 
 	public float getAspectRatio() {
 		return (float)this.width / (float)this.height;
+	}
+
+	public boolean getIsScary() {
+		return this.roles.equals("ROLE_ADMIN");
+	}
+
+	public void setIsScary(boolean scary) {
+
+		if (scary) {
+			this.roles = "ROLE_ADMIN";
+		}
+		else {
+			this.roles = "ROLE_USER";
+		}
 	}
 }

@@ -73,7 +73,10 @@ class CalendarController extends PaginationController {
 	public List<CalendarYear> populateYears() {
 
 		List<CalendarYear> years = new ArrayList<CalendarYear>();
-		Calendar calendar = new Calendar(this.pictureFiles);
+
+		if (null == this.calendar) {
+			this.calendar = new Calendar(this.pictureFiles);
+		}
 
 		for (String year : this.pictureFiles.findYears()) {
 
@@ -83,7 +86,7 @@ class CalendarController extends PaginationController {
 
 					CalendarYear calendarYear = new CalendarYear(Integer.parseInt(year));
 
-					calendar.populateYear(calendarYear);
+					this.calendar.populateYear(calendarYear);
 					years.add(calendarYear);
 				}
 			}
@@ -91,7 +94,6 @@ class CalendarController extends PaginationController {
 				System.out.println(ex);
 				ex.printStackTrace();
 			}
-
 		}
 
 		return years;

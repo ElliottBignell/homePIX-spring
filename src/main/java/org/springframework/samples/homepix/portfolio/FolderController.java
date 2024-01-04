@@ -321,4 +321,49 @@ class FolderController extends PaginationController {
 
 	}
 
+	@PostMapping("/toggleRestricted")
+	public String toggleRestricted(@RequestParam(name = "showScary", defaultValue = "false") boolean showScary,
+								   Map<String, Object> model
+	) {
+		// Set a model attribute to track the state of showScary
+		model.put("showScary", showScary);
+
+		// Additional logic to update scary pictures in the database or session
+		// ...
+
+		return "redirect:/buckets/"; // Redirect back to the original page
+	}
+
+	@PostMapping("/restrict/{id}")
+	@ResponseBody
+	public String restrict(@PathVariable Integer id) {
+
+		Optional<PictureFile> picture = this.pictureFiles.findById(id);
+
+		if (picture.isPresent()) {
+
+			picture.get().setRoles("ROLE_ADMIN");
+			this.pictureFiles.save(picture.get());
+
+			return "success"; // Return a response as needed
+		}
+
+		return "failure"; // Return a response as needed
+	}
+	@PostMapping("/derestrict/{id}")
+	@ResponseBody
+	public String derestrict(@PathVariable Integer id) {
+
+		Optional<PictureFile> picture = this.pictureFiles.findById(id);
+
+		if (picture.isPresent()) {
+
+			picture.get().setRoles("ROLE_USER");
+			this.pictureFiles.save(picture.get());
+
+			return "success"; // Return a response as needed
+		}
+
+		return "failure"; // Return a response as needed
+	}
 }
