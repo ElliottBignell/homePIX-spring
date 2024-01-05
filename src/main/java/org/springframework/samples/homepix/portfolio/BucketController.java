@@ -187,7 +187,7 @@ class BucketController extends PaginationController {
 		}
 		else {
 
-			List<PictureFile> results = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+			List<PictureFile> results = this.pictureFiles.findByFilename(name + "/").stream()
 				.filter(item -> isAuthorised(item, authentication))
 				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 				.sorted( orderBy )
@@ -211,7 +211,7 @@ class BucketController extends PaginationController {
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		List<PictureFile> results = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+		List<PictureFile> results = this.pictureFiles.findByFilename(name + "/").stream()
 			.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 			.sorted( orderBy )
 			.collect(Collectors.toList());
@@ -373,7 +373,7 @@ class BucketController extends PaginationController {
 
 			// List<PictureFile> pictureFiles = loadPictureFiles(imagePath,
 			// folder.getName());
-			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename("/web-images/" + name + "/").stream()
+			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename(name + "/").stream()
 				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 				.sorted( orderBy )
 				.collect(Collectors.toList());
@@ -455,9 +455,7 @@ class BucketController extends PaginationController {
 				if (extension.equals(".jpg")) {
 
 					String suffix = name.substring(5, name.length());
-					name = "/web-images" + suffix;
-
-					results.add(name);
+					results.add(suffix);
 				}
 			}
 			catch (Exception ex) {
@@ -489,9 +487,7 @@ class BucketController extends PaginationController {
 			String extension = name.substring(name.length() - 4).toLowerCase();
 
 			if (extension.equals(".jpg")) {
-
-				String suffix = name.substring(5, name.length());
-				name = "/web-images" + suffix;
+				name = name.substring(5, name.length());
 			}
 
 			return name;

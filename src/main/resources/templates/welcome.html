@@ -105,8 +105,8 @@
                        <div class="carousel-item active" style="height:45vw;">
                          <img th:id="@{picture__${picture.id}__}"
                               class="lazyload imageinlist imageresponsive"
-                              th:src="${picture.filename}"
-                              th:data-src="${picture.filename}"
+                              th:src="${picture.mediumFilename}"
+                              th:data-src="${picture.largeFilename}"
                               th:alt="${picture.filename}"
                               style="top:0px;height:80%;object-fit:contain;"
                          >

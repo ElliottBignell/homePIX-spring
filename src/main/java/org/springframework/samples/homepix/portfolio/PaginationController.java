@@ -369,7 +369,7 @@ public abstract class PaginationController implements AutoCloseable {
 					String sizePart = name.substring(name.length() - 9, name.length() - 4).toLowerCase();
 
 					String suffix = name.substring(5, name.length());
-					name = "/web-images" + suffix;
+					name = suffix;
 					String exifName = "jpegs" + suffix;
 
 					List<PictureFile> existingFile = this.pictureFiles.findByFilename(name);

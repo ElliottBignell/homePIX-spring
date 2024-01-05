@@ -227,8 +227,8 @@
           <!--<div class="bounding-box" style="background-image:url("/{{ picture.modpath }}/{{ picture.file }}");">-->
           <img th:id="@{picture__${picture.id}__}"
                class="lazyload imageinlist imageresponsive"
-               th:src="${picture.filename}"
-               th:data-src="${picture.filename}"
+               th:src="${picture.mediumFilename}"
+               th:data-src="${picture.largeFilename}"
                th:alt="${picture.filename}"
                style="height:10em;object-fit:contain;"
           >
@@ -318,7 +318,7 @@ i             </div>
                       </path>
                   </svg>
               </a>
-              <a th:href="@{https://www.linkedin.com/sharing/share-offsite/?url=${ picture.filename}}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
+              <a th:href="@{https://www.linkedin.com/sharing/share-offsite/?url=${ picture.largeFilename}}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
                   <svg width="48" height="48" fill="none" class="bo">
                       <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#07c">
                       </path>

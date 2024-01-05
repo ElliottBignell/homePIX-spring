@@ -27,6 +27,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.AlbumContent;
+import org.springframework.samples.homepix.portfolio.Folder;
 import org.springframework.samples.homepix.portfolio.Keywords;
 
 /**
@@ -50,6 +51,10 @@ public class PictureFile extends BaseEntity {
 	@NotEmpty
 	private String title;
 
+	@Column(name = "folder_name")
+	@NotEmpty
+	private String folder_name;
+
 	@Column(name = "last_modified")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate last_modified;
@@ -57,6 +62,10 @@ public class PictureFile extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "path_id")
 	private PictureFileType path;
+
+	@ManyToOne
+	@JoinColumn(name = "folder")
+	private Folder folder;
 
 	@Column(name = "width")
 	private Integer width;
@@ -137,7 +146,29 @@ public class PictureFile extends BaseEntity {
 
 			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];
 
-			String result = "/" + parts[1] + "/" + parts[2] + "/200px/" + filename;
+			String result = "/web-images/" + parts[0] + "/200px/" + filename;
+			return result;
+		}
+		catch (Exception ex) {
+
+			System.out.println(ex);
+			ex.printStackTrace();
+
+			return this.filename;
+		}
+	}
+
+	public String getLargeFilename() {
+
+		try {
+
+			String[] parts = this.filename.split("/");
+			String filename = parts[parts.length - 1];
+			String[] bodyAndExtension = filename.split("[\\.]");
+
+			filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
+
+			String result = "/web-images/" + parts[0] + "/" + filename;
 			return result;
 		}
 		catch (Exception ex) {
