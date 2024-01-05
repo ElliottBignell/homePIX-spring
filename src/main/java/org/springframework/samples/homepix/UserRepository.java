@@ -3,7 +3,6 @@ package org.springframework.samples.homepix;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.samples.homepix.portfolio.Album;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -21,6 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.Keywords;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -57,9 +61,13 @@ class BucketController extends PaginationController {
 
 	}
 
-	public BucketController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles,
-			KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public BucketController(FolderRepository folders,
+							AlbumRepository albums,
+							PictureFileRepository pictureFiles,
+							KeywordsRepository keywords,
+							KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 	}
 
 	@InitBinder
@@ -167,34 +175,55 @@ class BucketController extends PaginationController {
 		boolean reload
 	) {
 
-		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
-
 		model.put("showScary", true);
+
+		List<PictureFile> results;
 
 		if (reload) {
 
 			initialiseS3Client();
 
-			// Now you can use s3Client to interact with the Exoscale S3-compatible
-			// service
-			List<PictureFile> results = listFiles(s3Client, "jpegs/" + name).stream()
-				.filter(item -> isAuthorised(item, authentication))
-				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
-				.sorted( orderBy )
-				.collect(Collectors.toList());
-
-			return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+			results = listFilteredFiles(listFiles(s3Client, "jpegs/" + name), requestDTO, authentication);
 		}
 		else {
-
-			List<PictureFile> results = this.pictureFiles.findByFilename(name + "/").stream()
-				.filter(item -> isAuthorised(item, authentication))
-				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
-				.sorted( orderBy )
-				.collect(Collectors.toList());
-
-			return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+			results = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
 		}
+
+		return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+	}
+
+	List<PictureFile> listFilteredFiles(List<PictureFile> files,
+										CollectionRequestDTO requestDTO,
+										Authentication authentication) {
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		return files.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter( item -> {
+
+				String search = requestDTO.getSearch();
+
+				boolean result = item.getTitle().contains(search);
+
+				if (!result) {
+
+					Collection<KeywordRelationships> relations = this.keywordsRelationships.findByPictureId(item.getId());
+
+					if (!relations.isEmpty()) {
+
+						Keywords keywords = relations.iterator().next().getKeywords();
+
+						if (null != keywords) {
+							result = keywords.getContent().contains(search);
+						}
+					}
+				}
+
+				return result;
+			})
+			.sorted( orderBy )
+			.collect(Collectors.toList());
 	}
 
 	public String showFolderSlideshow(
@@ -211,7 +240,7 @@ class BucketController extends PaginationController {
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
-		List<PictureFile> results = this.pictureFiles.findByFilename(name + "/").stream()
+		List<PictureFile> results = this.pictureFiles.findByFolderName(name + "/").stream()
 			.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 			.sorted( orderBy )
 			.collect(Collectors.toList());
@@ -282,7 +311,7 @@ class BucketController extends PaginationController {
 
 			try {
 
-				List<PictureFile> existingFile = pictureFiles.findByFilename(file.getFilename());
+				List<PictureFile> existingFile = pictureFiles.findByFolderName(file.getFilename());
 
 				if (existingFile.isEmpty()) {
 					pictureFiles.save(file);
@@ -315,7 +344,7 @@ class BucketController extends PaginationController {
 
 			try {
 
-				List<PictureFile> existingFile = pictureFiles.findByFilename(file.getFilename());
+				List<PictureFile> existingFile = pictureFiles.findByFolderName(file.getFilename());
 
 				if (existingFile.isEmpty()) {
 					pictureFiles.save(file);
@@ -373,7 +402,7 @@ class BucketController extends PaginationController {
 
 			// List<PictureFile> pictureFiles = loadPictureFiles(imagePath,
 			// folder.getName());
-			List<PictureFile> pictureFiles = this.pictureFiles.findByFilename(name + "/").stream()
+			List<PictureFile> pictureFiles = this.pictureFiles.findByFolderName(name).stream()
 				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
 				.sorted( orderBy )
 				.collect(Collectors.toList());
@@ -384,14 +413,31 @@ class BucketController extends PaginationController {
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
 
-			int count = pictureFiles.size();
+			PictureFile file = pictureFiles.get(id);
 
-			model.put("picture", pictureFiles.get(id));
+			int count = pictureFiles.size();
+			int pictureID = file.getId();
+
+			model.put("picture", file);
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
+
+			Collection<KeywordRelationships> relationships = this.keywordsRelationships.findByPictureId(pictureID);
+
+			if (!relationships.isEmpty()) {
+
+				Keywords keywords = relationships.iterator().next().getKeywords();
+
+				if (null != keywords) {
+
+					String words = keywords.getContent();
+					String[] wordArray = words.split(",");
+					model.put("keywords", wordArray);
+				}
+			}
 
 			Iterable<Album> albums = this.albums.findAll();
 
@@ -577,7 +623,11 @@ class BucketController extends PaginationController {
 
 			Keywords keywords = new Keywords();
 			keywords.setContent(name);
-			item.setKeywords(keywords);
+
+			KeywordRelationships relation = new KeywordRelationships();
+			relation.setPictureFile(item);
+			relation.setKeywords(keywords);
+			this.keywordsRelationships.save(relation);
 
 			pictureFiles.add(item);
 		}
@@ -612,7 +662,11 @@ class BucketController extends PaginationController {
 
 		Keywords keywords = new Keywords();
 		keywords.setContent(name);
-		item.setKeywords(keywords);
+
+		KeywordRelationships relation = new KeywordRelationships();
+		relation.setPictureFile(item);
+		relation.setKeywords(keywords);
+		this.keywordsRelationships.save(relation);
 
 		pictureFiles.add(item);
 

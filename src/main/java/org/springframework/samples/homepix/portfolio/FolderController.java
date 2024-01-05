@@ -16,9 +16,10 @@
 package org.springframework.samples.homepix.portfolio;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +33,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,9 +48,13 @@ class FolderController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
-	public FolderController(FolderRepository folders, AlbumRepository albums, PictureFileRepository pictureFiles,
-			KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public FolderController(FolderRepository folders,
+							AlbumRepository albums,
+							PictureFileRepository pictureFiles,
+							KeywordsRepository keywords,
+							KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 	}
 
 	@InitBinder
@@ -156,7 +160,7 @@ class FolderController extends PaginationController {
 
 		List<String> fileNames = Stream.of(new File(filename).listFiles()).filter(file -> !file.isDirectory())
 				.filter(file -> file.getName().endsWith(".jpg")).map(File::getName)
-				.filter(file -> this.pictureFiles.findByFilename(file).isEmpty()).sorted().collect(Collectors.toList());
+				.filter(file -> this.pictureFiles.findByFolderName(file).isEmpty()).sorted().collect(Collectors.toList());
 		List<PictureFile> pictures = new ArrayList<>();
 
 		for (String name : fileNames) {

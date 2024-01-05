@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * Repository class for <code>Organise</code> domain objects All method names are
@@ -28,6 +29,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author Sam Brannen
  * @author Michael Isvy
  */
+@Repository
 public interface OrganiseRepository extends CrudRepository<Organise, Integer> {
 
 }

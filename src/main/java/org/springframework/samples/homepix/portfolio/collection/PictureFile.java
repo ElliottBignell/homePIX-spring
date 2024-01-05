@@ -28,7 +28,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.AlbumContent;
 import org.springframework.samples.homepix.portfolio.Folder;
-import org.springframework.samples.homepix.portfolio.Keywords;
 
 /**
  * Simple business object representing a pet.
@@ -51,10 +50,6 @@ public class PictureFile extends BaseEntity {
 	@NotEmpty
 	private String title;
 
-	@Column(name = "folder_name")
-	@NotEmpty
-	private String folder_name;
-
 	@Column(name = "last_modified")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate last_modified;
@@ -72,10 +67,6 @@ public class PictureFile extends BaseEntity {
 
 	@Column(name = "height")
 	private Integer height;
-
-	@ManyToOne
-	@JoinColumn(name = "keywords_id")
-	private Keywords keywords;
 
 	@Column(name = "sortkey")
 	private Integer sortkey;
@@ -146,7 +137,7 @@ public class PictureFile extends BaseEntity {
 
 			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];
 
-			String result = "/web-images/" + parts[0] + "/200px/" + filename;
+			String result = "/web-images/" + this.folder.getName() + "/200px/" + filename;
 			return result;
 		}
 		catch (Exception ex) {
@@ -168,7 +159,7 @@ public class PictureFile extends BaseEntity {
 
 			filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
 
-			String result = "/web-images/" + parts[0] + "/" + filename;
+			String result = "/web-images/" + this.folder.getName() + "/" + filename;
 			return result;
 		}
 		catch (Exception ex) {
@@ -181,20 +172,7 @@ public class PictureFile extends BaseEntity {
 	}
 
 	public String getDisplayFilename() {
-
-		try {
-
-			String[] parts = this.filename.split("/");
-			String filename = parts[parts.length - 1];
-			return filename;
-		}
-		catch (Exception ex) {
-
-			System.out.println(ex);
-			ex.printStackTrace();
-
-			return this.filename;
-		}
+		return this.folder.getName() + "/" + filename;
 	}
 
 	public Integer getDisplayWidth() {

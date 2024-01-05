@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.keywords;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,10 +40,10 @@ public class Keywords extends BaseEntity {
 
 	@Column(name = "content")
 	@NotEmpty
-	private String content;
+	private String content = "";
 
 	@Column(name = "keyword_count")
-	private int keyword_count;
+	private int keyword_count = 0;
 
 	@Override
 	public String toString() {
@@ -62,5 +62,4 @@ public class Keywords extends BaseEntity {
 
 		return items;
 	}
-
 }

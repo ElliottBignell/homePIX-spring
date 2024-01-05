@@ -22,6 +22,8 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
+import org.springframework.samples.homepix.portfolio.keywords.Keywords;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -141,9 +143,15 @@ public class Folder extends BaseEntity {
 					ex.printStackTrace();
 				}
 
-				Keywords keywords = new Keywords();
+				// TODO: Add folder name to keywords in the controller
+				/*Keywords keywords = new Keywords();
 				keywords.setContent(this.name);
-				item.setKeywords(keywords);
+
+				KeywordRelationships relation = new KeywordRelationships();
+				relation.setPictureFile(item);
+				relation.setKeywords(keywords);
+
+				item.setKeywords(keywords);*/
 
 				pictureFiles.add(item);
 			}

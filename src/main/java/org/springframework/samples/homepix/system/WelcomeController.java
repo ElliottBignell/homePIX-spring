@@ -18,8 +18,14 @@ package org.springframework.samples.homepix.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.*;
+import org.springframework.samples.homepix.portfolio.Album;
+import org.springframework.samples.homepix.portfolio.AlbumContent;
+import org.springframework.samples.homepix.portfolio.AlbumContentRepository;
+import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,9 +40,14 @@ class WelcomeController extends PaginationController {
 	private final AlbumContentRepository albumContents;
 
 	@Autowired
-	public WelcomeController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders,
-			AlbumContentRepository albumContents, KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public WelcomeController(PictureFileRepository pictureFiles,
+							 AlbumRepository albums,
+							 FolderRepository folders,
+							 AlbumContentRepository albumContents,
+							 KeywordsRepository keywords,
+							 KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 		this.albumContents = albumContents;
 	}
 

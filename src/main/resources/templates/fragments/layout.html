@@ -110,7 +110,8 @@
                 </a>
                 <ul class="drop-down-menu">
                   <li th:each="folder : ${folders}">
-                    <a th:href="@{/buckets/__${folder.name}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
+                    <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
+                    <!--<a th:href="@{/buckets/__${folder.name}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" class="bigmenu" th:text="${folder.displayName}">Folders</a>-->
                   </li>
                 </ul>
               </li>

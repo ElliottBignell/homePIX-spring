@@ -19,6 +19,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +29,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -40,9 +41,14 @@ class AlbumController extends PaginationController {
 	private final AlbumContentRepository albumContent;
 
 	@Autowired
-	public AlbumController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
-			AlbumContentRepository albumContents, KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public AlbumController(AlbumRepository albums,
+						   FolderRepository folders,
+						   PictureFileRepository pictureFiles,
+						   AlbumContentRepository albumContents,
+						   KeywordsRepository keywords,
+						   KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 		this.albumContent = albumContents;
 	}
 

@@ -16,6 +16,8 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -34,9 +36,13 @@ class AboutController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about";
 
-	AboutController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
-			KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	AboutController(AlbumRepository albums,
+					FolderRepository folders,
+					PictureFileRepository pictureFiles,
+					KeywordsRepository keywords,
+					KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 	}
 
 	@GetMapping("/about/")

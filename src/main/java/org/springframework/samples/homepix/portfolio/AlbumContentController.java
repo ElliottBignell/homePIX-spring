@@ -15,13 +15,14 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,9 +47,14 @@ class AlbumContentController extends PaginationController {
 	private final AlbumContentRepository albumContent;
 
 	@Autowired
-	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders,
-			PictureFileRepository pictureFiles, KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public AlbumContentController(AlbumContentRepository albumContent,
+								  AlbumRepository albums,
+								  FolderRepository folders,
+								  PictureFileRepository pictureFiles,
+								  KeywordsRepository keywords,
+								  KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 		this.albumContent = albumContent;
 	}
 
@@ -279,7 +285,7 @@ class AlbumContentController extends PaginationController {
 	@Secured("ROLE_ADMIN")
 	@PostMapping("/albums/{name}/curate/")
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
-			Map<String, Object> model) {
+										   Map<String, Object> model) {
 		return "folders/folderList.html";
 	}
 

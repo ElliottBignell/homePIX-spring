@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -40,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Michael Isvy
  * @author Elliott Bignell
  */
+@Repository
 public interface PictureFileRepository extends CrudRepository<PictureFile, Integer> {
 
 	/**
@@ -54,9 +56,12 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<String> findYears();
 
-	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename LIKE :filename%")
+	//@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename LIKE :filename%")
+	//@Transactional(readOnly = true)
+	//List<PictureFile> findByFilename(@Param("filename") String filename);
+	@Query("SELECT pf FROM PictureFile pf JOIN pf.folder f WHERE f.name = :filename")
 	@Transactional(readOnly = true)
-	List<PictureFile> findByFilename(@Param("filename") String filename);
+	List<PictureFile> findByFolderName(@Param("filename") String filename);
 
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE DATE(picture_file.taken_on) = :date")
 	@Transactional(readOnly = true)

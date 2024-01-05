@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.keywords;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.samples.homepix.portfolio.Folder;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -31,6 +33,7 @@ import java.util.Collection;
  *
  * @author Elliott Bignell
  */
+@Repository
 public interface KeywordsRepository extends CrudRepository<Keywords, Integer> {
 
 	/**

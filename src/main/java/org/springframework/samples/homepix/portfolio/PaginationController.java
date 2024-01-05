@@ -7,6 +7,10 @@ import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.Keywords;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -26,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -48,6 +51,8 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected final KeywordsRepository keywords;
 
+	protected final KeywordRelationshipsRepository keywordsRelationships;
+
 	protected static final String bucketName = "picture-files";
 
 	protected static final String endpoint = "https://sos-ch-dk-2.exo.io";
@@ -64,12 +69,17 @@ public abstract class PaginationController implements AutoCloseable {
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
 	@Autowired
-	protected PaginationController(AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles,
-			KeywordsRepository keywords) {
+	protected PaginationController(AlbumRepository albums,
+								   FolderRepository folders,
+								   PictureFileRepository pictureFiles,
+								   KeywordsRepository keywords,
+								   KeywordRelationshipsRepository keywordsRelationships
+	) {
 		this.albums = albums;
 		this.folders = folders;
 		this.pictureFiles = pictureFiles;
 		this.keywords = keywords;
+		this.keywordsRelationships = keywordsRelationships;
 		pagination = new Pagination();
 	}
 
@@ -372,7 +382,7 @@ public abstract class PaginationController implements AutoCloseable {
 					name = suffix;
 					String exifName = "jpegs" + suffix;
 
-					List<PictureFile> existingFile = this.pictureFiles.findByFilename(name);
+					List<PictureFile> existingFile = this.pictureFiles.findByFolderName(name);
 
 					if (existingFile.isEmpty()) {
 
@@ -405,10 +415,16 @@ public abstract class PaginationController implements AutoCloseable {
 							newKeywords.setContent(iptcKeywords);
 							newKeywords.setKeyword_count(0);
 							this.keywords.save(newKeywords);
-							picture.setKeywords(newKeywords);
+
+							KeywordRelationships relation = new KeywordRelationships();
+							relation.setPictureFile(picture);
+							relation.setKeywords(newKeywords);
+							this.keywordsRelationships.save(relation);
+
+							//picture.setKeywords(newKeywords);
 						}
 						else {
-							picture.setKeywords(keywords.iterator().next());
+							//picture.setKeywords(keywords.iterator().next());
 						}
 
 						if (picture.getRoles() == null || picture.getRoles().equals("")) {

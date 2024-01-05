@@ -15,19 +15,16 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
-import jakarta.validation.Valid;
 import org.springframework.samples.homepix.portfolio.*;
+import org.springframework.samples.homepix.portfolio.Album;
+import org.springframework.samples.homepix.portfolio.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.util.StringUtils;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * @author Juergen Hoeller
@@ -43,9 +40,13 @@ public class PictureFileController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about.html";
 
-	public PictureFileController(PictureFileRepository pictureFiles, AlbumRepository albums, FolderRepository folders,
-			KeywordsRepository keywords) {
-		super(albums, folders, pictureFiles, keywords);
+	public PictureFileController(PictureFileRepository pictureFiles,
+								 AlbumRepository albums,
+								 FolderRepository folders,
+								 KeywordsRepository keywords,
+								 KeywordRelationshipsRepository keywordsRelationships
+	) {
+		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
 	}
 
 	@ModelAttribute("types")
