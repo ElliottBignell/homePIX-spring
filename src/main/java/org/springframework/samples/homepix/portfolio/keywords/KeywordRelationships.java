@@ -1,9 +1,6 @@
 package org.springframework.samples.homepix.portfolio.keywords;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.core.style.ToStringCreator;
@@ -13,19 +10,23 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 @Entity
 @Getter
 @Setter
-@Table(name = "keyword_relationships")
+@Table(name = "keyword_relationships_new")
 public class KeywordRelationships extends BaseEntity {
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "keyword_id")
-	private Keywords keywords;
+	private Keyword keyword;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "entry_id")
 	private PictureFile pictureFile;
 
 	@Override
 	public String toString() {
 		return new ToStringCreator(this).append("id", this.getId()).toString();
+	}
+
+	public Integer getPictureId() {
+		return (pictureFile != null) ? pictureFile.getId() : null;
 	}
 }

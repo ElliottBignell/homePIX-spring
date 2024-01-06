@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,10 +51,10 @@ class FolderController extends PaginationController {
 	public FolderController(FolderRepository folders,
 							AlbumRepository albums,
 							PictureFileRepository pictureFiles,
-							KeywordsRepository keywords,
+							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships
 	) {
-		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
 	}
 
 	@InitBinder

@@ -22,8 +22,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
-import org.springframework.samples.homepix.portfolio.keywords.Keywords;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;

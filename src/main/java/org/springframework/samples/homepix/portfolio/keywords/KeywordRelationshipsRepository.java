@@ -3,12 +3,11 @@ package org.springframework.samples.homepix.portfolio.keywords;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
-import org.springframework.samples.homepix.portfolio.keywords.Keywords;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface KeywordRelationshipsRepository extends CrudRepository<KeywordRelationships, Integer> {
@@ -21,4 +20,8 @@ public interface KeywordRelationshipsRepository extends CrudRepository<KeywordRe
 	@Query("SELECT kw FROM KeywordRelationships kw left join fetch kw.pictureFile WHERE kw.pictureFile.id =:picture_id")
 	@Transactional(readOnly = true)
 	Collection<KeywordRelationships> findByPictureId(@Param("picture_id") Integer picture_id);
+
+	@Query("SELECT kw FROM KeywordRelationships kw WHERE kw.pictureFile.id IN :pictureIds")
+	@Transactional(readOnly = true)
+	Collection<KeywordRelationships> findByPictureIds(@Param("pictureIds") List<Integer> pictureIds);
 }

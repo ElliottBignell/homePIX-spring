@@ -19,7 +19,7 @@ import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.Album;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -43,10 +43,10 @@ public class PictureFileController extends PaginationController {
 	public PictureFileController(PictureFileRepository pictureFiles,
 								 AlbumRepository albums,
 								 FolderRepository folders,
-								 KeywordsRepository keywords,
+								 KeywordRepository keyword,
 								 KeywordRelationshipsRepository keywordsRelationships
 	) {
-		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
 	}
 
 	@ModelAttribute("types")

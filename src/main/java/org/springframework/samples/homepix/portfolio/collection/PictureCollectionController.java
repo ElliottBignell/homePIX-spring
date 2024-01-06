@@ -19,7 +19,8 @@ import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -32,7 +33,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -48,11 +48,11 @@ class PictureCollectionController extends PaginationController {
 									   PictureCollectionRepository pictures,
 									   AlbumRepository albums,
 									   FolderRepository folders,
-									   KeywordsRepository keywords,
+									   KeywordRepository keyword,
 									   KeywordRelationshipsRepository keywordsRelationships
 	) {
 
-		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
 		this.pictures = pictures;
 	}
 
@@ -88,16 +88,20 @@ class PictureCollectionController extends PaginationController {
 	public String processFindCollectionsSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 											  PictureCollection pictureCollection,
 											  BindingResult result,
-											  Map<String, Object> model) {
+											  Map<String, Object> model,
+											  Authentication authentication
+	) {
 
-		return processFindCollections(requestDTO, pictureCollection, result, model);
+		return processFindCollections(requestDTO, pictureCollection, result, model, authentication);
 	}
 
 	@GetMapping("/collection")
 	public String processFindCollections(@ModelAttribute CollectionRequestDTO requestDTO,
 										 PictureCollection pictureCollection,
 										 BindingResult result,
-										 Map<String, Object> model) {
+										 Map<String, Object> model,
+										 Authentication authentication
+	) {
 
 		// allow parameterless GET request for /collections to return all records
 		if (pictureCollection.getName() == null) {
@@ -115,8 +119,26 @@ class PictureCollectionController extends PaginationController {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
-		LocalDate startDate = LocalDate.parse(requestDTO.getFromDate(), formatter);
-		LocalDate endDate = LocalDate.parse(requestDTO.getToDate(), formatter);
+		String fromDate = requestDTO.getFromDate();
+		String toDate = requestDTO.getToDate();
+
+		if (fromDate.equals("")) {
+			fromDate = "1970-01-01";
+		}
+
+		if (toDate.equals("")) {
+
+			Supplier<String> supplier = () -> {
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+				LocalDateTime now = LocalDateTime.now();
+				return dtf.format(now);
+			};
+
+			toDate = supplier.get();
+		}
+
+		LocalDate startDate = LocalDate.parse(fromDate, formatter);
+		LocalDate endDate = LocalDate.parse(toDate, formatter);
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
@@ -127,11 +149,7 @@ class PictureCollectionController extends PaginationController {
 		files = this.pictures.findByDates(start, end);
 
 		if (null != requestDTO.getSearch()) {
-
-			files = files.stream()
-				.filter( item -> item.getTitle().contains(requestDTO.getSearch()))
-				.sorted( orderBy )
-				.collect(Collectors.toList());
+			files = listFilteredFiles(files, requestDTO, authentication);
 		}
 
 		model.put("collection", files);

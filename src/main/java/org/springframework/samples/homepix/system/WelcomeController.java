@@ -17,6 +17,7 @@
 package org.springframework.samples.homepix.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.Album;
 import org.springframework.samples.homepix.portfolio.AlbumContent;
@@ -25,10 +26,11 @@ import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.Collection;
 import java.util.Map;
@@ -44,15 +46,22 @@ class WelcomeController extends PaginationController {
 							 AlbumRepository albums,
 							 FolderRepository folders,
 							 AlbumContentRepository albumContents,
-							 KeywordsRepository keywords,
+							 KeywordRepository keyword,
 							 KeywordRelationshipsRepository keywordsRelationships
 	) {
-		super(albums, folders, pictureFiles, keywords, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
 		this.albumContents = albumContents;
 	}
 
 	@GetMapping("/")
-	public String welcome(Album album, BindingResult result, Map<String, Object> model) {
+	public String welcome(@ModelAttribute CollectionRequestDTO requestDTO,
+						  Album album,
+						  BindingResult result,
+						  Map<String, Object> model
+	) {
+		if (!requestDTO.getSearch().equals("")) {
+			return "redirect:/collection/";
+		}
 
 		long id = 0;
 

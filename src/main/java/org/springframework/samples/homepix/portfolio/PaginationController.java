@@ -7,10 +7,8 @@ import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.Keywords;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
+import org.springframework.samples.homepix.portfolio.keywords.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -33,6 +31,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,9 +48,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected final PictureFileRepository pictureFiles;
 
-	protected final KeywordsRepository keywords;
+	protected final KeywordRepository keyword;
 
-	protected final KeywordRelationshipsRepository keywordsRelationships;
+	protected final KeywordRelationshipsRepository keywordRelationships;
 
 	protected static final String bucketName = "picture-files";
 
@@ -72,14 +71,14 @@ public abstract class PaginationController implements AutoCloseable {
 	protected PaginationController(AlbumRepository albums,
 								   FolderRepository folders,
 								   PictureFileRepository pictureFiles,
-								   KeywordsRepository keywords,
+								   KeywordRepository keyword,
 								   KeywordRelationshipsRepository keywordsRelationships
 	) {
 		this.albums = albums;
 		this.folders = folders;
 		this.pictureFiles = pictureFiles;
-		this.keywords = keywords;
-		this.keywordsRelationships = keywordsRelationships;
+		this.keyword = keyword;
+		this.keywordRelationships = keywordsRelationships;
 		pagination = new Pagination();
 	}
 
@@ -407,19 +406,18 @@ public abstract class PaginationController implements AutoCloseable {
 							iptcKeywords = subFolder.substring(6);
 						}
 
-						Collection<Keywords> keywords = this.keywords.findByContent(iptcKeywords);
+						Collection<Keyword> keywords = this.keyword.findByContent(iptcKeywords);
 
 						if (keywords.isEmpty()) {
 
-							Keywords newKeywords = new Keywords();
-							newKeywords.setContent(iptcKeywords);
-							newKeywords.setKeyword_count(0);
-							this.keywords.save(newKeywords);
+							Keyword newKeyword = new Keyword();
+							newKeyword.setWord(iptcKeywords);
+							this.keyword.save(newKeyword);
 
 							KeywordRelationships relation = new KeywordRelationships();
 							relation.setPictureFile(picture);
-							relation.setKeywords(newKeywords);
-							this.keywordsRelationships.save(relation);
+							relation.setKeyword(newKeyword);
+							this.keywordRelationships.save(relation);
 
 							//picture.setKeywords(newKeywords);
 						}
@@ -489,6 +487,105 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 
 		return results;
+	}
+
+	protected List<PictureFile> listFilteredFiles(List<PictureFile> files,
+												  CollectionRequestDTO requestDTO,
+												  Authentication authentication) {
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		Pattern pattern = Pattern.compile("\\b" + requestDTO.getSearch() + "\\b", Pattern.CASE_INSENSITIVE);
+
+		// Fetch all keyword relationships for the given picture files
+		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+
+		return files.parallelStream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+	}
+
+	private Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
+		List<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toList());
+
+		// Fetch all keyword relationships for the given picture files
+		Collection<KeywordRelationships> keywordRelationshipsList = keywordRelationships.findByPictureIds(fileIds);
+
+		// Build a map of file IDs to associated keywords
+		return keywordRelationshipsList.stream()
+			.collect(Collectors.groupingBy(
+				KeywordRelationships::getPictureId,
+				Collectors.mapping(relationship -> relationship.getKeyword().getWord(), Collectors.toSet())
+			));
+	}
+
+	private boolean matchesTitleOrKeyword(PictureFile item, Pattern pattern, Map<Integer, Set<String>> keywordMap) {
+		// Check if title matches
+		Matcher titleMatcher = pattern.matcher(item.getTitle());
+		if (titleMatcher.find()) {
+			return true;
+		}
+
+		// Check if any associated keyword matches
+		Set<String> keywords = keywordMap.getOrDefault(item.getId(), Collections.emptySet());
+		return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
+	}
+
+	protected List<PictureFile> listFilteredFiles_(List<PictureFile> files,
+												  CollectionRequestDTO requestDTO,
+												  Authentication authentication) {
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		Pattern pattern = Pattern.compile(
+			"\\b" + requestDTO.getSearch() + "\\b",
+			Pattern.CASE_INSENSITIVE
+		);
+
+		return files.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter( item -> {
+
+				Matcher matcher = pattern.matcher(item.getTitle());
+				boolean matchFound = matcher.find();
+
+				if (!matchFound) {
+
+					Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureId(item.getId());
+
+					for (KeywordRelationships relationship : relations) {
+
+						Keyword keyword = relationship.getKeyword();
+
+						if (null != keyword) {
+
+							matcher = pattern.matcher(keyword.getWord());
+							matchFound = matcher.find();
+
+							if (matchFound) {
+								break;
+							}
+						}
+					}
+				}
+
+				return matchFound;
+			})
+			.sorted( orderBy )
+			.collect(Collectors.toList());
+	}
+
+	private boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
+
+		if (authentication != null && authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"))) {
+			return true;
+		} else {
+			// Non-admin logic, filter pictures based on your criteria
+			// For example, don't show pictures with scary content to non-admin users
+			String roles = pictureFile.getRoles();
+			return roles.equals("ROLE_USER") || roles.equals("");
+		}
 	}
 
 	private void setDate(PictureFile picture, Map<String, String> properties) {

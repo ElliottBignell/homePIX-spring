@@ -479,7 +479,7 @@ i             </div>
               <span th:if="${keywords != null}">
                 <span id="keywords" class="titlecontent" th:each="word : ${keywords}">
                   <button type="button" class="buttonfont" data-react-toolbox="button">
-                    <span th:text="${word}"></span>
+                    <span th:text="${word.keyword.word}"></span>
                     <span>
                       <a href="/remove">
                         <i class='glyphicon glyphicon-remove'>
