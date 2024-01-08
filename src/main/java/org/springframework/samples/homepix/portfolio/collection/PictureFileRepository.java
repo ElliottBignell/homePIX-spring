@@ -56,9 +56,17 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<String> findYears();
 
-	//@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename LIKE :filename%")
-	//@Transactional(readOnly = true)
-	//List<PictureFile> findByFilename(@Param("filename") String filename);
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE picture_file.filename=:filename")
+	@Transactional(readOnly = true)
+	List<PictureFile> findByFilename(@Param("filename") String filename);
+
+	@Query("SELECT pf.filename FROM PictureFile pf WHERE pf.filename IN :filenames")
+	@Transactional(readOnly = true)
+	List<String> findFilenamesByFilenames(@Param("filenames") List<String> filenames);
+
+	@Query("SELECT pf FROM PictureFile pf WHERE pf.filename IN :filenames")
+	List<PictureFile> findByFilenames(@Param("filenames") List<String> filenames);
+
 	@Query("SELECT pf FROM PictureFile pf JOIN pf.folder f WHERE f.name = :filename")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFolderName(@Param("filename") String filename);

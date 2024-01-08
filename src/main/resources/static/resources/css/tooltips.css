@@ -210,13 +210,13 @@ tt_icon_anchor {
 
 .tt_unselected {
 
-    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    position:relative;top:100%;left:0%;z-index:0;border-radius:12px;
     box-shadow: 0 0 0 0px white;
 }
 
 .tt_selected {
 
-    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    position:relative;top:100%;left:0%;z-index:0;border-radius:12px;
     box-shadow: 0 0 0 2px green,
                 0 0 0 4px green,
                 0 0 0 6px green;
@@ -224,7 +224,7 @@ tt_icon_anchor {
 
 .tt_focussed {
 
-    position:relative;top:100%;left:0%;z-index:0;height:100px; border-radius:12px;
+    position:relative;top:100%;left:0%;z-index:0;border-radius:12px;
     box-shadow: 0 0 0 2px red,
                 0 0 0 4px yellow,
                 0 0 0 6px red;

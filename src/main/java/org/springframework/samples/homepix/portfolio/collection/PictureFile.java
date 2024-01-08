@@ -137,16 +137,28 @@ public class PictureFile extends BaseEntity {
 
 			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];
 
-			String result = "/web-images/" + this.folder.getName() + "/200px/" + filename;
-			return result;
+			if (null != this.folder) {
+				return "/web-images/" + this.folder.getName() + "/200px/" + filename;
+			}
+			else {
+
+				int slashIndex = this.filename.indexOf('/', 1);
+
+				if (slashIndex > 1) {
+
+					String folderName = this.filename.substring(1, slashIndex);
+
+					return "/web-images/" + folderName + "/200px/" + filename;
+				}
+			}
 		}
 		catch (Exception ex) {
 
 			System.out.println(ex);
 			ex.printStackTrace();
-
-			return this.filename;
 		}
+
+		return this.filename;
 	}
 
 	public String getLargeFilename() {
@@ -201,5 +213,9 @@ public class PictureFile extends BaseEntity {
 		else {
 			this.roles = "ROLE_USER";
 		}
+	}
+
+	public boolean isValid() {
+		return (null != width && null != height);
 	}
 }

@@ -578,7 +578,6 @@ $( "div[id^=selectable_]" ).keydown(function () {
 
     case 9: //Tab
 
-        alert( target.html );
         event.preventDefault();
         break;
 
@@ -755,7 +754,6 @@ $('div[id^=universe_]').on('drop dragdrop', function( event ) {
 
 $('div[id^=album_]').on('drop dragdrop', function( event ) {
 
-    alert( event.originalEvent.dataTransfer );
     var ids = event.originalEvent.dataTransfer.getData("text");
     var album = $(this).attr( 'id' ).split( '_' )[ 1 ];
 

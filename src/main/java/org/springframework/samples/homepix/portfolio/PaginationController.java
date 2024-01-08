@@ -35,6 +35,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class PaginationController implements AutoCloseable {
 
@@ -60,7 +62,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 	Collection<Folder> folderCache = null;
 
-	protected S3Client s3Client;
+	protected static S3Client s3Client = null;
 
 	private AwsCredentials awsCredentials;
 
@@ -86,7 +88,9 @@ public abstract class PaginationController implements AutoCloseable {
 	public void close() throws Exception {
 
 		if (s3Client != null) {
+
 			s3Client.close();
+			s3Client = null;
 		}
 	}
 
@@ -336,6 +340,71 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
+	protected List<PictureFile> listFiles_(S3Client s3Client, String subFolder) {
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
+		List<PictureFile> results = new ArrayList<>();
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+
+		ListObjectsV2Response listObjectsResponse;
+
+		do {
+			listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+			List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> object.key().toLowerCase().endsWith(".jpg"))
+				.collect(Collectors.toList());
+
+			for (S3Object s3Object : filteredObjects) {
+				try {
+					String name = s3Object.key();
+					String exifName = "jpegs" + name.substring(5);
+
+					// Fetch only metadata
+					GetObjectResponse metadataResponse = s3Client.getObject(GetObjectRequest.builder()
+						.bucket(bucketName)
+						.key(name)
+						.build())
+						.response();
+
+					Map<String, String> properties = getExifEntries(exifName);
+
+					// Process metadata and create/update PictureFile objects
+					processMetadata(properties, name, subFolder, results);
+				} catch (Exception ex) {
+					System.out.println(ex);
+					ex.printStackTrace();
+				}
+			}
+
+			listObjectsRequest = ListObjectsV2Request.builder()
+				.bucket(bucketName)
+				.prefix(prefix)
+				.continuationToken(listObjectsResponse.nextContinuationToken())
+				.build();
+		} while (listObjectsResponse.isTruncated());
+
+		return results;
+	}
+
+	private void processMetadata(Map<String, String> properties, String name, String subFolder, List<PictureFile> results) {
+		// Your existing logic for processing metadata and creating/updating PictureFile objects
+		// ...
+
+		// Example:
+		// PictureFile picture = new PictureFile();
+		// picture.setTitle(properties.get("title"));
+		// picture.setFilename(name);
+		// ...
+
+		// results.add(picture);
+		// this.pictureFiles.save(picture);
+	}
+
 	protected List<PictureFile> listFiles(S3Client s3Client, String subFolder) {
 
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
@@ -375,13 +444,15 @@ public abstract class PaginationController implements AutoCloseable {
 
 				if (extension.equals(".jpg")) {
 
-					String sizePart = name.substring(name.length() - 9, name.length() - 4).toLowerCase();
-
 					String suffix = name.substring(5, name.length());
 					name = suffix;
 					String exifName = "jpegs" + suffix;
 
-					List<PictureFile> existingFile = this.pictureFiles.findByFolderName(name);
+					String folderName = name.substring( 1, name.indexOf('/', 1));
+
+					name = name.substring(folderName.length() + 2);
+
+					List<PictureFile> existingFile = this.pictureFiles.findByFilename(name);
 
 					if (existingFile.isEmpty()) {
 
@@ -393,36 +464,27 @@ public abstract class PaginationController implements AutoCloseable {
 
 						picture.setTitle(properties.get("title"));
 						picture.setFilename(name);
-						picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
-						picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
-						picture.setAdded_on(java.time.LocalDate.now());
-						// picture.setLocation(properties.get("title")));
-						// picture.setPrimaryCategory(properties.get("title")));
-						// picture.setSecondaryCategory(properties.get("title")));
 
+						try {
+
+							picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
+							picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
+							picture.setAdded_on(java.time.LocalDate.now());
+							// picture.setLocation(properties.get("title")));
+							// picture.setPrimaryCategory(properties.get("title")));
+							// picture.setSecondaryCategory(properties.get("title")));
+						}
+						catch (Exception ex) {
+							System.out.println(ex);
+						}
+
+						// TODO: Split keywords and add singly!!!
 						String iptcKeywords = properties.get("IPTC:Keywords");
 
 						if (null == iptcKeywords) {
+
 							iptcKeywords = subFolder.substring(6);
-						}
-
-						Collection<Keyword> keywords = this.keyword.findByContent(iptcKeywords);
-
-						if (keywords.isEmpty()) {
-
-							Keyword newKeyword = new Keyword();
-							newKeyword.setWord(iptcKeywords);
-							this.keyword.save(newKeyword);
-
-							KeywordRelationships relation = new KeywordRelationships();
-							relation.setPictureFile(picture);
-							relation.setKeyword(newKeyword);
-							this.keywordRelationships.save(relation);
-
-							//picture.setKeywords(newKeywords);
-						}
-						else {
-							//picture.setKeywords(keywords.iterator().next());
+							addKeywordAndRelationship(picture, iptcKeywords);
 						}
 
 						if (picture.getRoles() == null || picture.getRoles().equals("")) {
@@ -489,6 +551,34 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
+	protected void addKeywordAndRelationship(PictureFile picture, String word) {
+
+		Collection<Keyword> existing = this.keyword.findByContent(word);
+
+		Keyword newKeyword;
+
+		if (existing.isEmpty()) {
+
+			newKeyword = new Keyword();
+			newKeyword.setWord(word);
+			this.keyword.save(newKeyword);
+		}
+		else
+			newKeyword = existing.iterator().next();
+
+		Collection<KeywordRelationships> relations = this.keywordRelationships.findByBothIds(picture.getId(), newKeyword.getId());
+
+		if (relations.isEmpty()) {
+
+			KeywordRelationships relation = new KeywordRelationships();
+			relation.setPictureFile(picture);
+			relation.setKeyword(newKeyword);
+			this.keywordRelationships.save(relation);
+		}
+
+		//picture.setKeywords(newKeywords);
+	}
+
 	protected List<PictureFile> listFilteredFiles(List<PictureFile> files,
 												  CollectionRequestDTO requestDTO,
 												  Authentication authentication) {
@@ -501,6 +591,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 		return files.parallelStream()
 			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
 			.sorted(orderBy)
 			.collect(Collectors.toList());

@@ -24,4 +24,9 @@ public interface KeywordRelationshipsRepository extends CrudRepository<KeywordRe
 	@Query("SELECT kw FROM KeywordRelationships kw WHERE kw.pictureFile.id IN :pictureIds")
 	@Transactional(readOnly = true)
 	Collection<KeywordRelationships> findByPictureIds(@Param("pictureIds") List<Integer> pictureIds);
+
+	@Query("SELECT kw FROM KeywordRelationships kw left join fetch kw.pictureFile left join fetch kw.keyword WHERE kw.pictureFile.id =:picture_id AND kw.keyword.id =:keyword_id")
+	@Transactional(readOnly = true)
+	Collection<KeywordRelationships> findByBothIds(@Param("picture_id") Integer picture_id,
+												   @Param("keyword_id") Integer keyword_id);
 }

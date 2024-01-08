@@ -18,7 +18,9 @@
   </h3>
   <c th:each="pictureFile : ${collection}">
     <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}" th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+      <a th:id="@{picture__${pictureFile.id}__}"
+         th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+      >
         <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
           <span class="tt_subject">
             <img th:id="@{picture__${pictureFile.id}__}"
@@ -32,44 +34,48 @@
           </span>
         </section>
       </a>
-    <figcaption class="tt_edit">
-      <form id="editprops">
-        <fieldset>
-          <button type="button" class="tt_title imageresponsive_">
-            <span style="text-align:left;" th:text="${pictureFile.title}"></span>
-          </button>
-        </fieldset>
-      </form>
-    </figcaption>
-    <div th:id="@{header-o-__${ pictureFile.id }__}" class="tt_left tt_text tt_header">
-      <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-        <i class="material-icons tt_icon">
-          keyboard_arrow_left
-        </i>
+      <a th:id="@{picture__${pictureFile.id}__}"
+         th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+      >
+        <figcaption class="tt_edit">
+          <form id="editprops">
+            <fieldset>
+              <button type="button" class="tt_title imageresponsive_">
+                <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+              </button>
+            </fieldset>
+          </form>
+        </figcaption>
       </a>
-      <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-        <i class="material-icons tt_icon">
-          keyboard_arrow_right
-        </i>
-      </a>
-      <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-        <i class="material-icons tt_icon">
-          bedtime
-        </i>
-      </a>
-      <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-        <i class="material-icons tt_icon">
-          delete
-        </i>
-      </a>
-    </div>
+      <div th:id="@{header-o-__${ pictureFile.id }__}" class="tt_left tt_text tt_header">
+        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+          <i class="material-icons tt_icon">
+            keyboard_arrow_left
+          </i>
+        </a>
+        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+          <i class="material-icons tt_icon">
+            keyboard_arrow_right
+          </i>
+        </a>
+        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+          <i class="material-icons tt_icon">
+            bedtime
+          </i>
+        </a>
+        <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+          <i class="material-icons tt_icon">
+            delete
+          </i>
+        </a>
+      </div>
       <!--
-    <figcaption class="tt_text tt_bottom">
-      <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
-    </figcaption>
-    -->
-  </figure>
-</c>
+      <figcaption class="tt_text tt_bottom">
+        <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
+      </figcaption>
+      -->
+    </figure>
+  </c>
 </div>
 
 

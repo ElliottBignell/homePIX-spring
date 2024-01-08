@@ -26,6 +26,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -86,22 +87,39 @@ class PictureCollectionController extends PaginationController {
 
 	@GetMapping("/collection/")
 	public String processFindCollectionsSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+											  @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+											  RedirectAttributes redirectAttributes,
 											  PictureCollection pictureCollection,
 											  BindingResult result,
 											  Map<String, Object> model,
-											  Authentication authentication
-	) {
+											  Authentication authentication) {
 
-		return processFindCollections(requestDTO, pictureCollection, result, model, authentication);
+		return processFindCollections(requestDTO, redirectedDTO, pictureCollection, result, model, authentication);
 	}
 
+
 	@GetMapping("/collection")
-	public String processFindCollections(@ModelAttribute CollectionRequestDTO requestDTO,
+	public String processFindCollectionsSlashNoSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+													 @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+													  PictureCollection pictureCollection,
+													  BindingResult result,
+													  Map<String, Object> model,
+													  Authentication authentication) {
+
+		return processFindCollections(requestDTO, redirectedDTO, pictureCollection, result, model, authentication);
+	}
+
+	public String processFindCollections(CollectionRequestDTO requestDTO,
+										 CollectionRequestDTO redirectedDTO,
 										 PictureCollection pictureCollection,
 										 BindingResult result,
 										 Map<String, Object> model,
 										 Authentication authentication
 	) {
+    	// Check if redirectedDTO is not null, use it if available
+		if (redirectedDTO != null) {
+			requestDTO = redirectedDTO;
+		}
 
 		// allow parameterless GET request for /collections to return all records
 		if (pictureCollection.getName() == null) {

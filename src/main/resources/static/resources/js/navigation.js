@@ -258,7 +258,6 @@ function retreat( evtobj )
 
 function moveTo( index )
 {
-    alert(currentIndex);
     var oldIndex = "[id^=selectable_" + ( currentIndex ).toString() + "_]";
 
     if ( $( oldIndex ).length ) { // Element exists

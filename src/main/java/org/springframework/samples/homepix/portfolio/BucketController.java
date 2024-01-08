@@ -255,13 +255,41 @@ class BucketController extends PaginationController {
 
 		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
 
+		Collection<Folder> existingFolder = this.folders.findByName(folder.getName());
+
+		if (!existingFolder.isEmpty()) {
+			folder = existingFolder.iterator().next();
+		}
+		else {
+
+			folder.setPicture_count(files.size());
+			this.folders.save(folder);
+		}
+
+		// Fetch existing filenames from the database
+		List<PictureFile> existingFiles = pictureFiles.findByFilenames(
+			files.stream().map(PictureFile::getFilename).collect(Collectors.toList())
+		);
+
+		final Folder newFolder = folder;
+
 		for (PictureFile file : files) {
 
 			try {
 
-				List<PictureFile> existingFile = pictureFiles.findByFolderName(file.getFilename());
+				// Check if the filename already exists in the database
+				Optional<PictureFile> existingFileOptional = existingFiles.stream()
+					.filter(existingFile -> existingFile.getFilename().equals(file.getFilename()))
+					.findFirst();
 
-				if (existingFile.isEmpty()) {
+				if (existingFileOptional.isPresent()) {
+					// Update existing record
+					PictureFile existingFile = existingFileOptional.get();
+					existingFile.setFolder(folder);
+					pictureFiles.save(existingFile);
+				} else {
+					// Save new record
+					file.setFolder(folder);
 					pictureFiles.save(file);
 				}
 			}
@@ -284,7 +312,7 @@ class BucketController extends PaginationController {
 	public ResponseEntity<Map<String, Object>> importPicturesFromBucketAsync(@Valid Folder folder, @PathVariable("name") String name,
 																			 Map<String, Object> model) {
 
-		initialiseS3Client();
+		/*initialiseS3Client();
 
 		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
 
@@ -307,6 +335,9 @@ class BucketController extends PaginationController {
 		model.put("collection", files);
 		model.put("baseLink", "/folders/" + name);
 		model.put("albums", this.albums.findAll());
+		*/
+
+		importPicturesFromBucket(folder, name, model);
 
 		Collection<Folder> folders = this.folders.findByName(name);
 
@@ -315,7 +346,7 @@ class BucketController extends PaginationController {
 		if (!folders.isEmpty()) {
 
 			// Assuming you have the picture count in the folder object
-			int pictureCount = folders.iterator().next().getPicture_count() + 1;
+			int pictureCount = folders.iterator().next().getPicture_count();
 
 			// Create a new map to hold the response data
 			responseData.put("newPictureCount", pictureCount);
@@ -549,13 +580,7 @@ class BucketController extends PaginationController {
 				ex.printStackTrace();
 			}
 
-			Keyword keyword = new Keyword();
-			keyword.setWord(name);
-
-			KeywordRelationships relation = new KeywordRelationships();
-			relation.setPictureFile(item);
-			relation.setKeyword(keyword);
-			this.keywordRelationships.save(relation);
+			this.addKeywordAndRelationship(item, name);
 
 			pictureFiles.add(item);
 		}
@@ -588,13 +613,7 @@ class BucketController extends PaginationController {
 			ex.printStackTrace();
 		}
 
-		Keyword keyword = new Keyword();
-		keyword.setWord(name);
-
-		KeywordRelationships relation = new KeywordRelationships();
-		relation.setPictureFile(item);
-		relation.setKeyword(keyword);
-		this.keywordRelationships.save(relation);
+		this.addKeywordAndRelationship(item, name);
 
 		pictureFiles.add(item);
 

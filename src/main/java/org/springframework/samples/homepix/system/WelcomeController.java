@@ -16,6 +16,7 @@
 
 package org.springframework.samples.homepix.system;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collection;
 import java.util.Map;
@@ -55,11 +57,14 @@ class WelcomeController extends PaginationController {
 
 	@GetMapping("/")
 	public String welcome(@ModelAttribute CollectionRequestDTO requestDTO,
+						  RedirectAttributes redirectAttributes,
 						  Album album,
 						  BindingResult result,
 						  Map<String, Object> model
 	) {
 		if (!requestDTO.getSearch().equals("")) {
+
+			redirectAttributes.addAttribute("search", requestDTO.getSearch());
 			return "redirect:/collection/";
 		}
 
