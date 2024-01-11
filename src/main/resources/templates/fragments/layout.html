@@ -100,22 +100,23 @@
                 </i>
               </a>
             </li>
-              <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;">
-                <a href="/buckets/" class="navlink bigbrand">
-                  <i class="large material-icons"
-                     style="color:var( {{ request.get_full_path|current_background:'folders' }} );"
-                  >
-                      folder
-                  </i>
-                </a>
-                <ul class="drop-down-menu">
-                  <li th:each="folder : ${folders}">
-                    <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
-                    <!--<a th:href="@{/buckets/__${folder.name}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" class="bigmenu" th:text="${folder.displayName}">Folders</a>-->
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'albums' }} ); height:4em;display: inline-block;">
+            <li class="nav-item" style="background-color: var({{ request.get_full_path|current_content:'folders' }}); height: 4em; display: inline-block;">
+              <a href="/buckets/" class="navlink bigbrand">
+                <i class="large material-icons" style="color: var({{ request.get_full_path|current_background:'folders' }});">
+                  folder
+                </i>
+              </a>
+              <ul class="drop-down-menu">
+                <table>
+                  <tr th:each="chunk : ${T(org.springframework.samples.homepix.portfolio.util.ChunkUtil).chunkList(folders, 4)}">
+                    <td th:each="folder : ${chunk}">
+                      <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
+                    </td>
+                  </tr>
+                </table>
+              </ul>
+            </li>
+            <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'albums' }} ); height:4em;display: inline-block;">
                 <a href="/album/" class="bigbrand">
                   <i class="large material-icons"
                      style="color:var( {{ request.get_full_path|current_background:'albums' }} );"
@@ -201,7 +202,7 @@
                 <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;right-margin:12px;position:relative;width:22em;top:-0.34em;">
                   <select name="sort" id="sort" th:value="${ param.sort }" style="position:absolute;width:10em;top:0.4em;" placeholder="Sort by..." class="form-control">
                     <c th:if="${pagination}">
-                     <option th:each="option : ${ pagination.sortOptions }" th:value="${ option}" th:selected="${ option ==  param.sort }" th:text="${option}">Sort options</option>
+                     <option th:each="option : ${ pagination.sortOptions }" th:value="${option}" th:selected="${ option ==  sort }" th:text="${option}">Sort options</option>
                     </c>
                   </select>
                   <button type="submit" style="font-size:2em;position:absolute;top:0.3em;left:8.4em;height:1.5em;">
@@ -288,71 +289,64 @@
         <ul>
           <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4em;top:5em;right:4em;">
             <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
-              <ul class="pagination" style="margin:0 0;">
+              <span th:if="${pageNumber != null}">
+                <ul class="pagination" style="margin:0 0;">
+                  <li th:class="${pageNumber > 0 ? page : disabled}">
+                    <a th:href="@{./?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      |&laquo;
+                    </a>
+                  </li>
+                  <li th:class="${pageNumber > 0 ? page : disabled}">
+                    <a th:href="@{./?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      &laquo;
+                    </a>
+                  </li>
+                  <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
+                    <a th:href="@{./?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      &raquo;
+                    </a>
+                  </li>
+                  <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
+                    <a th:href="@{./?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      &raquo;|
+                    </a>
+                  </li>
 
-                <li><a th:if="${pagination.hasPrevious}" th:href="@{?__${ link_params }__page=__${ pagination.previousPage }__}">&laquo;</a></li>
-                <li th:if="${!pagination.hasPrevious}" class="disabled"><span>&laquo;</span></li>
-
-                <spen th:each="l : ${#numbers.sequence(1, pagination.pageCount)}">
-                  <span th:switch="pagination.caseOption">
-                    <li th:case="0" class="disabled"><span th:text="${page}"></span></li>
-                    <li th:case="1"><a href="?{{ link_params }}page={{l}}" th:text="${l}"></a></li>
-                    <li th:case="2" class="disabled"><a href="">...</a></li>
-                    <li th:case="3" class="page"><a href="?{{ link_params }}page={{l}}" th:text="${l}"></a></li>
-                    <li th:case="4" class="page"><a href="?{{ link_params }}page={{l}}" th:text="${l}"><b></b></a></li>
-                    <li th:case="5" class="page"><a href="?{{ link_params }}page={{l}}" th:text="${l}"></a></li>
-                    <li th:case="6" class="disabled"><a href="">...</a></li>
-                    <li th:case="7" class="page" th:text="@{__${l}__:__${ pagination.pageCount - 5 }__:__${ page }__}"></li>
-                    <li th:case="8" class="page">
-                      <a href="?{{ link_params }}page={{ ForItemCount }}">{{ ForItemCount }}
-                      </a>
-                    </li>
-                  </spen>
-                </spen>
-
-                <li th:if="${pagination.hasNext}" class="page">
-                  <a href="?{{ link_params }}page={{ page_obj.next_page_number }}">
-                    &raquo;
-                  </a>
-                </li>
-                <li th:if="${!pagination.hasNext}" class="disabled">
-                    <span style="background-color:var( --homepix-dark );color:var( --homepix-bg );">
-                        &raquo;
-                    </span>
-                </li>
-
-                <li>
-                  <div class="container">
-                    <div class="vertical-center">
-                      <div style="width:10em;height:100%;">
-                        <ul class="pagination" style="margin: 0 0;">
-                          <li id="page_no">
-                            <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );" th:href="@{?page=__${l}__}" th:text="@{Go to: __${pagination.page}__}">
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="container">
-                    <div class="vertical-center">
-                      <div style="position:absolute;top:10px;width:72em;">
-                        <div class="range-slider">
-                          <input
-                            class="custom-range form-control-slider"
-                            type="range" th:value="${ page }" min="1" th:max="${ ForItemCount }"
-                            id="slider" >
+                  <li>
+                    <div class="container">
+                      <div class="vertical-center">
+                        <div style="width:12em;height:100%;">
+                          <ul class="pagination" style="margin: 0 0;">
+                            <li id="page_no">
+                              <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );"
+                                 th:href="@{./?page=__${pageNumber}__}"
+                                 th:text="@{Go to page: __${pageNumber + 1}__}"
+                              >
+                              </a>
+                            </li>
+                          </ul>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              </ul>
+                  </li>
+                  <li>
+                    <div class="container">
+                      <div class="vertical-center">
+                        <div style="position:absolute;top:10px;width:72em;">
+                          <div class="range-slider">
+                            <input
+                              class="custom-range form-control-slider"
+                              type="range" th:value="${ pageNumber + 1 }" min="1" th:max="${ totalPages }"
+                              id="slider" >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </span>
             </div>
           </div>
-
         </div>
         {% endif %}
       </div>

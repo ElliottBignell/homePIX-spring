@@ -1023,7 +1023,7 @@ $('#find').on('search', function(e) {
 
 $( '#slider' ).on( 'input', function( e ) {
     $( '#page_no' ).html(
-        "<a href=\"?page=" + $( this ).val() + "\">" + $( this ).val() + "</a>"
+        "<a href=\"?page=" + $( this ).val() + "\">" + "Go to page " + $( this ).val() + "</a>"
     );
 });
 

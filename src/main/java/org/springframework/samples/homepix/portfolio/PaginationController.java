@@ -1,7 +1,7 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
@@ -595,6 +595,44 @@ public abstract class PaginationController implements AutoCloseable {
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
 			.sorted(orderBy)
 			.collect(Collectors.toList());
+	}
+
+	protected Page<PictureFile> listFilteredFilesPaged(List<PictureFile> files,
+													   CollectionRequestDTO requestDTO,
+													   Authentication authentication,
+													   Pageable pageable
+	) {
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		Pattern pattern = Pattern.compile("\\b" + requestDTO.getSearch() + "\\b", Pattern.CASE_INSENSITIVE);
+
+		// Fetch all keyword relationships for the given picture files
+		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+
+		List<PictureFile> filteredFiles = files.parallelStream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
+			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+
+		List<PictureFile> pagedFiles = getPagedFiles(filteredFiles, pageable);
+
+		return new PageImpl<>(pagedFiles, pageable, filteredFiles.size());
+	}
+
+	List<PictureFile> getPagedFiles(List<PictureFile> filteredFiles, Pageable pageable) {
+
+		int pageSize = pageable.getPageSize();
+		int currentPage = pageable.getPageNumber();
+		int startItem = currentPage * pageSize;
+
+		if (startItem >= filteredFiles.size()) {
+			return Collections.emptyList();
+		} else {
+			int endItem = Math.min(startItem + pageSize, filteredFiles.size());
+			return filteredFiles.subList(startItem, endItem);
+		}
 	}
 
 	private Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {

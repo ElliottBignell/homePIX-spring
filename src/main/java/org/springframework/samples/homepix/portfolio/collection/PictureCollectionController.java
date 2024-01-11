@@ -15,6 +15,9 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
@@ -88,29 +91,32 @@ class PictureCollectionController extends PaginationController {
 	@GetMapping("/collection/")
 	public String processFindCollectionsSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 											  @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+											  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 											  RedirectAttributes redirectAttributes,
 											  PictureCollection pictureCollection,
 											  BindingResult result,
 											  Map<String, Object> model,
 											  Authentication authentication) {
 
-		return processFindCollections(requestDTO, redirectedDTO, pictureCollection, result, model, authentication);
+		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
 
 	@GetMapping("/collection")
 	public String processFindCollectionsSlashNoSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 													 @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+													 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 													  PictureCollection pictureCollection,
 													  BindingResult result,
 													  Map<String, Object> model,
 													  Authentication authentication) {
 
-		return processFindCollections(requestDTO, redirectedDTO, pictureCollection, result, model, authentication);
+		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
 	public String processFindCollections(CollectionRequestDTO requestDTO,
 										 CollectionRequestDTO redirectedDTO,
+										 Pageable pageable, // Default page size and sorting
 										 PictureCollection pictureCollection,
 										 BindingResult result,
 										 Map<String, Object> model,
@@ -158,6 +164,8 @@ class PictureCollectionController extends PaginationController {
 		LocalDate startDate = LocalDate.parse(fromDate, formatter);
 		LocalDate endDate = LocalDate.parse(toDate, formatter);
 
+		toDate = endDate.toString();
+
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		List<PictureFile> files = null;
@@ -166,16 +174,30 @@ class PictureCollectionController extends PaginationController {
 		LocalDate end = endDate.atTime(LocalTime.MAX).toLocalDate();;
 		files = this.pictures.findByDates(start, end);
 
-		if (null != requestDTO.getSearch()) {
-			files = listFilteredFiles(files, requestDTO, authentication);
+		Page<PictureFile> results = null;
+
+		results = listFilteredFilesPaged(files, requestDTO, authentication, pageable);
+
+		int pageSize = results.getSize();
+		int number = results.getNumber();
+		long total = results.getTotalElements();
+		int firstIndex = results.getNumber() * pageSize + 1;
+		long lastIndex = firstIndex + pageSize - 1;
+
+		if (lastIndex > total) {
+			lastIndex= total;
 		}
 
-		model.put("collection", files);
-
-		model.put("startDate", requestDTO.getFromDate());
-		model.put("endDate", requestDTO.getToDate());
+		model.put("collection", results);
+		model.put("startDate", fromDate);
+		model.put("endDate", toDate);
 		model.put("sort", requestDTO.getSort());
 		model.put("search", requestDTO.getSearch());
+		model.put("pageNumber", results.getNumber());
+		model.put("totalPages", results.getTotalPages());
+		model.put("firstIndex", firstIndex);
+		model.put("lastIndex", lastIndex);
+		model.put("count", results.getTotalElements());
 
 		return "collections/collection";
 	}

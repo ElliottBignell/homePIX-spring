@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.samples.homepix.portfolio.collection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -77,6 +79,27 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 
 	@Query("SELECT p.taken_on, COUNT(p) FROM PictureFile p GROUP BY p.taken_on")
 	List<Object[]> countByTakenOn();
+
+	@Query("SELECT p FROM PictureFile p WHERE p.filename LIKE %:searchText% AND p.taken_on BETWEEN :startDate AND :endDate")
+	Page<PictureFile> findByFilenameContainingAndTakenOnBetween(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate,
+		Pageable pageable
+	);
+
+	/*@Query("SELECT DISTINCT p FROM PictureFile p " +
+		"LEFT JOIN FETCH p.keywords k " +
+		"WHERE (p.filename LIKE %:searchText% OR p.title LIKE %:searchText%) " +
+		"AND p.taken_on BETWEEN :startDate AND :endDate " +
+		"AND (k.name LIKE %:keyword% OR :keyword IS NULL)")
+	Page<PictureFile> findByFilenameContainingAndTakenOnBetweenAndKeywordsNameContaining(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate,
+		@Param("keyword") String keyword,
+		Pageable pageable
+	);*/
 
 	default Map<LocalDateTime, Long> getCountByTakenOn() {
 		List<Object[]> result = countByTakenOn();

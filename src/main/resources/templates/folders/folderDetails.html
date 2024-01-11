@@ -80,7 +80,7 @@
     /*]]>*/
   </script>
 
-  <h2 th:text="${folder.displayName + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h2>
+  <h2 th:text="@{__${folder.displayName}__ - __${firstIndex}__ to __${lastIndex}__ of __${count}__ photos}"></h2>
   <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
         action="#"
         th:action="@{/buckets/__${folder.name}__/import/}"

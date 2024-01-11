@@ -4,11 +4,11 @@
 
 <body>
 
-<c th:if="${startDate} eq ${endDate}">
-  <h2 th:text="${'Collection from ' + startDate + ' (' + (collection?.size() ?: 0) + ' Photos)'}">Collection</h2>
+<c th:if="${#strings.isEmpty(endDate) or startDate eq endDate}">
+  <h2 th:text="${'Collection from ' + startDate + ' - __${firstIndex}__ to __${lastIndex}__ of __${count}__ photos}">Collection</h2>
 </c>
 <c th:unless="${startDate} eq ${endDate}">
-  <h2 th:text="${'Collection from ' + startDate + ' to ' + endDate + ' (' + (collection?.size() ?: 0) + ' Photos)'}">Collection</h2>
+  <h2 th:text="${'Collection from ' + startDate + ' to ' + endDate + ' - __${firstIndex}__ to __${lastIndex}__ of __${count}__ photos'}">Collection</h2>
 </c>
 
 <div style="overflow-y: auto; max-height: 75vh;">

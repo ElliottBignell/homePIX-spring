@@ -17,6 +17,9 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -167,6 +170,7 @@ class BucketController extends PaginationController {
 	public String showFolder(
 		CollectionRequestDTO requestDTO,
 		String name,
+		Pageable pageable,
 		Map<String, Object> model,
 		Authentication authentication,
 		boolean reload
@@ -174,19 +178,37 @@ class BucketController extends PaginationController {
 
 		model.put("showScary", true);
 
-		List<PictureFile> results;
+		Page<PictureFile> results;
 
 		if (reload) {
 
 			initialiseS3Client();
 
-			results = listFilteredFiles(listFiles(s3Client, "jpegs/" + name), requestDTO, authentication);
+			results = listFilteredFilesPaged(listFiles(s3Client, "jpegs/" + name), requestDTO, authentication, pageable);
 		}
 		else {
-			results = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
+			results = listFilteredFilesPaged(this.pictureFiles.findByFolderName(name), requestDTO, authentication, pageable);
 		}
 
-		return setModel(requestDTO, model, this.folders.findByName(name), results, "folders/folderDetails");
+		int pageSize = results.getSize();
+		int number = results.getNumber();
+		long total = results.getTotalElements();
+		int firstIndex = results.getNumber() * pageSize + 1;
+		long lastIndex = firstIndex + pageSize - 1;
+
+		if (lastIndex > total) {
+			lastIndex= total;
+		}
+
+		// Add the results to the model
+		model.put("results", results);
+		model.put("pageNumber", results.getNumber());
+		model.put("totalPages", results.getTotalPages());
+		model.put("firstIndex", firstIndex);
+		model.put("lastIndex", lastIndex);
+		model.put("count", results.getTotalElements());
+
+		return setModel(requestDTO, model, this.folders.findByName(name), results.getContent(), "folders/folderDetails");
 	}
 
 
@@ -212,19 +234,21 @@ class BucketController extends PaginationController {
 	@GetMapping("/buckets/{name}")
 	public String showbuckets(@ModelAttribute CollectionRequestDTO requestDTO,
 							  @PathVariable("name") String name,
+							  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 							  Authentication authentication,
 							  Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model, authentication,false);
+		return showFolder(requestDTO, name, pageable, model, authentication,false);
 	}
 
 	@GetMapping("/buckets/{name}/")
 	public String showbucketsByName(@ModelAttribute CollectionRequestDTO requestDTO,
 									@PathVariable("name") String name,
+									@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 									Authentication authentication,
 									Map<String, Object> model
 	) {
-		return showFolder(requestDTO, name, model, authentication, false);
+		return showFolder(requestDTO, name, pageable, model, authentication, false);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow")
