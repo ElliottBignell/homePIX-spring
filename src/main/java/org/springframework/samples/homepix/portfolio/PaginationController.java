@@ -28,7 +28,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -174,6 +177,28 @@ public abstract class PaginationController implements AutoCloseable {
 			folderCache = this.folders.findAll();
 		}
 		return folderCache;
+	}
+
+	@ModelAttribute("yearNames")
+	public List<List<String>> populateDates() {
+
+		List<String> years = this.pictureFiles.findYears();
+
+		int width = 4;
+
+		List<List<String>> table = new ArrayList<List<String>>() ;
+
+		for (int n = 0; n < 4; n++) {
+			table.add(new ArrayList<>());
+		}
+
+		int count = 0;
+
+		for (String year : years) {
+			table.get(count++ % 4).add(year);
+		}
+
+		return table;
 	}
 
 	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
@@ -420,13 +445,26 @@ public abstract class PaginationController implements AutoCloseable {
 
 		ListObjectsV2Response listObjectsResponse;
 
+		/*
+		final String format = "yyyy-MM-dd HH:mm:ss"; // Use uppercase 'HH' for 24-hour format
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+		String date = "2023-01-12 00:00:00";
+		LocalDateTime fromDate = LocalDateTime.parse(date, formatter);
+
+		LocalDateTime localDateTime = LocalDateTime.now(); // Replace with your LocalDateTime
+		ZoneId zoneId = ZoneId.of("UTC"); // Use the appropriate time zone
+		Instant instant = localDateTime.atZone(zoneId).toInstant();
+		 */
+
 		do {
 			listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
 
 			filteredObjects.addAll(listObjectsResponse.contents().stream()
+				//.filter(s3Object -> s3Object.lastModified().isAfter(Instant.from(instant)))
 				.filter(object -> !object.key().startsWith(prefix + "200px/"))
 				.filter(object -> object.key().endsWith(".jpg"))
-				.collect(Collectors.toList()));
+				.collect(Collectors.toList())
+			);
 
 			listObjectsRequest = ListObjectsV2Request.builder()
 				.bucket(bucketName)
@@ -891,12 +929,22 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 	}
 
-	protected Comparator<PictureFile> getOrderComparator(CollectionRequestDTO requestDTO) {
+	protected Comparator<PictureFile> getOrderComparator(
+		CollectionRequestDTO requestDTO
+	) {
+
+		final Comparator<PictureFile> orderBy = (item1, item2 ) -> { return item1.getTitle().compareTo(item2.getTitle()); };
+
+		return getOrderComparator(requestDTO, orderBy);
+	}
+
+	protected Comparator<PictureFile> getOrderComparator(
+		CollectionRequestDTO requestDTO,
+		Comparator<PictureFile> orderBy
+	) {
 
 		String sortCriterion = "title";
 		Sort.Direction direction = Sort.Direction.ASC;
-
-		Comparator<PictureFile> orderBy = (item1, item2 ) -> { return item1.getTitle().compareTo(item2.getTitle()); };
 
 		if (null != requestDTO.getSort()) {
 
@@ -920,6 +968,20 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 
 		return orderBy;
+	}
+
+	protected int getSortOrder(AlbumContentRepository albumContent, Album album, PictureFile item) {
+
+		int pictureId = item.getId();
+		long albumId = album.getId();
+
+		Collection<AlbumContent> content = albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+
+		if (!content.isEmpty()) {
+			return content.iterator().next().getSort_order();
+		}
+
+		return -1;
 	}
 
 	protected String setModel(CollectionRequestDTO requestDTO,

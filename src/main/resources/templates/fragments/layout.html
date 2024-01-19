@@ -23,9 +23,7 @@
   <link rel="stylesheet" th:href="@{/resources/css/petclinic.css}" />
   <link rel="stylesheet" th:href="@{/resources/css/custom.css}" />
 
-
   <meta name="description" content="Stock photo server written by Elliott Bignell.">
-
 
   <!-- Medium-Style Editor -->
   <script src="//cdn.jsdelivr.net/npm/medium-editor@latest/dist/js/medium-editor.min.js"></script>
@@ -43,6 +41,7 @@
   <link href="https://fonts.googleapis.com/css?family=Montserrat|Russo+One" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
   <link rel="shortcut icon" href="/static/images/favicon.ico">
 
@@ -110,7 +109,9 @@
                 <table>
                   <tr th:each="chunk : ${T(org.springframework.samples.homepix.portfolio.util.ChunkUtil).chunkList(folders, 4)}">
                     <td th:each="folder : ${chunk}">
-                      <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}">Folders</a>
+                      <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}" style="font-size:12px;">
+                        Folders
+                      </a>
                     </td>
                   </tr>
                 </table>
@@ -146,15 +147,21 @@
               </li>
               <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'calendar_view_day' }} ); height:4em;display: inline-block;">
                 <a href="/calendar" class="bigbrand">
-                  <i class="large material-icons"
-                     style="color:var( {{ request.get_full_path|current_background:'calendar_view_day' }} );"
-                     >
-                          calendar_view_day
-                  </i>
+                  <span class="material-symbols-outlined">
+                    calendar_month
+                  </span>
                 </a>
                 <ul class="drop-down-menu">
                   <li>
-                    <a href="/calendar" class="bigmenu">Calendar</a>
+                    <table>
+                      <tr th:each="yearGroup : ${yearNames}">
+                        <td th:each="year : ${yearGroup}">
+                          <a th:href="@{/calendar#year__${year}__}" class="bigmenu" th:text="${year}" style="font-size:12px;">
+                            year
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </li>
                 </ul>
               </li>
@@ -227,7 +234,7 @@
                     <i class="medium material-icons">search </i>
                   </button>
                   <input name="fromDate" type="date" th:if="${pagination}" th:value="${startDate}" style="visibility:hidden;width:0em;">
-                    <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
+                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
                   <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
                   <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
                   <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
@@ -291,27 +298,36 @@
             <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
               <span th:if="${pageNumber != null}">
                 <ul class="pagination" style="margin:0 0;">
-                  <li th:class="${pageNumber > 0 ? page : disabled}">
-                    <a th:href="@{./?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      |&laquo;
+                  <li th:class="${pageNumber > 0 ? page : disabled}" >
+                    <a th:href="@{.?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;vertical-align: middle;">
+                      <span class="material-symbols-outlined">
+                        first_page
+                      </span>
                     </a>
                   </li>
                   <li th:class="${pageNumber > 0 ? page : disabled}">
-                    <a th:href="@{./?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      &laquo;
+                    <a th:href="@{.?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <span class="material-symbols-outlined">
+                        <span class="material-symbols-outlined">
+                          navigate_before
+                        </span>
+                      </span>
                     </a>
                   </li>
                   <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                    <a th:href="@{./?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      &raquo;
+                    <a th:href="@{.?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <span class="material-symbols-outlined">
+                        navigate_next
+                      </span>
                     </a>
                   </li>
                   <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                    <a th:href="@{./?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      &raquo;|
+                    <a th:href="@{.?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <span class="material-symbols-outlined">
+                        last_page
+                      </span>
                     </a>
                   </li>
-
                   <li>
                     <div class="container">
                       <div class="vertical-center">
@@ -319,7 +335,7 @@
                           <ul class="pagination" style="margin: 0 0;">
                             <li id="page_no">
                               <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );"
-                                 th:href="@{./?page=__${pageNumber}__}"
+                                 th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
                                  th:text="@{Go to page: __${pageNumber + 1}__}"
                               >
                               </a>

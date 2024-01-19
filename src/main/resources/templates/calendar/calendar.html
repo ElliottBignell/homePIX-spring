@@ -19,12 +19,13 @@
   <h2>Calendar</h2>
 
   <div id="div_collection" style="overflow-y: auto; max-height: 75vh;">
-    <span th:each="year : ${yearNames}">
-      <a th:href="@{#year__${year}__}">
-        <h1 class="techfont" style="color:var( --homepix-dark ); font-size:24px;position:relative;top:1.8em;left:0.5em;background: none;transform-origin: 0 0;" th:text="${year}">
-        </h1>
-      </a>
-    </span>
+    <table>
+      <tr th:each="yearGroup : ${yearNames}">
+        <td th:each="year : ${yearGroup}">
+          <a th:href="@{#year__${year}__}" class="bigmenu" th:text="${year}">year</a>
+        </td>
+      </tr>
+    </table>
 
     <c th:each="year : ${years}">
       <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
@@ -70,34 +71,34 @@
                             </tr>
                             <tr th:each="week : ${month.getWeeks}">
                               <td></td>
-                                <td th:each="day : ${week.getDays}">
-                                  <a  th:if="${day.thumbnail}"
-                                      th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}">
-                                  <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
-                                       th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
-                                    <c th:if="true">
-                                      <img id="picture_{{ day.0 }}"
-                                           class="lazyload calendar_thumbnail calendar_tile_small"
-                                           th:src="${day.thumbnail.mediumFilename}"
-                                           th:data-src="${ day.thumbnail.mediumFilename}"
-                                           alt="">
-                                      </img>
-                                    </c>
+                              <td th:each="day : ${week.getDays}">
+                                <a  th:id="@{daylink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
+                                    th:if="${day.thumbnail != null}"
+                                    th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}"
+                                >
+                                  <div class="calendar_tile calendar_tile_small">
+                                    <img id="picture_{{ day.0 }}"
+                                         class="lazyload calendar_thumbnail calendar_tile_small"
+                                         th:src="${day.thumbnail.mediumFilename}"
+                                         th:data-src="${ day.thumbnail.mediumFilename}"
+                                         alt="">
                                     <div class="calendar_day_pic" style="position:relative;top:-36px;">
                                       <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;" th:text="${day.getDayOfMonth}">
                                       </div>
                                     </div>
                                   </div>
-                                  </a>
-                                  <a  th:if="${day.thumbnail == null}" >
-                                    <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
-                                         th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
-                                      <div class="calendar_day_pic" style="position:relative;top:-36px;">
-                                        <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;">
-                                        </div>
+                                </a>
+                                <a  th:id="@{nolink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
+                                    th:unless="${day.thumbnail != null}"
+                                >
+                                  <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
+                                       th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
+                                    <div class="calendar_day_pic" style="position:relative;top:-36px;">
+                                      <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;">
                                       </div>
                                     </div>
-                                  </a>
+                                  </div>
+                                </a>
                               </td>
                               <td></td>
                             </tr>

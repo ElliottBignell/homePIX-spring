@@ -65,18 +65,7 @@
   </style>
   <body>
 
-    <div class="centerstage" style="height:100%;">
-       <div class="techfont" id="div_centrestage" style="min-height:4em;">
-         <div class="row">
-           <div class="col-md-6">
-    
-             <h1 style="font-size:4em;">Welcome to homePIX</h1>
-             <h2>Implementation for pictures by Elliott Bignell</h2>
-    
-           </div>
-         </div>
-       </div>
-    
+  <div style="position:absolute;left:0;top:15%;width:100%;height:100%;">
        <div id="details" style="position:relative;top:0em;bottom:0em;left:0em;right:0em;">
            <table id="maintab" style="position:relative;top:0em;left:0em;width:100%;bottom:0em;padding:0px;border:0px;">
              <tr colspan=4 style="height:2em;vertical-align:middle;">
@@ -108,7 +97,7 @@
                               th:src="${picture.mediumFilename}"
                               th:data-src="${picture.largeFilename}"
                               th:alt="${picture.filename}"
-                              style="top:0px;height:80%;object-fit:contain;"
+                              style="left:0;top:0px;width:100%;height:80%;object-fit:contain;"
                          >
 
                          </img>

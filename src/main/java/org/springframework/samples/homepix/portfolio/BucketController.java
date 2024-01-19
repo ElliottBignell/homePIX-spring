@@ -203,6 +203,7 @@ class BucketController extends PaginationController {
 		// Add the results to the model
 		model.put("results", results);
 		model.put("pageNumber", results.getNumber());
+		model.put("pageSize", results.getSize());
 		model.put("totalPages", results.getTotalPages());
 		model.put("firstIndex", firstIndex);
 		model.put("lastIndex", lastIndex);

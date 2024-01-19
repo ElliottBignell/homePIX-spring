@@ -30,9 +30,6 @@
           $('#' + elementId).show();
         }
 
-        // Implement logic to send a request to the server to update the visibility of the picture
-        // You can use AJAX to send a request to the server
-        // Example using jQuery:
         $.post('/restrict/' + pictureId, function(response) {
 
             elementId = "hide-" + pictureId;
@@ -49,9 +46,7 @@
     }
 
     function showPicture(pictureId) {
-        // Implement logic to send a request to the server to update the visibility of the picture
-        // You can use AJAX to send a request to the server
-        // Example using jQuery:
+
         $.post('/derestrict/' + pictureId, function(response) {
 
             elementId = "hide-" + pictureId;
@@ -80,7 +75,7 @@
     /*]]>*/
   </script>
 
-  <h2 th:text="@{__${folder.displayName}__ - __${firstIndex}__ to __${lastIndex}__ of __${count}__ photos}"></h2>
+  <h2 th:text="@{__${folder.displayName}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages}"></h2>
   <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
         action="#"
         th:action="@{/buckets/__${folder.name}__/import/}"
@@ -104,22 +99,24 @@
             th:id="@{div__${pictureFile.id}__}"
     >
       <a th:id="@{picture__${pictureFile.id}__}"
-         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
       >
         <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
-              <span class="tt_subject">
-                <img th:id="@{picture__${pictureFile.id}__}"
-                     class="lazyload imageinlist imageresponsive"
-                     th:width="${pictureFile.displayWidth}"
-                     th:height="${pictureFile.displayHeight}"
-                     th:src="${pictureFile.mediumFilename}"
-                     th:data-src="${pictureFile.mediumFilename}"
-                     th:alt="${pictureFile.filename}"
-                >
-              </span>
+          <span class="tt_subject">
+            <img th:id="@{picture__${pictureFile.id}__}"
+                 class="lazyload imageinlist imageresponsive"
+                 th:width="${pictureFile.displayWidth}"
+                 th:height="${pictureFile.displayHeight}"
+                 th:src="${pictureFile.mediumFilename}"
+                 th:data-src="${pictureFile.mediumFilename}"
+                 th:alt="${pictureFile.filename}"
+            >
+          </span>
         </section>
       </a>
-      <a th:id="@{btn__${pictureFile.id}__}" th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+      <a th:id="@{btn__${pictureFile.id}__}"
+         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+      >
         <figcaption class="tt_edit">
           <form id="editprops">
             <fieldset>

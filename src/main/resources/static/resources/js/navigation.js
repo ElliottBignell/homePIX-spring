@@ -654,9 +654,22 @@ $('#find').on('search', function(e) {
 });
 
 $( '#slider' ).on( 'input', function( e ) {
-    $( '#page_no' ).html(
-        "<a href=\"?page=" + $( this ).val() + "\">" + "Go to page " + $( this ).val() + "</a>"
-    );
+
+    var html = $( '#page_no' ).html();
+    var currentPage = parseInt($(this).val(), 10);
+    var newPage = currentPage - 1;
+
+    console.log($(this).val());
+    console.log(currentPage);
+
+    // Use a regular expression to replace "page=n" with the new page number
+    var newhtml = html.replace(/page=\d+/, 'page=' + newPage);
+    newhtml = newhtml.replace(/Go to page: \d+/, 'Go to page: ' + currentPage);
+
+    console.log(newhtml);
+
+    $( '#page_no' ).html(newhtml);
+    //$( '#page_no' ).text( "Go to page " + currentPage );
 });
 
 function dispatchOp( value )

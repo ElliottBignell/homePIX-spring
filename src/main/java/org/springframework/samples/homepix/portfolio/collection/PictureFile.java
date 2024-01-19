@@ -135,20 +135,27 @@ public class PictureFile extends BaseEntity {
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 
-			filename = bodyAndExtension[0] + "_200px." + bodyAndExtension[1];
+			int length = bodyAndExtension.length;
 
-			if (null != this.folder) {
-				return "/web-images/" + this.folder.getName() + "/200px/" + filename;
-			}
-			else {
+			if (length > 1) {
 
-				int slashIndex = this.filename.indexOf('/', 1);
+				bodyAndExtension[length - 2] = bodyAndExtension[length - 2] + "_200px";
 
-				if (slashIndex > 1) {
+				filename = String.join(".", bodyAndExtension);
 
-					String folderName = this.filename.substring(1, slashIndex);
+				if (null != this.folder) {
+					return "/web-images/" + this.folder.getName() + "/200px/" + filename;
+				}
+				else {
 
-					return "/web-images/" + folderName + "/200px/" + filename;
+					int slashIndex = this.filename.indexOf('/', 1);
+
+					if (slashIndex > 1) {
+
+						String folderName = this.filename.substring(1, slashIndex);
+
+						return "/web-images/" + folderName + "/200px/" + filename;
+					}
 				}
 			}
 		}

@@ -69,11 +69,6 @@ class CalendarController extends PaginationController {
 		return super.calendar;
 	}
 
-	@ModelAttribute("yearNames")
-	public Collection<String> populateDates() {
-		return this.pictureFiles.findYears();
-	}
-
 	@ModelAttribute("years")
 	public List<CalendarYear> populateYears() {
 

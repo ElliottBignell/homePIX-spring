@@ -60,4 +60,15 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Lon
 	@Transactional(readOnly = true)
 	Collection<PictureFile> findThumbnailIds(@Param("album_id") Long album_id);
 
-}
+	/**
+	 * Retrieve an {@link AlbumContent} from the data store by sort_order.
+	 * @param sort_order the sort_order to search for
+	 * @return the {@link AlbumContent} if found
+	 */
+	@Query("SELECT albumcontent FROM AlbumContent albumcontent WHERE albumcontent.album.id=:album_id AND albumcontent.sort_order =:sort_order")
+	@Transactional(readOnly = true)
+	Collection<AlbumContent> findByAlbumAndSortOrder(@Param("album_id") Long album_id, @Param("sort_order") Long sort_order);
+
+	@Query("SELECT pictureFile FROM AlbumContent albumcontent WHERE albumcontent.album.id =:album_id")
+	@Transactional(readOnly = true)
+	Collection<PictureFile> findPictures(@Param("album_id") Long album_id);}

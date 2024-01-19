@@ -42,6 +42,9 @@ public class AlbumContent extends BaseEntity {
 	@JoinColumn(name = "entry_id")
 	private PictureFile pictureFile;
 
+	@Column(name = "sort_order")
+	private Integer sort_order;
+
 	@Override
 	public String toString() {
 		return new ToStringCreator(this).append("id", this.getId()).toString();

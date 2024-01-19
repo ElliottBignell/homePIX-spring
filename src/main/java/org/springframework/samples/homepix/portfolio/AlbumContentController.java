@@ -99,7 +99,11 @@ class AlbumContentController extends PaginationController {
 
 		ModelAndView mav = new ModelAndView(template);
 
-		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
+			getSortOrder(this.albumContent, album, item1) - getSortOrder(this.albumContent, album, item2);
+		};
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO, defaultSort);
 
 		Collection<PictureFile> content = this.albumContent.findByAlbumId(id).stream()
 			.filter( item -> item.getPictureFile().getTitle().contains(requestDTO.getSearch()))
@@ -235,11 +239,15 @@ class AlbumContentController extends PaginationController {
 		if (entry.isEmpty()) {
 
 			AlbumContent content = new AlbumContent();
+
 			Optional<PictureFile> picture = this.pictureFiles.findById(pictureId);
 			Optional<Album> album = this.albums.findById(albumId);
 
 			if (picture.isPresent() && album.isPresent()) {
 
+				Collection<AlbumContent> allContent = this.albumContent.findByAlbumId(albumId);
+
+				content.setSort_order(allContent.size() + 1);
 				content.setPictureFile(picture.get());
 				content.setAlbum(album.get());
 
@@ -402,4 +410,101 @@ class AlbumContentController extends PaginationController {
 		return ResponseEntity.status(400).body("Already added or other error");
 	}
 
+	@Secured("ROLE_ADMIN")
+	@PostMapping("/album/{albumId}/move/{pictureId}/{index}")
+	@ResponseBody
+	public String movePicture(
+		@PathVariable Long albumId,
+		@PathVariable Integer pictureId,
+		@PathVariable Integer index
+	) {
+
+		Collection<AlbumContent> content1 = this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+
+		if (!content1.isEmpty()) {
+
+			AlbumContent entry1 = content1.iterator().next();
+
+			Long otherIndex = 0L;
+
+			switch (index) {
+				case 0:
+
+					while (entry1.getSort_order() > 1) {
+
+						movePicture(albumId, pictureId, -1);
+
+						content1 = this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+
+						if (!content1.isEmpty()) {
+							entry1 = content1.iterator().next();
+						}
+					}
+					return "success";
+
+				case -1:
+					otherIndex = (long) (entry1.getSort_order() - 1);
+					break;
+				case 1:
+					otherIndex = (long) (entry1.getSort_order() + 1);
+					break;
+				default:
+
+					Collection<PictureFile> wholeAlbum = this.albumContent.findPictures(albumId);
+
+					while (entry1.getSort_order() < wholeAlbum.size()) {
+
+						movePicture(albumId, pictureId, +1);
+
+						content1 = this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+
+						if (!content1.isEmpty()) {
+							entry1 = content1.iterator().next();
+						}
+					}
+					return "success";
+			}
+
+			Collection<AlbumContent> content2 = this.albumContent.findByAlbumAndSortOrder(albumId, otherIndex);
+
+			if (!content2.isEmpty()) {
+
+				AlbumContent entry2 = content2.iterator().next();
+
+				int cacheOrder = entry2.getSort_order();
+
+				entry2.setSort_order(entry1.getSort_order());
+				entry1.setSort_order(cacheOrder);
+
+				this.albumContent.save(entry1);
+				this.albumContent.save(entry2);
+
+				return "success"; // Return a response as needed
+			}
+		}
+
+		return "error"; // Return a response as needed
+	}
+
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/albums/all/initialise")
+	public String initialisePictures() {
+
+		Iterable<Album> albums = this.albums.findAll();
+
+		for (Album album : albums) {
+
+			Collection<AlbumContent> albumContent = this.albumContent.findByAlbumId(album.getId());
+
+			int index = 1;
+
+			for (AlbumContent content : albumContent) {
+
+				content.setSort_order(index++);
+				this.albumContent.save(content);
+			}
+		}
+
+		return "redirect:/album/";
+	}
 }

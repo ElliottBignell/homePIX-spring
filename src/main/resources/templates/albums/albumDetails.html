@@ -20,32 +20,51 @@
   </head>
   <body>
 
-    <script>
-      function handleDeleteClick(event, album, picture) {
+  <script>
+    function handleDeleteClick(event, album, picture) {
 
-        event.preventDefault(); // Prevent the default form submission behavior
+      event.preventDefault(); // Prevent the default form submission behavior
 
-        $.ajax({
-          url: '/album/' + album + '/delete/' + picture,
+      $.ajax({
+        url: '/album/' + album + '/delete/' + picture,
+        method: 'POST',
+        dataType: 'text',
+        success: function(response) {
+
+          if (response === 'Deleted successfully') {
+            $('#figure-' + picture).prop("hidden", true);
+          } else {
+            // Handle other success cases if needed
+          }
+        },
+        error: function(error) {
+          console.error('Error:', error);
+        }
+      });
+    }
+
+    function movePicture(event, albumId, pictureId, index) {
+
+      event.preventDefault(); // Prevent the default form submission behavior
+
+      const url = `/album/${albumId}/move/${parseInt(pictureId)}/${index}`;
+
+      $.ajax({
+          url: url,
           method: 'POST',
           dataType: 'text',
           success: function(response) {
-
-            if (response === 'Deleted successfully') {
-              $('#figure-' + picture).prop("hidden", true);
-            } else {
-              // Handle other success cases if needed
-            }
+              console.log("Success");
           },
           error: function(error) {
-            console.error('Error:', error);
+              console.error('Error:', error);
           }
-        });
-      }
-    </script>
+      });
+    }
+
+  </script>
 
     <h2 th:text="${album.name + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h2>
-
 
     <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}" action="#" th:action="@{/album/__${album.id}__/curate}" th:object="${album}" method="post">
       <input type="submit" value="Curate...">
@@ -57,9 +76,11 @@
 
     <div style="overflow-y: auto; max-height: 75vh;">
 
-      <figure th:each="entry : ${collection}" class="tt_base droppable draggable" th:id="@{figure-__${entry.id}__}">
+      <figure th:each="entry : ${collection}"
+              th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+              th:id="@{figure-__${entry.id}__}">
         <a th:id="@{picture__${entry.id}__}"
-           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
         >
           <section class="wrapper" th:id=" @{file-number_${entry.id}}">
             <span class="tt_subject">
@@ -76,7 +97,7 @@
           </section>
         </a>
         <a th:id="@{btn__${entry.id}__}"
-           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
+           th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
         >
           <figcaption class="tt_edit">
             <form id="editprops">
@@ -94,14 +115,60 @@
               album
             </i>
           </a>
-          <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/-1/}">
+          <a class="tt_icon tt_small_icon_anchor"
+             href="#"
+             th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+             th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', 0);'"
+             th:id="@{raise-__${entry.id}__}"
+          >
             <i class="material-icons tt_icon">
-              keyboard_arrow_left
+              <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined">
+                  first_page
+                </span>
+              </span>
             </i>
           </a>
-          <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
+          <a class="tt_icon tt_small_icon_anchor"
+             href="#"
+             th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+             th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', -1);'"
+             th:id="@{raise-__${entry.id}__}"
+          >
             <i class="material-icons tt_icon">
-              keyboard_arrow_right
+              <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined">
+                  navigate_before
+                </span>
+              </span>
+            </i>
+          </a>
+          <a class="tt_icon tt_small_icon_anchor"
+             href="#"
+             th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+             th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', +1);'"
+             th:id="@{raise-__${entry.id}__}"
+          >
+            <i class="material-icons tt_icon">
+              <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined">
+                  navigate_next
+                </span>
+              </span>
+            </i>
+          </a>
+          <a class="tt_icon tt_small_icon_anchor"
+             href="#"
+             th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+             th:onclick="'movePicture(event, \'__${album.id}__\', \'' + __${entry.id}__ + '\', __${collection?.size()}__);'"
+             th:id="@{raise-__${entry.id}__}"
+          >
+            <i class="material-icons tt_icon">
+              <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined">
+                  last_page
+                </span>
+              </span>
             </i>
           </a>
           <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">

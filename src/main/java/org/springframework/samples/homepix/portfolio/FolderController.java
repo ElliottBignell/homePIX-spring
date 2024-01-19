@@ -354,6 +354,7 @@ class FolderController extends PaginationController {
 
 		return "failure"; // Return a response as needed
 	}
+
 	@PostMapping("/derestrict/{id}")
 	@ResponseBody
 	public String derestrict(@PathVariable Integer id) {

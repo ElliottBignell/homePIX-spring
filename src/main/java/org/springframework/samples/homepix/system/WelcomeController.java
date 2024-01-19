@@ -34,8 +34,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collection;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Controller
@@ -62,9 +64,27 @@ class WelcomeController extends PaginationController {
 						  BindingResult result,
 						  Map<String, Object> model
 	) {
-		if (!requestDTO.getSearch().equals("")) {
+		final String format = "yyyy-M-d";
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+		Supplier<String> today = () -> {
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+			LocalDateTime now = LocalDateTime.now();
+			return dtf.format(now);
+		};
+
+		String toDate = today.get();
+
+		if (!requestDTO.getSearch().equals("") ||
+			!requestDTO.getFromDate().equals("1970-01-01") ||
+			!requestDTO.getToDate().equals(toDate)
+		) {
 
 			redirectAttributes.addAttribute("search", requestDTO.getSearch());
+			redirectAttributes.addAttribute("startDate", requestDTO.getFromDate());
+			redirectAttributes.addAttribute("endDate", requestDTO.getToDate());
+			redirectAttributes.addAttribute("sort", requestDTO.getSort());
+
 			return "redirect:/collection/";
 		}
 
@@ -80,11 +100,23 @@ class WelcomeController extends PaginationController {
 
 		if (!contents.isEmpty()) {
 
+			final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
+				getSortOrder(this.albumContents, album, item1) - getSortOrder(this.albumContents, album, item2);
+			};
+
+			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO, defaultSort);
+
 			Collection<PictureFile> slides = contents.stream().map(item -> item.getPictureFile())
-					.collect(Collectors.toList());
+				.sorted(orderBy)
+				.collect(Collectors.toList());
 
 			model.put("collection", slides);
 		}
+
+		redirectAttributes.addAttribute("search", requestDTO.getSearch());
+		redirectAttributes.addAttribute("startDate", requestDTO.getSearch());
+		redirectAttributes.addAttribute("endDate", requestDTO.getSearch());
+		redirectAttributes.addAttribute("sort", requestDTO.getSearch());
 
 		// 1 album found
 		return "welcome";

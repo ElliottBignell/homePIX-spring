@@ -164,6 +164,7 @@ class PictureCollectionController extends PaginationController {
 		LocalDate startDate = LocalDate.parse(fromDate, formatter);
 		LocalDate endDate = LocalDate.parse(toDate, formatter);
 
+		fromDate = startDate.toString();
 		toDate = endDate.toString();
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
