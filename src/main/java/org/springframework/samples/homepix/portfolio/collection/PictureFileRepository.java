@@ -88,18 +88,68 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		Pageable pageable
 	);
 
-	/*@Query("SELECT DISTINCT p FROM PictureFile p " +
-		"LEFT JOIN FETCH p.keywords k " +
-		"WHERE (p.filename LIKE %:searchText% OR p.title LIKE %:searchText%) " +
-		"AND p.taken_on BETWEEN :startDate AND :endDate " +
-		"AND (k.name LIKE %:keyword% OR :keyword IS NULL)")
-	Page<PictureFile> findByFilenameContainingAndTakenOnBetweenAndKeywordsNameContaining(
+	@Query(value = "SELECT pf.* FROM picture_file pf JOIN folders f ON pf.folder = f.id WHERE pf.title LIKE CONCAT('% ', :searchText, ' %') OR f.name LIKE CONCAT('% ', :searchText, ' %')\n",
+		countQuery = "SELECT count(*) FROM picture_file pf JOIN folders f ON pf.folder = f.id WHERE pf.title LIKE CONCAT('% ', :searchText, ' %') OR f.name LIKE CONCAT('% ', :searchText, ' %')\n",
+		nativeQuery = true)
+	List<PictureFile> findByWordInTitleOrFolder( @Param("searchText") String searchText );
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+		"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(k.word) = LOWER(:searchText)) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+			"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(k.word) = LOWER(:searchText))",
+		nativeQuery = true)
+	List<PictureFile> findByWordInTitleOrFolderOrKeyword(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(k.word) = LOWER(:searchText)) " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(k.word) = LOWER(:searchText)) " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
 		@Param("searchText") String searchText,
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDate endDate,
-		@Param("keyword") String keyword,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
 		Pageable pageable
-	);*/
+	);
+
 
 	default Map<LocalDateTime, Long> getCountByTakenOn() {
 		List<Object[]> result = countByTakenOn();

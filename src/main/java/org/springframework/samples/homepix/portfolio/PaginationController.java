@@ -2,13 +2,16 @@ package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
+import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -28,12 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -365,6 +366,102 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
+	public String processFindCollections(CollectionRequestDTO requestDTO,
+										 CollectionRequestDTO redirectedDTO,
+										 Pageable pageable, // Default page size and sorting
+										 PictureCollection pictureCollection,
+										 BindingResult result,
+										 Map<String, Object> model,
+										 Authentication authentication
+	) {
+		// Check if redirectedDTO is not null, use it if available
+		if (redirectedDTO != null) {
+			requestDTO = redirectedDTO;
+		}
+
+		// allow parameterless GET request for /collections to return all records
+		if (pictureCollection.getName() == null) {
+			pictureCollection.setName(""); // empty string signifies broadest possible
+			// search
+		}
+
+		// Extract roles to a comma-separated string
+		String userRoles = authentication.getAuthorities().stream()
+			.map(GrantedAuthority::getAuthority)
+			.collect(Collectors.joining(","));
+
+		PageRequest pageRequest = PageRequest.of(
+			pageable.getPageNumber(),
+			pageable.getPageSize(),
+			Sort.by(getOrderColumn(requestDTO))
+		);
+
+		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+
+		Page<PictureFile> files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+			requestDTO.getSearch(),
+			dates.getFirst(),
+			dates.getSecond(),
+			isAdmin(authentication),
+			userRoles,
+			pageRequest
+		);
+
+		model.put("collection", files);
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
+		model.put("pageNumber", files.getNumber());
+		model.put("totalPages", files.getTotalPages());
+		model.put("count", files.getTotalElements());
+
+		return "collections/collection";
+	}
+
+	Pair<LocalDate, LocalDate> getDateRange(
+		CollectionRequestDTO requestDTO,
+		Map<String, Object> model
+	) {
+
+		final String format = "yyyy-M-d";
+
+		Supplier<String> today = () -> {
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+			LocalDateTime now = LocalDateTime.now();
+			return dtf.format(now);
+		};
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+		String fromDate = requestDTO.getFromDate();
+		String toDate = requestDTO.getToDate();
+
+		if (fromDate.equals("")) {
+			fromDate = "1970-01-01";
+		}
+
+		if (toDate.equals("")) {
+
+			Supplier<String> supplier = () -> {
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+				LocalDateTime now = LocalDateTime.now();
+				return dtf.format(now);
+			};
+
+			toDate = supplier.get();
+		}
+
+		LocalDate startDate = LocalDate.parse(fromDate, formatter);
+		LocalDate endDate = LocalDate.parse(toDate, formatter);
+
+		fromDate = startDate.toString();
+		toDate = endDate.toString();
+
+		model.put("startDate", fromDate);
+		model.put("endDate", toDate);
+
+		return Pair.of(startDate, endDate.atTime(LocalTime.MAX).toLocalDate());
+	}
+
 	protected List<PictureFile> listFiles_(S3Client s3Client, String subFolder) {
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 		List<PictureFile> results = new ArrayList<>();
@@ -620,6 +717,7 @@ public abstract class PaginationController implements AutoCloseable {
 	protected List<PictureFile> listFilteredFiles(List<PictureFile> files,
 												  CollectionRequestDTO requestDTO,
 												  Authentication authentication) {
+
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		Pattern pattern = Pattern.compile("\\b" + requestDTO.getSearch() + "\\b", Pattern.CASE_INSENSITIVE);
@@ -694,12 +792,17 @@ public abstract class PaginationController implements AutoCloseable {
 			return true;
 		}
 
+		titleMatcher = pattern.matcher(item.getFolder().getDisplayName());
+		if (titleMatcher.find()) {
+			return true;
+		}
+
 		// Check if any associated keyword matches
 		Set<String> keywords = keywordMap.getOrDefault(item.getId(), Collections.emptySet());
 		return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
 	}
 
-	protected List<PictureFile> listFilteredFiles_(List<PictureFile> files,
+	/*protected List<PictureFile> listFilteredFiles_(List<PictureFile> files,
 												  CollectionRequestDTO requestDTO,
 												  Authentication authentication) {
 
@@ -719,19 +822,25 @@ public abstract class PaginationController implements AutoCloseable {
 
 				if (!matchFound) {
 
-					Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureId(item.getId());
+					matcher = pattern.matcher(item.getFolder().getDisplayName());
+					matchFound = matcher.find();
 
-					for (KeywordRelationships relationship : relations) {
+					if (!matchFound) {
 
-						Keyword keyword = relationship.getKeyword();
+						Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureId(item.getId());
 
-						if (null != keyword) {
+						for (KeywordRelationships relationship : relations) {
 
-							matcher = pattern.matcher(keyword.getWord());
-							matchFound = matcher.find();
+							Keyword keyword = relationship.getKeyword();
 
-							if (matchFound) {
-								break;
+							if (null != keyword) {
+
+								matcher = pattern.matcher(keyword.getWord());
+								matchFound = matcher.find();
+
+								if (matchFound) {
+									break;
+								}
 							}
 						}
 					}
@@ -741,7 +850,7 @@ public abstract class PaginationController implements AutoCloseable {
 			})
 			.sorted( orderBy )
 			.collect(Collectors.toList());
-	}
+	}*/
 
 	private boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
 
@@ -752,6 +861,16 @@ public abstract class PaginationController implements AutoCloseable {
 			// For example, don't show pictures with scary content to non-admin users
 			String roles = pictureFile.getRoles();
 			return roles.equals("ROLE_USER") || roles.equals("");
+		}
+	}
+
+	protected boolean isAdmin(Authentication authentication) {
+
+		if (authentication != null && authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"))) {
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 
@@ -968,6 +1087,27 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 
 		return orderBy;
+	}
+
+	protected String getOrderColumn(CollectionRequestDTO requestDTO) {
+
+		if (null != requestDTO.getSort()) {
+
+			switch (requestDTO.getSort()) {
+				case "Sort by Filename":
+					return "filename";
+				case "Sort by Date":
+					return "taken_on";
+				case "Sort by Size":
+					return "width * height";
+				case "Sort by Aspect Ratio":
+					return "aspect_ratio";
+				case "Sort by Saved Order":
+					return "taken_on";
+			}
+		}
+
+		return "filename";
 	}
 
 	protected int getSortOrder(AlbumContentRepository albumContent, Album album, PictureFile item) {

@@ -121,6 +121,9 @@ public class PictureFile extends BaseEntity {
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
 
+	@Column(name = "aspect_ratio")
+	private Float aspect_ratio;
+
 	public String fileNameOnly() {
 
 		File f = new File(this.filename);

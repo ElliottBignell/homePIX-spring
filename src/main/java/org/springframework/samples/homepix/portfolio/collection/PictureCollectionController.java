@@ -16,14 +16,18 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.FolderRepository;
+import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -37,6 +41,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -114,95 +119,6 @@ class PictureCollectionController extends PaginationController {
 		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
-	public String processFindCollections(CollectionRequestDTO requestDTO,
-										 CollectionRequestDTO redirectedDTO,
-										 Pageable pageable, // Default page size and sorting
-										 PictureCollection pictureCollection,
-										 BindingResult result,
-										 Map<String, Object> model,
-										 Authentication authentication
-	) {
-    	// Check if redirectedDTO is not null, use it if available
-		if (redirectedDTO != null) {
-			requestDTO = redirectedDTO;
-		}
-
-		// allow parameterless GET request for /collections to return all records
-		if (pictureCollection.getName() == null) {
-			pictureCollection.setName(""); // empty string signifies broadest possible
-			// search
-		}
-
-		final String format = "yyyy-M-d";
-
-		Supplier<String> today = () -> {
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
-			LocalDateTime now = LocalDateTime.now();
-			return dtf.format(now);
-		};
-
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
-
-		String fromDate = requestDTO.getFromDate();
-		String toDate = requestDTO.getToDate();
-
-		if (fromDate.equals("")) {
-			fromDate = "1970-01-01";
-		}
-
-		if (toDate.equals("")) {
-
-			Supplier<String> supplier = () -> {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
-				LocalDateTime now = LocalDateTime.now();
-				return dtf.format(now);
-			};
-
-			toDate = supplier.get();
-		}
-
-		LocalDate startDate = LocalDate.parse(fromDate, formatter);
-		LocalDate endDate = LocalDate.parse(toDate, formatter);
-
-		fromDate = startDate.toString();
-		toDate = endDate.toString();
-
-		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
-
-		List<PictureFile> files = null;
-
-		LocalDate start = startDate;
-		LocalDate end = endDate.atTime(LocalTime.MAX).toLocalDate();;
-		files = this.pictures.findByDates(start, end);
-
-		Page<PictureFile> results = null;
-
-		results = listFilteredFilesPaged(files, requestDTO, authentication, pageable);
-
-		int pageSize = results.getSize();
-		int number = results.getNumber();
-		long total = results.getTotalElements();
-		int firstIndex = results.getNumber() * pageSize + 1;
-		long lastIndex = firstIndex + pageSize - 1;
-
-		if (lastIndex > total) {
-			lastIndex= total;
-		}
-
-		model.put("collection", results);
-		model.put("startDate", fromDate);
-		model.put("endDate", toDate);
-		model.put("sort", requestDTO.getSort());
-		model.put("search", requestDTO.getSearch());
-		model.put("pageNumber", results.getNumber());
-		model.put("totalPages", results.getTotalPages());
-		model.put("firstIndex", firstIndex);
-		model.put("lastIndex", lastIndex);
-		model.put("count", results.getTotalElements());
-
-		return "collections/collection";
-	}
-
 	/**
 	 * Custom handler for displaying an collection.
 	 * @param id the ID of the collection to display
@@ -220,6 +136,7 @@ class PictureCollectionController extends PaginationController {
 
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);
+		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
 
 		return "picture/pictureFile.html";
 	}
