@@ -47,7 +47,18 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		http.authorizeRequests().requestMatchers("/login").permitAll()
-			.requestMatchers("/", "/buckets/**", "/albums/**", "/collection/**", "/web-images/**", "/resources/**", "/static/**", "/register").permitAll()
+			.requestMatchers(
+				"/",
+				"/buckets/**",
+				"/albums/**",
+				"/collection/**",
+				"/calendar/**",
+				"/web-images/**",
+				"/resources/**",
+				"/static/**",
+				"/register"
+			)
+			.permitAll()
 			.anyRequest().authenticated()
 			.and()
 				.formLogin()

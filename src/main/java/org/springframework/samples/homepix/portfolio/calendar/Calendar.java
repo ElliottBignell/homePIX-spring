@@ -82,16 +82,15 @@ public class Calendar extends BaseEntity {
 		int year = 2002;
 		LocalDate date = LocalDate.of(year, 1, 1);
 
-		for (int n = 0; n < 6; n++) {
+		LocalDateTime now = LocalDateTime.now();
+		int finalYear = now.getYear();
+
+		while (year <= finalYear) {
 
 			List<CalendarYear> years = new ArrayList<>();
 
 			for (int annum = 0; annum < 3; annum++) {
-
-				CalendarYear calendarYear = new CalendarYear(year++);
-
-				populateYear(calendarYear);
-				years.add(calendarYear);
+				years.add(new CalendarYear(year++));
 			}
 
 			CalendarYearGroup group = new CalendarYearGroup(years);

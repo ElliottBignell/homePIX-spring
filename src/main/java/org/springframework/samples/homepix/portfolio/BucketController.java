@@ -39,7 +39,11 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -187,7 +191,38 @@ class BucketController extends PaginationController {
 			results = listFilteredFilesPaged(listFiles(s3Client, "jpegs/" + name), requestDTO, authentication, pageable);
 		}
 		else {
-			results = listFilteredFilesPaged(this.pictureFiles.findByFolderName(name), requestDTO, authentication, pageable);
+
+			final String format = "yyyy-M-d";
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+			String fromDate = requestDTO.getFromDate();
+			String toDate = requestDTO.getToDate();
+
+			if (fromDate.equals("")) {
+				fromDate = "1970-01-01";
+			}
+
+			if (toDate.equals("")) {
+
+				Supplier<String> supplier = () -> {
+					DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+					LocalDateTime now = LocalDateTime.now();
+					return dtf.format(now);
+				};
+
+				toDate = supplier.get();
+			}
+
+			LocalDate startDate = LocalDate.parse(fromDate, formatter);
+			LocalDate endDate = LocalDate.parse(toDate, formatter);
+
+			results = listFilteredFilesPaged(
+				this.pictureFiles.findByFolderName(name, requestDTO.getSearch(), startDate, endDate),
+				requestDTO,
+				authentication,
+				pageable
+			);
 		}
 
 		int pageSize = results.getSize();
@@ -225,7 +260,11 @@ class BucketController extends PaginationController {
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
-		List<PictureFile> results = listFilteredFiles(this.pictureFiles.findByFolderName(name + "/"), requestDTO, authentication);
+		List<PictureFile> results = listFilteredFiles(
+			this.pictureFiles.findByFolderName(name + "/"),
+			requestDTO,
+			authentication
+		);
 
 		Collection<Folder> buckets = this.folders.findByName(name);
 

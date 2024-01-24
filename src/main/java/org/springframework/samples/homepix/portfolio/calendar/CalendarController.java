@@ -29,6 +29,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -59,6 +60,27 @@ class CalendarController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
+	@GetMapping("/calendar/{year}")
+	public String processFindCalendars(@PathVariable("year") long year, Calendar calendar, BindingResult result, Map<String, Object> model) {
+
+		outerLoop:
+		for (CalendarYearGroup group : this.calendar.getItems()) {
+
+			for (CalendarYear calendarYear : group.getYears()) {
+
+				if (calendarYear.getYear() == year) {
+
+					if (calendarYear.getQuarters() == null || calendarYear.getQuarters().isEmpty()) {
+						this.calendar.populateYear(calendarYear);
+					}
+					model.put("year", calendarYear);
+					break outerLoop;
+				}
+			}
+		}
+		return "calendar/calendarYear";
+	}
+
 	@GetMapping("/calendar")
 	public String processFindCalendars(Calendar calendar, BindingResult result, Map<String, Object> model) {
 		return "calendar/calendar";
@@ -83,11 +105,7 @@ class CalendarController extends PaginationController {
 			try {
 
 				if (null != year) {
-
-					CalendarYear calendarYear = new CalendarYear(Integer.parseInt(year));
-
-					this.calendar.populateYear(calendarYear);
-					years.add(calendarYear);
+					years.add(new CalendarYear(Integer.parseInt(year)));
 				}
 			}
 			catch (Exception ex) {

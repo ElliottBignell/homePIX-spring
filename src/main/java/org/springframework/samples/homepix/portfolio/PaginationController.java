@@ -638,15 +638,21 @@ public abstract class PaginationController implements AutoCloseable {
 
 						Map<String, String> properties = getExifEntries(exifName);
 
-						picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
-						picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
-						picture.setCameraModel(properties.get("CameraModel"));
-						picture.setExposureTime(properties.get("ExposureTime"));
-						picture.setFNumber(properties.get("FNumber"));
-						picture.setExposureProgram(properties.get("ExposureProgram"));
-						picture.setMeteringMode(properties.get("MeteringMode"));
-						picture.setLightSource(properties.get("LightSource"));
-						picture.setFocalLength(properties.get("FocalLength"));
+						try {
+
+							picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
+							picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
+							picture.setCameraModel(properties.get("CameraModel"));
+							picture.setExposureTime(properties.get("ExposureTime"));
+							picture.setFNumber(properties.get("FNumber"));
+							picture.setExposureProgram(properties.get("ExposureProgram"));
+							picture.setMeteringMode(properties.get("MeteringMode"));
+							picture.setLightSource(properties.get("LightSource"));
+							picture.setFocalLength(properties.get("FocalLength"));
+						}
+						catch (Exception ex) {
+							System.out.println(ex);
+						}
 
 						if (picture.getRoles() == null || picture.getRoles().equals("")) {
 							picture.setRoles("ROLE_USER");
@@ -883,7 +889,7 @@ public abstract class PaginationController implements AutoCloseable {
 				Locale.ENGLISH
 			);
 
-			String dateTimeString = properties.get("DateTimeOriginal");
+			String dateTimeString = properties.get("ProfileDateTime");
 
 			if (null != dateTimeString) {
 
@@ -967,6 +973,11 @@ public abstract class PaginationController implements AutoCloseable {
 
 						nextEvent = reader.nextEvent();
 						results.put("DateTimeOriginal", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("ProfileDateTime")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("ProfileDateTime", nextEvent.asCharacters().getData());
 					}
 					else if (key.equals("IPTC:Keywords")) {
 
@@ -1072,7 +1083,20 @@ public abstract class PaginationController implements AutoCloseable {
 					orderBy = (item1, item2 ) -> { return item1.getFilename().compareTo(item2.getFilename()); };
 					break;
 				case "Sort by Date":
-					orderBy = (item1, item2 ) -> { return item1.getTaken_on().compareTo(item2.getTaken_on()); };
+					orderBy = (item1, item2 ) -> {
+
+						if (item1.getTaken_on() == null && item2.getTaken_on() == null) {
+							return 0;
+						}
+						else if (item1.getTaken_on() == null ) {
+							return -1;
+						}
+						else if (item2.getTaken_on() == null ) {
+							return 1;
+						}
+
+						return item1.getTaken_on().compareTo(item2.getTaken_on());
+					};
 					break;
 				case "Sort by Size":
 					orderBy = (item1, item2 ) -> { return item1.getWidth() * item1.getWidth() - item2.getWidth() * item2.getWidth(); };

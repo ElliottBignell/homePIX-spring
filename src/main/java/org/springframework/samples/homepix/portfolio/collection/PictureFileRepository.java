@@ -73,6 +73,35 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFolderName(@Param("filename") String filename);
 
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE f.name = :folder " +
+		"AND pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+		"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+		"OR LOWER(k.word) = LOWER(:searchText)) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE f.name = :folder " +
+			"AND pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+			"AND (LOWER(pf.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+			"OR LOWER(k.word) = LOWER(:searchText))",
+		nativeQuery = true)
+	List<PictureFile> findByFolderName(
+		@Param("folder") String folder,
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate
+	);
+
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE DATE(picture_file.taken_on) = :date")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);

@@ -156,7 +156,7 @@
                     <table>
                       <tr th:each="yearGroup : ${yearNames}">
                         <td th:each="year : ${yearGroup}">
-                          <a th:href="@{/calendar#year__${year}__}" class="bigmenu" th:text="${year}" style="font-size:12px;">
+                          <a th:href="@{/calendar/__${year}__}" class="bigmenu" th:text="${year}" style="font-size:12px;">
                             year
                           </a>
                         </td>

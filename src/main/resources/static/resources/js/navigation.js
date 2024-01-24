@@ -115,105 +115,108 @@ $( 'body' ).keydown( function( e ) {
     var code = (e.keyCode ? e.keyCode : e.which);
     var evtobj = window.event? event : e;
 
-    if ( e.target == document.body || e.target.nodeType == 1 )
-    {
-        switch ( code ) {
-        case 8: //Delete
-            event.preventDefault();
-            break;
-        case 13: //Return
-            event.preventDefault();
-            //document.getElementById( 'piclink_' + index ).click();
-            break;
-        case 16: //Shift
-            event.preventDefault();
-            isShiftPressed = true;
-            break;
-        case 17: //Ctrl
-            event.preventDefault();
-            isCtrlPressed = true;
-            break;
-        case 35: //End
-            imgnav.navigate( count, e );
-            break;
-        case 36: //Home
-            imgnav.navigate( 1, e );
-            break;
+    // Check if the target is not an input, textarea, or select
+    if (!["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
+        if ( e.target == document.body || e.target.nodeType == 1 )
+        {
+            switch ( code ) {
+            case 8: //Delete
+                event.preventDefault();
+                break;
+            case 13: //Return
+                event.preventDefault();
+                //document.getElementById( 'piclink_' + index ).click();
+                break;
+            case 16: //Shift
+                event.preventDefault();
+                isShiftPressed = true;
+                break;
+            case 17: //Ctrl
+                event.preventDefault();
+                isCtrlPressed = true;
+                break;
+            case 35: //End
+                imgnav.navigate( count, e );
+                break;
+            case 36: //Home
+                imgnav.navigate( 1, e );
+                break;
 
-        case 32: //Spacebar
+            case 32: //Spacebar
 
-            //if ( e.target == document.body ) {
+                //if ( e.target == document.body ) {
 
-                select();
-                e.preventDefault();
-            //}
+                    select();
+                    e.preventDefault();
+                //}
 
-            break;
+                break;
 
-        case 'h':
-        case 37: //Left
-            event.preventDefault();
-            if ( currentIndex >= 0 ) {
-                retreat( e );
-            }
-            else {
-                moveTo(0);
-            }
-            break;
+            case 'h':
+            case 37: //Left
+                event.preventDefault();
+                if ( currentIndex >= 0 ) {
+                    retreat( e );
+                }
+                else {
+                    moveTo(0);
+                }
+                break;
 
-        case 'l':
-        case 39: //Right
-            event.preventDefault();
-            if ( currentIndex >= 0 ) {
-                advance( e );
-            }
-            else {
-                moveTo(0);
-            }
-            break;
+            case 'l':
+            case 39: //Right
+                event.preventDefault();
+                if ( currentIndex >= 0 ) {
+                    advance( e );
+                }
+                else {
+                    moveTo(0);
+                }
+                break;
 
-        case 38:
-        case 'k':
-            retreatY( e );
-            break;
-        case 40:
-        case 'j':
-            advanceY( e );
-            break;
-        case 'G':
-            break;
+            case 38:
+            case 'k':
+                retreatY( e );
+                break;
+            case 40:
+            case 'j':
+                advanceY( e );
+                break;
+            case 'G':
+                break;
 
-        case 'F': // F
-        case 'f': // f
+            case 'F': // F
+            case 'f': // f
 
-            if ( e ) {
+                if ( e ) {
 
+                    e.preventDefault();
+                    $( "#find" ).focus();
+                }
+                break;
+
+            case 114: // F3
                 e.preventDefault();
                 $( "#find" ).focus();
+                break;
+
+            case 46: //Return
+
+                var ids    = get_selected_ids();
+                var url    = window.location.href
+                var params   = url.split( '?' )[ 1 ]
+                var albums = params.split( '=' );
+                var album  = albums[ albums.length - 1 ];
+
+                delete_ids_from_album( album, ids );
+
+                event.preventDefault();
+
+                break;
+
+            default:
+                //alert( e.which );
             }
-            break;
-
-        case 114: // F3
-            e.preventDefault();
-            $( "#find" ).focus();
-            break;
-
-        case 46: //Return
-
-            var ids    = get_selected_ids();
-            var url    = window.location.href
-            var params   = url.split( '?' )[ 1 ]
-            var albums = params.split( '=' );
-            var album  = albums[ albums.length - 1 ];
-
-            delete_ids_from_album( album, ids );
-
-            event.preventDefault();
-
-            break;
-
-        default:
-            //alert( e.which );
         }
     }
 });

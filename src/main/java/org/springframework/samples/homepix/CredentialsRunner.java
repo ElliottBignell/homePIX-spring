@@ -15,15 +15,18 @@ public class CredentialsRunner implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
+		accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
+		secretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
+
 		// Retrieve AWS access key and secret key from command-line arguments
-		for (String arg : args) {
+		/*for (String arg : args) {
 			if (arg.startsWith("--aws.accessKeyId=")) {
 				accessKeyId = arg.substring("--aws.accessKeyId=".length());
 			}
 			else if (arg.startsWith("--aws.secretKey=")) {
 				secretKey = arg.substring("--aws.secretKey=".length());
 			}
-		}
+		}*/
 	}
 
 	public static String getAccessKeyId() {

@@ -747,14 +747,12 @@ h4{
 
 .calendar_tile {
 
-    border:2px solid var( --homepix-bg );
     position:relative;
     top:0px;
     left:0px;
     right:0px;
     bottom:0px;
     z-index:0;
-    border-radius:0.6em;
     text-align:center;
     vertical-align:center;
     font-size: 2em;
@@ -764,13 +762,24 @@ h4{
 .scrim {
 
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.2);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.5) 30%, transparent 70%);
+  color: white; /* or any text color you prefer */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .scrim_small {
-  box-shadow: 0 0 1rem rgba(0, 0, 0.5);
+  width: 32px;
+  height: 32px;
 }
 
 .scrim_medium {
   box-shadow: 0 0 5rem rgba(0, 0, 0.5);
+}
+
+.stretch-background {
+    background-size: cover;
+    background-position: center;
 }
