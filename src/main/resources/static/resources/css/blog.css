@@ -86,7 +86,9 @@
   border: 0px;
   position: absolute;
   top: -0.5em;
-  height:80px;
+  height:40px;
+  background-color:var( --homepix-dark );
+  vertical-align:middle;
 }
 
 .bigmenu{

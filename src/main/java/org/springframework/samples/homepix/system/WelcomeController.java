@@ -131,5 +131,4 @@ class WelcomeController extends PaginationController {
 	public String logout(Album album, BindingResult result, Map<String, Object> model) {
 		return "redirect:/welcome";
 	}
-
 }

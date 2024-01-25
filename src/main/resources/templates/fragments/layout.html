@@ -80,11 +80,14 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom techfont fixed-top">
 
-      <div style="width:96%;margin-right:2%;margin-left:2%;height:8.5em">
+      <div class="homePIX-navbar">
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1" aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Toggle navigation" style="font-size:2em;">
           <span class="navbar-toggler-icon"></span>
         </button>
+
+        <!-- Title for small screens -->
+        <span class="navbar-title">homePIX Photos</span>
 
         <!-- Collapsible content -->
         <div class="collapse navbar-collapse" id="navbarSupportedContent1">
@@ -97,6 +100,7 @@
                 >
                   home
                 </i>
+                <span class="toolbar-text">Home</span>
               </a>
             </li>
             <li class="nav-item" style="background-color: var({{ request.get_full_path|current_content:'folders' }}); height: 4em; display: inline-block;">
@@ -104,6 +108,7 @@
                 <i class="large material-icons" style="color: var({{ request.get_full_path|current_background:'folders' }});">
                   folder
                 </i>
+                <span class="toolbar-text">Folders</span>
               </a>
               <ul class="drop-down-menu">
                 <table>
@@ -124,6 +129,7 @@
                      >
                           photo_album
                   </i>
+                  <span class="toolbar-text">Albums</span>
                 </a>
                 <ul class="drop-down-menu">
                   <li th:each="album : ${albums}">
@@ -138,6 +144,7 @@
                      >
                           view_quilt
                   </i>
+                  <span class="toolbar-text">Organise</span>
                 </a>
                 <ul class="drop-down-menu">
                   <li>
@@ -150,6 +157,7 @@
                   <span class="material-symbols-outlined">
                     calendar_month
                   </span>
+                  <span class="toolbar-text">Calendar</span>
                 </a>
                 <ul class="drop-down-menu">
                   <li>
@@ -170,6 +178,7 @@
                   <i class="large material-icons" style="color:var( {{ request.get_full_path|current_background:'about' }} );">
                         info
                   </i>
+                  <span class="toolbar-text">About</span>
                 </a>
                 <ul class="drop-down-menu">
                   <li>
@@ -178,7 +187,7 @@
                 </ul>
               </li>
 
-              <li class="nav-item" style="display: inline-block;">
+              <li class="nav-item toolbar-tools">
                 <form class="form-inline" th:action="${ '#' }" method="get" style="left-margin:12px;margin:0px;position:relative;top:-0.34em;height:5em;width:39em;">
                   <span class="bigbrand"  th:if="${pagination}" style="color:var( --homepix-bg );position:absolute;top:10pt;left:0pt;">From...</span>
                   <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${startDate}"
@@ -205,7 +214,7 @@
                   <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
                 </form>
               </li>
-              <li class="nav-item" style="display: inline-block;width:22em;">
+              <li class="nav-item toolbar-tools">
                 <form class="form-inline" th:action="${ '' }" method="get" style="left-margin:12px;right-margin:12px;position:relative;width:22em;top:-0.34em;">
                   <select name="sort" id="sort" th:value="${ param.sort }" style="position:absolute;width:10em;top:0.4em;" placeholder="Sort by..." class="form-control">
                     <c th:if="${pagination}">
@@ -222,7 +231,7 @@
                   <input name="search"   type="text" th:placeholder="${ param.search }" th:value="${ param.search }" style="visibility:hidden;width:0em;">
                 </form>
               </li>
-              <li class="nav-item" style="display: inline-block;">
+              <li class="nav-item toolbar-tools">
                 <form class="form-inline" th:action="${ '' }" method="get" style="top-margin:0px;left-margin:12px;right-margin:12px;position:relative;width:22em;top:-0.34em;">
                   <input name="search"   type="text" th:value="${ param.search }" placeholder="Search..."
                         class="form-control mr-sm-2"
@@ -241,31 +250,14 @@
                 </form>
               </li>
         </ul>
+          </div>
+
         <div style="position:absolute;right:1em;top:1em;width:12em;height:6em;">
           <div style="position:absolute;left:5em;top:0em;width:4em;height:4em;">
             <a href="{% url 'picture_new'%}">
               <i class="large material-icons">add_a_photo </i>
             </a>
           </div>
-          <!--
-          <div style="position:absolute;left:5em;top:0em;width:4em;height:4em;">
-              <a href="{% url 'directory_new'%}">
-                <i class="large material-icons">create_new_folder </i>
-              </a>
-          </div>
-          <div th:if="${#authorization.expression('isAuthenticated()')}">
-            Authenticated
-          </div>
-          <div th:unless="${#authorization.expression('isAuthenticated()')}">
-            Not Authenticated
-          </div>
-          <div th:text="${#authorization.expression('isAuthenticated()')}"></div>
-          <div th:if="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
-            <a href="/logout">
-              <i class="large material-icons">exit_to_app </i>
-            </a>
-          </div>
-          -->
 
           <div th:unless="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
             <a href="/login">
@@ -278,151 +270,108 @@
               <i class="large material-icons">exit_to_app </i>
             </a>
           </div>
-        </div>
 
-        <!--
-          <div th:if="${not user_authenticated}">
-            <ul>
-              <li class="nav-item" style="display: inline-block;">
-                <a href="{% url 'login'%}" class="bigbrand">
-                  <i class="large material-icons" style="color:var( {{ request.get_full_path|current_background:'calendar_view_day' }} );">
-                      person
-                  </i>
-                </a>
-            </li>
-          </ul>
-        </div>
-        -->
-        <ul>
-          <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4em;top:5em;right:4em;">
-            <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
-              <span th:if="${pageNumber != null}">
-                <ul class="pagination" style="margin:0 0;">
-                  <li th:class="${pageNumber > 0 ? page : disabled}" >
-                    <a th:href="@{.?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;vertical-align: middle;">
-                      <span class="material-symbols-outlined">
-                        first_page
-                      </span>
-                    </a>
-                  </li>
-                  <li th:class="${pageNumber > 0 ? page : disabled}">
-                    <a th:href="@{.?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      <span class="material-symbols-outlined">
+          <ul>
+            <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4em;top:5em;right:4em;">
+              <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
+                <span th:if="${pageNumber != null}">
+                  <ul class="pagination" style="margin:0 0;">
+                    <li th:class="${pageNumber > 0 ? page : disabled}" >
+                      <a th:href="@{.?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;vertical-align: middle;">
                         <span class="material-symbols-outlined">
-                          navigate_before
+                          first_page
                         </span>
-                      </span>
-                    </a>
-                  </li>
-                  <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                    <a th:href="@{.?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      <span class="material-symbols-outlined">
-                        navigate_next
-                      </span>
-                    </a>
-                  </li>
-                  <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                    <a th:href="@{.?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
-                      <span class="material-symbols-outlined">
-                        last_page
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <div class="container">
-                      <div class="vertical-center">
-                        <div style="width:12em;height:100%;">
-                          <ul class="pagination" style="margin: 0 0;">
-                            <li id="page_no">
-                              <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );"
-                                 th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
-                                 th:text="@{Go to page: __${pageNumber + 1}__}"
-                              >
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="container">
-                      <div class="vertical-center">
-                        <div style="position:absolute;top:10px;width:72em;">
-                          <div class="range-slider">
-                            <input
-                              class="custom-range form-control-slider"
-                              type="range" th:value="${ pageNumber + 1 }" min="1" th:max="${ totalPages }"
-                              id="slider" >
+                      </a>
+                    </li>
+                    <li th:class="${pageNumber > 0 ? page : disabled}">
+                      <a th:href="@{.?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                        <span class="material-symbols-outlined">
+                          <span class="material-symbols-outlined">
+                            navigate_before
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                    <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
+                      <a th:href="@{.?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                        <span class="material-symbols-outlined">
+                          navigate_next
+                        </span>
+                      </a>
+                    </li>
+                    <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
+                      <a th:href="@{.?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                        <span class="material-symbols-outlined">
+                          last_page
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <div class="container">
+                        <div class="vertical-center">
+                          <div style="width:12em;height:100%;">
+                            <ul class="pagination" style="margin: 0 0;">
+                              <li id="page_no">
+                                <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );"
+                                   th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
+                                   th:text="@{Go to page: __${pageNumber + 1}__}"
+                                >
+                                </a>
+                              </li>
+                            </ul>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </li>
-                </ul>
+                    </li>
+                    <li>
+                      <div class="container">
+                        <div class="vertical-center">
+                          <div style="position:absolute;top:10px;width:72em;">
+                            <div class="range-slider">
+                              <input
+                                class="custom-range form-control-slider"
+                                type="range" th:value="${ pageNumber + 1 }" min="1" th:max="${ totalPages }"
+                                id="slider" >
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
               </span>
             </div>
           </div>
         </div>
-        {% endif %}
       </div>
     </nav>
-
-  </div>  <nav class="navbar navbar-default" role="navigation">
-    <div class="container">
-      <div class="navbar-header">
-        <a class="navbar-brand" th:href="@{/}"><span></span></a>
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
-          <span class="sr-only">
-            <os-p>Toggle navigation</os-p>
-          </span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-      <div class="navbar-collapse collapse" id="main-navbar">
-
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:remove="all">
-
-          <li th:fragment="menuItem (link,active,title,glyph,text)" th:class="nav-item">
-            <a th:class="${active==menu ? 'nav-link active' : 'nav-link'}" th:href="@{__${link}__}" th:title="${title}">
-              <span th:class="'fa fa-'+${glyph}" class="fa fa-home"></span>
-              <span th:text="${text}">Template</span>
-            </a>
-          </li>
-
-        </ul>
-
-        <!--
-        <ul class="nav navbar-nav navbar-left">
-
-          <li th:replace="~{::menuItem ('/','home','home page','home','Home')}">
-            <span class="fa fa-home" aria-hidden="true"></span>
-            <span>Home</span>
-          </li>
-
-          <li th:replace="::menuItem ('/folders/find','albums','find folders','search','Find folders')">
-            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-            <span>Find folders</span>
-          </li>
-
-          <li th:replace="::menuItem ('/albums/find','albums','find albums','search','Find albums')">
-            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-            <span>Find albums</span>
-          </li>
-
-          <li
-            th:replace="~{::menuItem ('/oups','error','trigger a RuntimeException to see how it is handled','exclamation-triangle','Error')}">
-            <span class="fa exclamation-triangle" aria-hidden="true"></span>
-            <span>Error</span>
-          </li>
-
-        </ul>
-        -->
-      </div>
+  </div>
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" th:href="@{/}"><span></span></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">
+          <os-p>Toggle navigation</os-p>
+        </span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
     </div>
-  </nav>
+    <div class="navbar-collapse collapse" id="main-navbar">
+
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:remove="all">
+
+        <li th:fragment="menuItem (link,active,title,glyph,text)" th:class="nav-item">
+          <a th:class="${active==menu ? 'nav-link active' : 'nav-link'}" th:href="@{__${link}__}" th:title="${title}">
+            <span th:class="'fa fa-'+${glyph}" class="fa fa-home"></span>
+            <span th:text="${text}">Template</span>
+          </a>
+        </li>
+
+      </ul>
+
+    </div>
+  </div>
   <div class="container-fluid">
     <div class="container xd-container">
 

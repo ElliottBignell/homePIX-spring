@@ -8440,3 +8440,171 @@ table {
     box-sizing: border-box;
     padding: 10px; /* Add padding as needed */
 }
+
+.toolbar-text {
+  display: none; /* Hide text by default */
+  vertical-align:top;
+  font-size:1.5em;
+}
+
+/* Media query for typical phone screen sizes */
+@media only screen and (max-width:768px) { /* Adjust as needed */
+  .navbar-collapse .toolbar-text {
+    display: inline; /* Show text when in phone view */
+  }
+}
+
+.toolbar-tools {
+  display: inline; /* Hide text by default */
+}
+
+/* Media query for typical phone screen sizes */
+@media only screen and (max-width:768px) { /* Adjust as needed */
+  .navbar-collapse .toolbar-tools {
+    display: none; /* Show text when in phone view */
+  }
+}
+
+.navbar-title {
+    display: none; /* Hide title by default */
+    margin-left: 10px; /* Spacing between icon and title */
+    color:white;
+    vertical-align:top;
+  font-size:2em;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .navbar-title {
+        display: inline-block; /* Show title on smaller screens */
+    }
+}
+
+.homepix-caption-1 {
+     display: none;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homepix-caption-1 {
+        position:relative;
+        top:0vw;
+        left:0vw;
+        height:15vw;
+        width:100%;
+        text-align:center;
+        color: var( --homepix-dark );
+        display: inline-block;
+    }
+}
+
+.homepix-caption-2 {
+     top:0vw;
+     height:45vw;
+     width:45vw;
+     text-align:center;
+     display: inline-block;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homepix-caption-2 {
+        display: none;
+    }
+}
+
+.homepix-caption-3 {
+     display: none;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homepix-caption-3 {
+        position:relative;
+        left:0vw;
+        top:calc(100% - 100px);
+        height:100px;
+        width:100%;
+        text-align:center;
+        color: var( --homepix-dark );
+        display: inline-block;
+    }
+}
+
+.mySlides
+{
+    position:relative;
+    left:0em;
+    top:0em;
+    height:inherit;
+    display:none;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .mySlides
+    {
+        position:relative;
+        top:0em;
+        left:0em;
+        width:100%;
+        height:100%;
+        display:block;
+    }
+}
+
+.homepix-main-picture {
+    height:45vw;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homepix-main-picture {
+        position:relative;
+        top:0em;
+        left:0em;
+        width:100%;
+        height:calc(100% - 5em);
+    }
+}
+
+.homePIX-main-cell {
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homePIX-main-cell {
+        position:relative;
+        top:0em;
+        left:0em;
+        width:100%;
+        height:100%;
+    }
+}
+
+.homePIX-navbar {
+    width:96%;
+    margin-right:2%;
+    margin-left:2%;
+    height:8.5em;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+    .homePIX-navbar {
+        width:96%;
+        margin-right:2%;
+        margin-left:2%;
+        height:4em;
+    }
+}
+
+.homePIX-all {
+     position:absolute;
+     left:0;
+     top:15%;
+     width:100%;
+     height:100%;"
+ }
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+.homePIX-all {
+     position:absolute;
+     left:0px;
+     top:4em;
+     width:100%;
+     height:calc(100% - 4em);"
+ }
+}
