@@ -108,9 +108,15 @@
 .drop-down-menu
 {
   position:relative;
-  top:3em;
+  top:0em;
   left:0px;
   background-color:var( --homepix-dark );
+}
+
+@media only screen and (max-width:992px) { /* Adjust as needed */
+  .drop-down-menu {
+    display: none; /* Show text when in phone view */
+  }
 }
 
 .textareaclass{
@@ -153,6 +159,13 @@ div.panemain {
   margin-left:5%;
   overflow-x: hidden;
   overflow-y: scroll;
+}
+
+@media only screen and (max-width:992px) { /* Adjust as needed */
+  div.panemain {
+    top: 0px;
+    height: calc( 100% - 5em );
+  }
 }
 
 div.justified {

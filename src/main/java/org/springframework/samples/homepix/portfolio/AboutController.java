@@ -40,9 +40,10 @@ class AboutController extends PaginationController {
 					FolderRepository folders,
 					PictureFileRepository pictureFiles,
 					KeywordRepository keyword,
-					KeywordRelationshipsRepository keywordsRelationships
+					KeywordRelationshipsRepository keywordsRelationships,
+					FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}
 
 	@GetMapping("/about/")

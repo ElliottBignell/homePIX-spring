@@ -75,93 +75,103 @@
     /*]]>*/
   </script>
 
-  <h2 th:text="@{__${folder.displayName}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages}"></h2>
-  <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-        action="#"
-        th:action="@{/buckets/__${folder.name}__/import/}"
-        th:object="${folder}"
-        method="post"
-  >
-    <input type="submit" value="Scan folder...">
-  </form>
-
-  <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-  >
-    <!-- th:if="${#authorization.expression('hasRole(''ADMIN'')')}"-->
-    <label>Show Restricted Pictures</label>
-    <input id="toggle_scary" onClick="toggleRestricted();" type="checkbox" name="showScary" th:checked="${showScary}" />
-  </div>
-
-  <div style="overflow-y: auto; max-height: 75vh;">
-
-    <figure th:each="pictureFile,iterStat : ${collection}"
-            th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
-            th:id="@{div__${pictureFile.id}__}"
-    >
-      <a th:id="@{picture__${pictureFile.id}__}"
-         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
-      >
-        <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
-          <span class="tt_subject">
-            <img th:id="@{picture__${pictureFile.id}__}"
-                 class="lazyload imageinlist imageresponsive"
-                 th:width="${pictureFile.displayWidth}"
-                 th:height="${pictureFile.displayHeight}"
-                 th:src="${pictureFile.mediumFilename}"
-                 th:data-src="${pictureFile.mediumFilename}"
-                 th:alt="${pictureFile.filename}"
-            >
-          </span>
-        </section>
-      </a>
-      <a th:id="@{btn__${pictureFile.id}__}"
-         th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
-      >
-        <figcaption class="tt_edit">
-          <form id="editprops">
-            <fieldset>
-              <button type="button" class="tt_title imageresponsive_">
-                <span style="text-align:left;" th:text="${pictureFile.title}"></span>
-              </button>
-            </fieldset>
-          </form>
-        </figcaption>
-      </a>
-      <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header">
-        <a href="#"
-           th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor hide_button' : 'tt_icon_anchor show_button'}"
-           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-           th:onclick="'showPicture(\'' + ${pictureFile.id} + '\')'"
-           th:id="@{show-__${pictureFile.id}__}"
-        >
-          <i th:id="@{add_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
-            add
-          </i>
-        </a>
-        <a href="#"
-           th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor show_button' : 'tt_icon_anchor hide_button'}"
-           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-           th:onclick="'hidePicture(\'' + ${pictureFile.id} + '\')'"
-           th:id="@{hide-__${pictureFile.id}__}"
-        >
-          <i th:id="@{remove_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
-            remove
-          </i>
-        </a>
-        <a class="tt_icon_anchor"
-           th:href="@{./delete/__${folder.name}__/}"
-           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-        >
-          <i class="material-icons tt_icon">
-            delete
-          </i>
-        </a>
-        <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
-          <div th:id="@{header__${folder.name}__}" class="tt_lefttextnooff" th:value="${folder.name}">
+  <div style="position:relative;top:4em;">
+    <div class="centerstage">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="row">
+          <div class="col-md-6">
+            <h1 th:text="@{__${folder.displayName}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages}"></h1>
           </div>
-        </figcaption>
+          <form th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                action="#"
+                th:action="@{/buckets/__${folder.name}__/import/}"
+                th:object="${folder}"
+                method="post"
+          >
+            <input type="submit" value="Scan folder...">
+          </form>
+
+          <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+          >
+            <!-- th:if="${#authorization.expression('hasRole(''ADMIN'')')}"-->
+            <label>Show Restricted Pictures</label>
+            <input id="toggle_scary" onClick="toggleRestricted();" type="checkbox" name="showScary" th:checked="${showScary}" />
+          </div>
+
+          <div style="overflow-y: auto; max-height: 75vh;">
+
+            <figure th:each="pictureFile,iterStat : ${collection}"
+                    th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                    th:id="@{div__${pictureFile.id}__}"
+            >
+              <a th:id="@{picture__${pictureFile.id}__}"
+                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+              >
+                <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
+                  <span class="tt_subject">
+                    <img th:id="@{picture__${pictureFile.id}__}"
+                         class="lazyload imageinlist imageresponsive"
+                         th:width="${pictureFile.displayWidth}"
+                         th:height="${pictureFile.displayHeight}"
+                         th:src="${pictureFile.mediumFilename}"
+                         th:data-src="${pictureFile.mediumFilename}"
+                         th:alt="${pictureFile.filename}"
+                    >
+                  </span>
+                </section>
+              </a>
+              <a th:id="@{btn__${pictureFile.id}__}"
+                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+              >
+                <figcaption class="tt_edit">
+                  <form id="editprops">
+                    <fieldset>
+                      <button type="button" class="tt_title imageresponsive_">
+                        <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+                      </button>
+                    </fieldset>
+                  </form>
+                </figcaption>
+              </a>
+              <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:id="@{header_o__${folder.name}__}" class="tt_left tt_text tt_header">
+                <a href="#"
+                   th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor hide_button' : 'tt_icon_anchor show_button'}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:onclick="'showPicture(\'' + ${pictureFile.id} + '\')'"
+                   th:id="@{show-__${pictureFile.id}__}"
+                >
+                  <i th:id="@{add_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+                    add
+                  </i>
+                </a>
+                <a href="#"
+                   th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor show_button' : 'tt_icon_anchor hide_button'}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:onclick="'hidePicture(\'' + ${pictureFile.id} + '\')'"
+                   th:id="@{hide-__${pictureFile.id}__}"
+                >
+                  <i th:id="@{remove_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+                    remove
+                  </i>
+                </a>
+                <a class="tt_icon_anchor"
+                   th:href="@{./delete/__${folder.name}__/}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                >
+                  <i class="material-icons tt_icon">
+                    delete
+                  </i>
+                </a>
+                <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+                  <div th:id="@{header__${folder.name}__}" class="tt_lefttextnooff" th:value="${folder.name}">
+                  </div>
+                </figcaption>
+              </div>
+            </figure>
+          </div>
+        </div>
       </div>
-    </figure>
+    </div>
   </div>
 
 </body>

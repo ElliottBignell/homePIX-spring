@@ -223,7 +223,7 @@
           </a>
           <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
         </td>
-        <td id="picframe" style="height:100%;width:calc(100%-15em);vertical-align:top;">
+        <td id="picframe" style="position:relative;top:1em;height:100%;width:calc(100%-15em);vertical-align:top;">
           <!--<div class="bounding-box" style="background-image:url("/{{ picture.modpath }}/{{ picture.file }}");">-->
           <img th:id="@{picture__${picture.id}__}"
                class="lazyload imageinlist imageresponsive"

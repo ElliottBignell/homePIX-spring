@@ -73,6 +73,8 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFolderName(@Param("filename") String filename);
 
+	List<PictureFile> findAllById(Iterable<Integer> ids);
+
 	@Query(value = "SELECT pf.* FROM picture_file pf " +
 		"JOIN folders f ON pf.folder = f.id " +
 		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +

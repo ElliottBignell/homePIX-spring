@@ -90,11 +90,11 @@
                        </div>
                        <div class="carousel-item active homepix-main-picture">
                          <img th:id="@{picture__${picture.id}__}"
-                              class="lazyload imageinlist imageresponsive"
+                              class="lazyload imageinlist imageresponsive homepix-main-picture"
                               th:src="${picture.mediumFilename}"
                               th:data-src="${picture.largeFilename}"
                               th:alt="${picture.filename}"
-                              style="left:0;top:0px;width:100%;height:calc(100% - 9em);object-fit:contain;object-position:center;"
+                              style="object-fit:contain;object-position:center;"
                          >
 
                          </img>

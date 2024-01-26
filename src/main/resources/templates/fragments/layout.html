@@ -12,7 +12,7 @@
 
   <link rel="shortcut icon" type="image/x-icon" th:href="@{/resources/images/favicon.png}">
 
-  <title>PetClinic :: a Spring Framework demonstration</title>
+  <title>homePIX Photo Server</title>
 
   <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -252,27 +252,33 @@
         </ul>
           </div>
 
-        <div style="position:absolute;right:1em;top:1em;width:12em;height:6em;">
-          <div style="position:absolute;left:5em;top:0em;width:4em;height:4em;">
+        <div style="position:absolute;left:calc(100% - 5em);top:1em;width:4em;height:4em;">
+          <div style="position:absolute;left:calc(100% - 9em);top:0em;width:4em;height:4em;">
             <a href="{% url 'picture_new'%}">
               <i class="large material-icons">add_a_photo </i>
             </a>
           </div>
 
-          <div th:unless="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+          <div th:unless="${#authorization.expression('isAuthenticated')}"
+               style="position:absolute;left:calc(100% - 4em);top:0em;width:4em;height:4em;"
+          >
             <a href="/login">
               <i class="large material-icons">login </i>
             </a>
           </div>
 
-          <div th:if="${#authorization.expression('isAuthenticated')}" style="position:absolute;left:9em;top:0em;width:4em;height:4em;">
+          <div th:if="${#authorization.expression('isAuthenticated')}"
+               style="position:absolute;left:calc(100% - 4em);top:0em;width:4em;height:4em;"
+          >
             <a href="/logout">
               <i class="large material-icons">exit_to_app </i>
             </a>
           </div>
+        </div>
 
+        <div style="position:absolute;left:2vw;top:4.5em;width:96vw;height:4em;">
           <ul>
-            <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4em;top:5em;right:4em;">
+            <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
               <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
                 <span th:if="${pageNumber != null}">
                   <ul class="pagination" style="margin:0 0;">

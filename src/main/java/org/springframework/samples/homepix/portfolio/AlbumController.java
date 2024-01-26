@@ -46,9 +46,10 @@ class AlbumController extends PaginationController {
 						   PictureFileRepository pictureFiles,
 						   AlbumContentRepository albumContents,
 						   KeywordRepository keyword,
-						   KeywordRelationshipsRepository keywordsRelationships
+						   KeywordRelationshipsRepository keywordsRelationships,
+						   FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContent = albumContents;
 	}
 

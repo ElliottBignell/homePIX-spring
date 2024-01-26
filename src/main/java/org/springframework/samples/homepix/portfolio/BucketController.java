@@ -27,6 +27,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileRepos
 import org.springframework.samples.homepix.portfolio.keywords.*;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -69,9 +70,10 @@ class BucketController extends PaginationController {
 							AlbumRepository albums,
 							PictureFileRepository pictureFiles,
 							KeywordRepository keyword,
-							KeywordRelationshipsRepository keywordsRelationships
+							KeywordRelationshipsRepository keywordsRelationships,
+							FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}
 
 	@InitBinder
@@ -106,15 +108,71 @@ class BucketController extends PaginationController {
 	}
 
 	@GetMapping("/buckets/")
-	public String processFindFormSlash(Folder folder, BindingResult result, Map<String, Object> model) {
-		return processFindForm(folder, result, model);
+	public String processFindFormSlash(
+		Folder folder,
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		BindingResult result,
+		Map<String, Object> model
+	) {
+		return processFindForm(folder, requestDTO, result, model);
 	}
 
 	@GetMapping("/buckets")
-	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
+	public String processFindForm(
+		Folder folder,
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		BindingResult result,
+		Map<String, Object> model
+	) {
 
 		folderCache = null;
-		return loadBuckets(folder, result, model);
+
+		loadBuckets(folder, result, model);
+
+		List<Folder> folders = new ArrayList<>(this.folders.findAll());
+		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
+
+		model.put("folders", folderCache);
+		model.put("thumbnails", thumbnailsMap);
+
+		// User is not authenticated or not an admin
+		return "folders/folderListPictorial";
+	}
+
+	@GetMapping("/buckets/admin")
+	public String folderAdminPage(
+		Folder folder,
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		BindingResult result,
+		Map<String, Object> model
+	) {
+
+		folderCache = null;
+
+		loadBuckets(folder, result, model);
+
+		// multiple folders found
+		model.put("folders", folderCache);
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		if (authentication != null && authentication.isAuthenticated()) {
+			// User is authenticated
+			boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+			if (isAdmin) {
+				// User is an administrator
+				return "folders/folderList";
+			}
+		}
+
+		List<Folder> folders = new ArrayList<>(this.folders.findAll());
+		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
+		model.put("thumbnails", thumbnailsMap);
+
+		// User is not authenticated or not an admin
+		return "folders/folderListPictorial";
 	}
 
 	@GetMapping("/bucket/")

@@ -50,50 +50,60 @@
   /*]]>*/
 </script>
 
-<h2>Folders</h2>
+<div style="position:relative;top:4em;">
+  <div class="centerstage">
+    <div class="techfont" id="div_centrestage" style="min-height:60px;">
+      <div class="row">
+        <div class="col-md-6">
+          <h1>Folders</h1>
+        </div>
 
-<div style="overflow-y: auto; max-height: 75vh;">
-  <table id="folders" class="table table-striped">
-    <thead>
-    <tr>
-      <th style="width: 150px;"></th>
-      <th style="width: 150px;">Name</th>
-      <th></th>
-      <th style="width: 100px"></th>
-      <th>Picture Count</th>
-      <th></th>
-      <th style="width: 100px"></th>
-      <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Reload</th>
-    </tr>
-    </thead>
-    <tbody>
-      <tr th:each="folder : ${folders}">
-        <td></td>
-        <td>
-          <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder
-            name</a>
-        </td>
-        <td></td>
-        <td></td>
-        <td th:id="@{pictureCount-__${folder.name}__}">
-          <a th:href="@{/buckets/__${folder.name}__}"
-             th:text="${folder.picture_count}"
-             style="color:black;">
-            File count
-          </a>
-        </td>
-        <td></td>
-        <td></td>
-        <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
-          <form th:method="post">
-            <input th:id="@{scanButton-__${folder.name}__}" type="button" value="Scan folder..."
-                   th:onclick="'performAjaxCall(\'' + __${folder.name}__ + '\')'"
-            />
-          </form>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        <div style="overflow-y: auto; max-height: 75vh;">
+          <table id="folders" class="table table-striped">
+            <thead>
+            <tr>
+              <th style="width: 150px;"></th>
+              <th style="width: 150px;">Name</th>
+              <th></th>
+              <th style="width: 100px"></th>
+              <th>Picture Count</th>
+              <th></th>
+              <th style="width: 100px"></th>
+              <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Reload</th>
+            </tr>
+            </thead>
+            <tbody>
+              <tr th:each="folder : ${folders}">
+                <td></td>
+                <td>
+                  <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder
+                    name</a>
+                </td>
+                <td></td>
+                <td></td>
+                <td th:id="@{pictureCount-__${folder.name}__}">
+                  <a th:href="@{/buckets/__${folder.name}__}"
+                     th:text="${folder.picture_count}"
+                     style="color:black;">
+                    File count
+                  </a>
+                </td>
+                <td></td>
+                <td></td>
+                <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                  <form th:method="post">
+                    <input th:id="@{scanButton-__${folder.name}__}" type="button" value="Scan folder..."
+                           th:onclick="'performAjaxCall(\'' + __${folder.name}__ + '\')'"
+                    />
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>

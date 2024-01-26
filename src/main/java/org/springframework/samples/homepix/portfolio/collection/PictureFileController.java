@@ -44,9 +44,10 @@ public class PictureFileController extends PaginationController {
 								 AlbumRepository albums,
 								 FolderRepository folders,
 								 KeywordRepository keyword,
-								 KeywordRelationshipsRepository keywordsRelationships
+								 KeywordRelationshipsRepository keywordsRelationships,
+								 FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}
 
 	@ModelAttribute("types")

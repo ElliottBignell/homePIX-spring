@@ -51,7 +51,7 @@
   --breakpoint-xs: 0;
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
+  --breakpoint-lg: 768px;
   --breakpoint-xl: 1200px;
   --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
@@ -479,7 +479,7 @@ pre {
   @media (min-width: 768px) {
     .container {
       max-width: 720px; } }
-  @media (min-width: 992px) {
+  @media (min-width: 768px) {
     .container {
       max-width: 960px; } }
   @media (min-width: 1200px) {
@@ -488,10 +488,23 @@ pre {
 
 .container-fluid {
   width: 100%;
+  top:8.5em;
   padding-right: 15px;
   padding-left: 15px;
   margin-right: auto;
   margin-left: auto; }
+
+@media only screen and (max-width:992px) { /* Adjust as needed */
+    .container-fluid {
+          width: 100%;
+          top:4em;
+          padding-right: 15px;
+          padding-left: 15px;
+          margin-right: auto;
+          margin-left: auto;
+          top:8.5vw;
+  }
+}
 
 .row {
   display: flex;
@@ -932,7 +945,7 @@ pre {
 
   .offset-md-11 {
     margin-left: 91.6666666667%; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .col-lg {
     flex-basis: 0;
     flex-grow: 1;
@@ -2652,7 +2665,7 @@ input[type="button"].btn-block {
   .dropdown-menu-md-right {
     right: 0;
     left: auto; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .dropdown-menu-lg-left {
     right: auto;
     left: 0; }
@@ -3506,7 +3519,7 @@ input[type="button"].btn-block {
   .navbar-expand-lg > .container-fluid {
     padding-right: 0;
     padding-left: 0; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .navbar-expand-lg {
     flex-flow: row nowrap;
     justify-content: flex-start; }
@@ -4346,7 +4359,7 @@ input[type="button"].btn-block {
         border-top-right-radius: 0.25rem;
         border-bottom-right-radius: 0.25rem;
         border-bottom-left-radius: 0; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .list-group-horizontal-lg {
     flex-direction: row; }
     .list-group-horizontal-lg .list-group-item {
@@ -4741,7 +4754,7 @@ a.close.disabled {
 
   .modal-sm {
     max-width: 300px; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .modal-lg,
   .modal-xl {
     max-width: 800px; } }
@@ -5515,7 +5528,7 @@ button.bg-homepix-alarm:focus {
 
   .d-md-inline-flex {
     display: inline-flex !important; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .d-lg-none {
     display: none !important; }
 
@@ -5936,7 +5949,7 @@ button.bg-homepix-alarm:focus {
 
   .align-self-md-stretch {
     align-self: stretch !important; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .flex-lg-row {
     flex-direction: row !important; }
 
@@ -6167,7 +6180,7 @@ button.bg-homepix-alarm:focus {
 
   .float-md-none {
     float: none !important; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .float-lg-left {
     float: left !important; }
 
@@ -7341,7 +7354,7 @@ button.bg-homepix-alarm:focus {
   .ml-md-auto,
   .mx-md-auto {
     margin-left: auto !important; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .m-lg-0 {
     margin: 0 !important; }
 
@@ -8069,7 +8082,7 @@ button.bg-homepix-alarm:focus {
 
   .text-md-center {
     text-align: center !important; } }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .text-lg-left {
     text-align: left !important; }
 
@@ -8277,10 +8290,10 @@ a.text-homepix-alarm:hover, a.text-homepix-alarm:focus {
   @page {
     size: a3; }
   body {
-    min-width: 992px !important; }
+    min-width: 768px !important; }
 
   .container {
-    min-width: 992px !important; }
+    min-width: 768px !important; }
 
   .navbar {
     display: none; }
@@ -8449,7 +8462,7 @@ table {
 
 /* Media query for typical phone screen sizes */
 @media only screen and (max-width:768px) { /* Adjust as needed */
-  .navbar-collapse .toolbar-text {
+  .toolbar-text {
     display: inline; /* Show text when in phone view */
   }
 }
@@ -8459,7 +8472,7 @@ table {
 }
 
 /* Media query for typical phone screen sizes */
-@media only screen and (max-width:768px) { /* Adjust as needed */
+@media only screen and (max-width:992px) { /* Adjust as needed */
   .navbar-collapse .toolbar-tools {
     display: none; /* Show text when in phone view */
   }
@@ -8483,12 +8496,12 @@ table {
      display: none;
 }
 
-@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+@media only screen and (max-width: 768px) and (orientation: portrait) {
     .homepix-caption-1 {
         position:relative;
-        top:0vw;
+        top:0vh;
         left:0vw;
-        height:15vw;
+        height:15vh;
         width:100%;
         text-align:center;
         color: var( --homepix-dark );
@@ -8496,10 +8509,24 @@ table {
     }
 }
 
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+    .homepix-caption-1 {
+        position:relative;
+        top:0vh;
+        left:0vw;
+        height:15vh;
+        width:100%;
+        text-align:center;
+        color: var( --homepix-bg );
+        display: inline-block;
+    }
+}
+
 .homepix-caption-2 {
      top:0vw;
-     height:45vw;
-     width:45vw;
+     left:5vw;
+     height:45vh;
+     width:90vw;
      text-align:center;
      display: inline-block;
 }
@@ -8514,15 +8541,28 @@ table {
      display: none;
 }
 
-@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+@media only screen and (max-width: 768px) and (orientation: portrait) {
     .homepix-caption-3 {
         position:relative;
-        left:0vw;
-        top:calc(100% - 100px);
+        left:0px;
+        top:calc(100vh - 260px);
         height:100px;
         width:100%;
         text-align:center;
         color: var( --homepix-dark );
+        display: inline-block;
+    }
+}
+
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+    .homepix-caption-3 {
+        position:relative;
+        left:0px;
+        top:calc(100vh - 200px);
+        height:100px;
+        width:100%;
+        text-align:center;
+        color: var( --homepix-bg );
         display: inline-block;
     }
 }
@@ -8532,14 +8572,14 @@ table {
     position:relative;
     left:0em;
     top:0em;
-    height:inherit;
+    height:calc(100vh - 16em);"
     display:none;
 }
 
-@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+@media only screen and (max-width: 992px) { /* Adjust based on your navbar's breakpoint */
     .mySlides
     {
-        position:relative;
+        position:absolute;
         top:0em;
         left:0em;
         width:100%;
@@ -8549,7 +8589,11 @@ table {
 }
 
 .homepix-main-picture {
-    height:45vw;
+    position:relative;
+    top:0em;
+    left:0em;
+    width:100%;
+    height:calc(100vh - 8.5em);
 }
 
 @media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
@@ -8558,11 +8602,13 @@ table {
         top:0em;
         left:0em;
         width:100%;
-        height:calc(100% - 5em);
+        height:100%;
     }
 }
 
 .homePIX-main-cell {
+    top: 0px;
+    height: 100%;
 }
 
 @media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
@@ -8582,7 +8628,7 @@ table {
     height:8.5em;
 }
 
-@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+@media only screen and (max-width: 992px) { /* Adjust based on your navbar's breakpoint */
     .homePIX-navbar {
         width:96%;
         margin-right:2%;
@@ -8596,7 +8642,7 @@ table {
      left:0;
      top:15%;
      width:100%;
-     height:100%;"
+     height:calc(100vh - 16em);"
  }
 
 @media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
@@ -8605,6 +8651,7 @@ table {
      left:0px;
      top:4em;
      width:100%;
-     height:calc(100% - 4em);"
+     height:calc(100vh - 4em);"
  }
 }
+

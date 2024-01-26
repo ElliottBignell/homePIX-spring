@@ -52,9 +52,10 @@ class FolderController extends PaginationController {
 							AlbumRepository albums,
 							PictureFileRepository pictureFiles,
 							KeywordRepository keyword,
-							KeywordRelationshipsRepository keywordsRelationships
+							KeywordRelationshipsRepository keywordsRelationships,
+							FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}
 
 	@InitBinder

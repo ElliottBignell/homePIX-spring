@@ -51,9 +51,10 @@ class WelcomeController extends PaginationController {
 							 FolderRepository folders,
 							 AlbumContentRepository albumContents,
 							 KeywordRepository keyword,
-							 KeywordRelationshipsRepository keywordsRelationships
+							 KeywordRelationshipsRepository keywordsRelationships,
+							 FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContents = albumContents;
 	}
 

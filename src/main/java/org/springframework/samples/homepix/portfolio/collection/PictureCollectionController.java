@@ -23,6 +23,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.FolderRepository;
+import org.springframework.samples.homepix.portfolio.FolderService;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
@@ -58,10 +59,11 @@ class PictureCollectionController extends PaginationController {
 									   AlbumRepository albums,
 									   FolderRepository folders,
 									   KeywordRepository keyword,
-									   KeywordRelationshipsRepository keywordsRelationships
+									   KeywordRelationshipsRepository keywordsRelationships,
+									   FolderService folderService
 	) {
 
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.pictures = pictures;
 	}
 

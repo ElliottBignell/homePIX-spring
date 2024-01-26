@@ -9,11 +9,16 @@ import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.keywords.*;
+import org.springframework.samples.homepix.portfolio.keywords.Keyword;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -31,7 +36,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -39,8 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public abstract class PaginationController implements AutoCloseable {
 
@@ -74,17 +79,22 @@ public abstract class PaginationController implements AutoCloseable {
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
 	@Autowired
+	protected FolderService folderService;
+
+	@Autowired
 	protected PaginationController(AlbumRepository albums,
 								   FolderRepository folders,
 								   PictureFileRepository pictureFiles,
 								   KeywordRepository keyword,
-								   KeywordRelationshipsRepository keywordsRelationships
+								   KeywordRelationshipsRepository keywordsRelationships,
+								   FolderService folderService
 	) {
 		this.albums = albums;
 		this.folders = folders;
 		this.pictureFiles = pictureFiles;
 		this.keyword = keyword;
 		this.keywordRelationships = keywordsRelationships;
+		this.folderService = folderService;
 		pagination = new Pagination();
 	}
 

@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.portfolio.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.AlbumRepository;
@@ -50,9 +51,10 @@ class CalendarController extends PaginationController {
 					   FolderRepository folders,
 					   PictureFileRepository pictureFiles,
 					   KeywordRepository keyword,
-					   KeywordRelationshipsRepository keywordsRelationships
+					   KeywordRelationshipsRepository keywordsRelationships,
+					   FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships);
+		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}
 
 	@InitBinder

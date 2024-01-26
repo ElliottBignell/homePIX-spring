@@ -51,6 +51,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				"/",
 				"/buckets/**",
 				"/albums/**",
+				"/album/**",
 				"/collection/**",
 				"/calendar/**",
 				"/web-images/**",
