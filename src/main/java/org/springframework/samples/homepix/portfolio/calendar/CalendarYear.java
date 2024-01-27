@@ -43,4 +43,5 @@ public class CalendarYear {
 		this.quarters = quarters;
 	}
 
+	public PictureFile getThumbnail() { return null; };
 }

@@ -278,7 +278,7 @@
 
         <div style="position:absolute;left:2vw;top:4.5em;width:96vw;height:4em;">
           <ul>
-            <div th:if="${pagination}" id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
+            <div th:if="${pagination != null && totalPages > 1}" id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
               <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
                 <span th:if="${pageNumber != null}">
                   <ul class="pagination" style="margin:0 0;">

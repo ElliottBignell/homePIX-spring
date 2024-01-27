@@ -8593,7 +8593,7 @@ table {
     top:0em;
     left:0em;
     width:100%;
-    height:calc(100vh - 8.5em);
+    height:calc(100vh - 16em);
 }
 
 @media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */

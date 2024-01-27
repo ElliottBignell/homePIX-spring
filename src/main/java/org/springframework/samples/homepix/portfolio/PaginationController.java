@@ -395,10 +395,18 @@ public abstract class PaginationController implements AutoCloseable {
 			// search
 		}
 
-		// Extract roles to a comma-separated string
-		String userRoles = authentication.getAuthorities().stream()
-			.map(GrantedAuthority::getAuthority)
-			.collect(Collectors.joining(","));
+		String userRoles = "ROLE_USER";
+
+		if (authentication != null && authentication.isAuthenticated()) {
+			// User is authenticated
+			boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+			if (isAdmin) {
+				// User is an administrator
+				userRoles = "ROLE_ADMIN";
+			}
+		}
 
 		PageRequest pageRequest = PageRequest.of(
 			pageable.getPageNumber(),

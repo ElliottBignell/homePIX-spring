@@ -4,78 +4,91 @@
 
 <body>
 
-<c th:if="${#strings.isEmpty(endDate)} or ${startDate} eq ${endDate}">
-  <h2 th:text="@{'Collection from __${startDate}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages'}">Collection</h2>
-</c>
-<c th:if="${startDate} neq ${endDate}">
-  <h2 th:text="@{'Collection from __${startDate}__ to __${endDate}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages'}">Collection</h2>
-</c>
+<div class="col-sm-12 panemain" id="panemain" style="width:90%;">
+  <div style="background:transparent;position:absolute;left:0em;right:0em;top:0em;bottom:0em;">
 
-<div style="overflow-y: auto; max-height: 75vh;">
+    <div class="centerstage">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="row">
+          <div class="col-md-6">
+            <c th:if="${#strings.isEmpty(endDate)} or ${startDate} eq ${endDate}">
+              <h1 th:text="@{'Collection from __${startDate}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages'}">Collection</h1>
+            </c>
+            <c th:if="${startDate} neq ${endDate}">
+              <h1 th:text="@{'Collection from __${startDate}__ to __${endDate}__ - #__${pageNumber + 1}__ of __${totalPages}__ pages'}">Collection</h1>
+            </c>
+          </div>
 
-  <h3 th:if="${#lists.isEmpty(collection)}">
-    No pictures from this date range
-  </h3>
-  <c th:each="pictureFile : ${collection}">
-    <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
-      <a th:id="@{picture__${pictureFile.id}__}"
-         th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
-      >
-        <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
-          <span class="tt_subject">
-            <img th:id="@{picture__${pictureFile.id}__}"
-                 class="lazyload imageinlist imageresponsive"
-                 th:width="${pictureFile.displayWidth}"
-                 th:height="${pictureFile.displayHeight}"
-                 th:src="${pictureFile.mediumFilename}"
-                 th:data-src="${pictureFile.mediumFilename}"
-                 th:alt="${pictureFile.filename}"
-            >
-          </span>
-        </section>
-      </a>
-      <a th:id="@{picture__${pictureFile.id}__}"
-         th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
-      >
-        <figcaption class="tt_edit">
-          <form id="editprops">
-            <fieldset>
-              <button type="button" class="tt_title imageresponsive_">
-                <span style="text-align:left;" th:text="${pictureFile.title}"></span>
-              </button>
-            </fieldset>
-          </form>
-        </figcaption>
-      </a>
-      <div th:id="@{header-o-__${ pictureFile.id }__}" class="tt_left tt_text tt_header">
-        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-          <i class="material-icons tt_icon">
-            keyboard_arrow_left
-          </i>
-        </a>
-        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-          <i class="material-icons tt_icon">
-            keyboard_arrow_right
-          </i>
-        </a>
-        <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-          <i class="material-icons tt_icon">
-            bedtime
-          </i>
-        </a>
-        <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
-          <i class="material-icons tt_icon">
-            delete
-          </i>
-        </a>
+          <div style="overflow-y: auto; max-height: 75vh;">
+
+            <h3 th:if="${#lists.isEmpty(collection)}">
+              No pictures from this date range
+            </h3>
+            <c th:each="pictureFile : ${collection}">
+              <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
+                <a th:id="@{picture__${pictureFile.id}__}"
+                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+                >
+                  <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
+                    <span class="tt_subject">
+                      <img th:id="@{picture__${pictureFile.id}__}"
+                           class="lazyload imageinlist imageresponsive"
+                           th:width="${pictureFile.displayWidth}"
+                           th:height="${pictureFile.displayHeight}"
+                           th:src="${pictureFile.mediumFilename}"
+                           th:data-src="${pictureFile.mediumFilename}"
+                           th:alt="${pictureFile.filename}"
+                      >
+                    </span>
+                  </section>
+                </a>
+                <a th:id="@{picture__${pictureFile.id}__}"
+                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+                >
+                  <figcaption class="tt_edit">
+                    <form id="editprops">
+                      <fieldset>
+                        <button type="button" class="tt_title imageresponsive_">
+                          <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+                        </button>
+                      </fieldset>
+                    </form>
+                  </figcaption>
+                </a>
+                <div th:id="@{header-o-__${ pictureFile.id }__}" class="tt_left tt_text tt_header">
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                    <i class="material-icons tt_icon">
+                      keyboard_arrow_left
+                    </i>
+                  </a>
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                    <i class="material-icons tt_icon">
+                      keyboard_arrow_right
+                    </i>
+                  </a>
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                    <i class="material-icons tt_icon">
+                      bedtime
+                    </i>
+                  </a>
+                  <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                    <i class="material-icons tt_icon">
+                      delete
+                    </i>
+                  </a>
+                </div>
+                <!--
+                <figcaption class="tt_text tt_bottom">
+                  <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
+                </figcaption>
+                -->
+              </figure>
+            </c>
+          </div>
+        </div>
       </div>
-      <!--
-      <figcaption class="tt_text tt_bottom">
-        <article th:id="@{art_keywords__${ pictureFile.id }__}" th:text="${pictureFile.keywords.content}">No keywords</article>
-      </figcaption>
-      -->
-    </figure>
-  </c>
+    </div>
+  </div>
 </div>
 
 

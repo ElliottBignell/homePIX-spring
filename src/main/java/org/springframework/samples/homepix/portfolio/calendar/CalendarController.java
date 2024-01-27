@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -46,15 +47,19 @@ class CalendarController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "calendar/createOrUpdateOwnerForm";
 
+	private YearThumbnailRepository yearThumbnailRepository;
+
 	@Autowired
 	CalendarController(AlbumRepository albums,
 					   FolderRepository folders,
 					   PictureFileRepository pictureFiles,
 					   KeywordRepository keyword,
 					   KeywordRelationshipsRepository keywordsRelationships,
-					   FolderService folderService
+					   FolderService folderService,
+					   YearThumbnailRepository yearThumbnailRepository
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		this.yearThumbnailRepository = yearThumbnailRepository;
 	}
 
 	@InitBinder
@@ -85,6 +90,15 @@ class CalendarController extends PaginationController {
 
 	@GetMapping("/calendar")
 	public String processFindCalendars(Calendar calendar, BindingResult result, Map<String, Object> model) {
+
+		List<YearThumbnailMapEntry> entries = this.yearThumbnailRepository.findYearThumbnailMapEntries();
+
+		Map<Integer, PictureFile> yearThumbnailMap = entries.stream()
+			.collect(Collectors.toMap(YearThumbnailMapEntry::getYear, YearThumbnailMapEntry::getThumbnail));
+
+		model.put("yearThumbnailMap", yearThumbnailMap);
+		model.put("years", this.calendar.getItems());
+
 		return "calendar/calendar";
 	}
 

@@ -7954,7 +7954,8 @@ strong {
 .navbar li > a, .navbar-text {
   font-family: "montserratregular", sans-serif;
   text-shadow: none;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 400;
   /* line-height: 14px; */
   padding: 5x 6px 5px 5px;
   transition: all 0.15s;
