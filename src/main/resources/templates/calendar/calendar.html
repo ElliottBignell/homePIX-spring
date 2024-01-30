@@ -4,6 +4,60 @@
 
 <body>
 
+  <style>
+    .colored-figure .colored-box {
+        width: 100px;
+        height: 100px;
+        background-color: #ff0000;
+    }
+
+    .scroll-window {
+         max-height: 85vh;
+         overflow-y:scroll;
+    }
+
+    .background-picture {
+      width: [[${120/years.size()}]]vw;
+      height: [[${100/years.size()}]]vh;
+    }
+
+    .foreground-text {
+      font-size: 6vh;
+    }
+
+    @media only screen and (max-width: 768px) and (orientation: portrait) {
+        .scroll-window {
+          max-height: 90vh;
+          overflow-y:scroll;
+        }
+
+      .background-picture {
+        width: [[${180/years.size()}]]vw;
+        height: [[${75/years.size()}]]vh;
+      }
+
+      .foreground-text {
+        font-size: 4vh;
+      }
+    }
+
+    @media only screen and (max-width: 768px) and (orientation: landscape) {
+        .scroll-window {
+          max-height: 50vh;
+          overflow-y:scroll;
+        }
+
+      .background-picture {
+        width: [[${120/years.size()}]]vw;
+        height: [[${100/years.size()}]]vh;
+      }
+
+      .foreground-text {
+        font-size: 6vh;
+      }
+    }
+  </style>
+
   <script>
 
     function scrollIntoView(i id ) {
@@ -16,141 +70,58 @@
 
   </script>
 
-  <div id="div_collection" style="max-height: 90vh;">
-    <table style="width:60vw;height:70vh;">
-      <tr th:each="yearGroup : ${years}">
-        <td th:each="year : ${yearGroup.getYears()}"
-            th:style="@{yearThumbnailMap[year.getYear()] != null ? 'background-image: url(__${yearThumbnailMap[year.getYear()]?.mediumFilename}__);width:20vh;height:__${60/8}__vh;' : 'width:20vh;height:__${60/8}__vh;'}"
-        >
-          <a th:href="@{/calendar/__${year.getYear()}__}">
+      <div id="div_collection" class="scroll-window">
+        <span th:each="yearGroup : ${years}">
+          <span th:each="year : ${yearGroup.getYears()}"
+                class="background-picture"
+          >
+            <a th:href="@{/calendar/__${year.getYear()}__}">
+
+              <figure class="tt_base droppable draggable"
+                      th:if="${yearThumbnailMap[year.getYear()] != null}"
+                      th:id="@{figure-__${year.getYear()}__}">
+                <section class="wrapper background-picture"
+                         th:id=" @{file-number_${year.getYear()}}" style="position: relative;"
+                >
+                  <span class="tt_subject">
+                    <img th:id="@{picture__${year.getYear()}__}"
+                         class="lazyload background-picture"
+                         th:style="@{object-fit:cover;}"
+                         th:src="${yearThumbnailMap[year.getYear()]?.mediumFilename}"
+                         th:data-src="${yearThumbnailMap[year.getYear()]?.mediumFilename}"
+                         th:alt="${yearThumbnailMap[year.getYear()]?.mediumFilename}"
+                    >
+                  </span>
+                  <div th:text="${year.getYear()}"
+                       class="background-picture foreground-text"
+                       th:style="@{position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center;}"
+                  >
+                    year
+                  </div>
+                </section>
+              </figure>
+            </a>
 
             <figure class="tt_base droppable draggable"
-                    th:if="${yearThumbnailMap[year.getYear()] != null}"
+                    th:unless="${yearThumbnailMap[year.getYear()] != null}"
                     th:id="@{figure-__${year.getYear()}__}">
-              <section class="wrapper" th:id=" @{file-number_${year.getYear()}}" style="position: relative;">
-                <span class="tt_subject">
-                  <img th:id="@{picture__${year.getYear()}__}"
-                       class="lazyload imageinlist imageresponsive"
-                       th:style="@{width:20vw;height:__${60/6}__vh;object-fit:cover;}"
-                       th:src="${yearThumbnailMap[year.getYear()]?.mediumFilename}"
-                       th:data-src="${yearThumbnailMap[year.getYear()]?.mediumFilename}"
-                       th:alt="${yearThumbnailMap[year.getYear()]?.mediumFilename}">
-                </span>
+              <section class="wrapper background-picture foreground-text"
+                       th:id=" @{file-number_${year.getYear()}}" style="position: relative;"
+              >
+                <div class="colored-box background-picture"
+                >
+
+                </div>
                 <div th:text="${year.getYear()}"
-                     style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; font-size:6vh;">
+                     class="background-picture foreground-text"
+                     style="color:var( --homepix-dark ); position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: center;}"
+                >
                   year
                 </div>
               </section>
             </figure>
-          </a>
+          </span>
+        </span>
 
-          <div th:text="${year.getYear()}"
-               th:unless="${yearThumbnailMap[year.getYear()] != null}"
-               style="color:var( --homepix-dark ); position: relative; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; font-size:6vh;">
-            year
-          </div>
-
-        </td>
-      </tr>
-    </table>
-
-    <!--<c th:each="year : ${years}">
-      <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
-        <tr style="height:10em;">
-            <td>
-              <a th:id="@{year__${year.getYear}__}">
-                <h1 class="techfont" style="color:var( --homepix-dark ); font-size:48px;position:relative;top:0.6em;left:0.5em;background: none;transform-origin: 0 0;transform:" th:text="${year.getYear}">
-                </h1>
-              </a>
-            </td>
-        </tr>
-        <tr>
-          <td>
-            <table th:id="@{quarterly__${ year }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
-              <tr>
-                <td>
-                  <table id="quarterly_{{ year.getYear }}_{{ month }}">
-                    <tr th:each="quarter, iterStat : ${year.getQuarters}" style="height:48px;">
-                      <td th:each="month : ${quarter.getMonths}" id="month_{{ year }}_{{ idx }}_{{day}}" style="width:calc(25%-2em);padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;">
-                        <div th:id="@{#quarterly-__${ year.getYear }__-__${ month.getName }__}">
-                          <table th:id="@{q_table__${ year }___${ month.name }__}" class="calendar_day_table">
-                            <tr>
-                              <td style="width:0.3em;"></td>
-                              <td style="colspan:7;">
-                                <div class="techfont" style="position:relative;top:0.2em;left:0.2em;color:var( --homepix-bg ); font-size:20px;" th:text="@{__${month.getName}__}">
-                                </div>
-                              </td>
-                              <td style="width:0.3em;"></td>
-                            </tr>
-                            <tr>
-                              <td>.</td>
-                              <td th:each="day : ${calendar.dayNames}" class="techfont" style="height:2em;color:var( --homepix-bg ); font-size:12px;">
-                                <a href="collection/?fromDate={{ year }}-{{month.0.0.4}}-{{day}}&toDate={{ year }}-{{month.0.0.4}}-{{day}}&ID=&Key=&search=&sort=" th:text="${day}">
-                                </a>
-                                </td>
-                              <td>.</td>
-                            </tr>
-                            <tr>
-                              <td></td>
-                              <td style="colspan:7;">
-                              </td>
-                              <td></td>
-                            </tr>
-                            <tr th:each="week : ${month.getWeeks}">
-                              <td></td>
-                              <td th:each="day : ${week.getDays}">
-                                <a  th:id="@{daylink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
-                                    th:if="${day.thumbnail != null}"
-                                    th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}"
-                                >
-                                  <div class="calendar_tile calendar_tile_small">
-                                    <img id="picture_{{ day.0 }}"
-                                         class="lazyload calendar_thumbnail calendar_tile_small"
-                                         th:src="${day.thumbnail.mediumFilename}"
-                                         th:data-src="${ day.thumbnail.mediumFilename}"
-                                         alt="">
-                                    <div class="calendar_day_pic" style="position:relative;top:-36px;">
-                                      <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;" th:text="${day.getDayOfMonth}">
-                                      </div>
-                                    </div>
-                                  </div>
-                                </a>
-                                <a  th:id="@{nolink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
-                                    th:unless="${day.thumbnail != null}"
-                                >
-                                  <div style="padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;"
-                                       th:class="@{ true ? 'calendar_tile calendar_tile_small' : 'calendar_tile_empty calendar_tile_small' }">
-                                    <div class="calendar_day_pic" style="position:relative;top:-36px;">
-                                      <div class="scrim scrim_small" style="font-size:1em;font-weight:bolder;left:0px;">
-                                      </div>
-                                    </div>
-                                  </div>
-                                </a>
-                              </td>
-                              <td></td>
-                            </tr>
-                            <tr th:if="${month.count <= 6}">
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                            </tr>
-                          </table>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                <td>
-              <tr>
-            <table>
-          <td>
-        <tr>
-      </table>
-    </c>-->
-  </div>
-
-</body>
-</html>
+    </body>
+    </html>

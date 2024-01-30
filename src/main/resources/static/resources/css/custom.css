@@ -3400,6 +3400,7 @@ input[type="button"].btn-block {
   display: block; }
 
 .navbar {
+  background-color: var(--homepix-dark);
   position: relative;
   display: flex;
   flex-wrap: wrap;
@@ -8469,12 +8470,223 @@ table {
 
 .toolbar-tools {
   display: inline; /* Hide text by default */
+  background-color: var( --homepix-dark );
+  height:4em;
+}
+
+.toolbar-group {
+  display: inline; /* Hide text by default */
+  background-color: var( --homepix-dark );
+}
+
+.toolbar-caption-date-from {
+    position:absolute;
+    top:10pt;
+    left:0pt;
+    color:var( --homepix-bg );
+}
+
+.toolbar-date-from {
+    position:absolute;
+    left:30pt;
+    top:0.5em;
+    background:var( --homepix-dark );
+}
+
+.toolbar-caption-date-to {
+    color:var( --homepix-bg );position:absolute;top:10pt;left:130pt;
+}
+
+.toolbar-date-to {
+    position:absolute;
+    left:160pt;
+    top: 0.5em;
+    background:var( --homepix-dark );
+}
+
+.toolbar-date-range {
+    font-size:2em;
+    position:absolute;
+    top:0.3em;
+    left:16.8em;
+    height:1.5em;
+}
+
+.toolbar-hidden {
+    visibility:hidden;
+    width:0em;
+}
+
+.toolbar-sort {
+    left-margin:12px;
+    right-margin:12px;
+    position:relative;
+    width:28em;
+    top:-0.34em;
+}
+
+.toolbar-sort-select {
+  position:absolute;
+  width:14em;
+  top:0.4em;
+}
+
+.toolbar-sort-button {
+  font-size:2em;
+  position:absolute;
+  top:0.3em;
+  left:10.8em;
+  height:1.5em;
+}
+
+.toolbar-search {
+  position:absolute;
+  top:0.5em;
+  background:var( --homepix-dark );
+}
+
+.toolbar-search-button {
+  font-size:2em;
+  position:absolute;
+  top:0.3em;
+  left:8em;
+  height:1.5em;
+}
+
+.toolbar-dates-form {
+  left-margin:12px;
+  margin:0px;
+  position:relative;
+  top:-0.34em;
+  height:5em;
+  width:39em;
+}
+
+.toolbar-sort-toggle,
+.toolbar-dates-toggle,
+.toolbar-search-toggle {
+  display: none;
+}
+
+/* Media query for intermediate screen sizes */
+@media only screen and (min-width: 481px) and (max-width: 992px) {
+  /* Hide inputs and show a toggle button */
+  .toolbar-inputs,
+  .toolbar-sort,
+  .toolbar_search,
+  .toolbar-dates {
+    display: none; /* Hide inputs initially */
+  }
+
+  .toolbar-inputs-toggle,
+  .toolbar-dates-toggle,
+  .toolbar-search-toggle {
+    display: block; /* Show toggle button */
+  }
+
+  /* When the toggle is active, show inputs */
+  .toolbar-inputs-toggle.active + .toolbar-inputs {
+    display: block;
+  }
+}
+
+.toolbar-dates {
+    height:4em;
+}
+
+/* Media query for typical phone screen sizes */
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+
+  .navbar-collapse .toolbar-tools {
+    display: none;
+  }
+
+  .toolbar-dates {
+    height:10em;
+  }
+
+  .toolbar-sort,
+  .toolbar_search {
+    height: 5em;
+  }
 }
 
 /* Media query for typical phone screen sizes */
 @media only screen and (max-width:992px) { /* Adjust as needed */
-  .navbar-collapse .toolbar-tools {
-    display: none; /* Show text when in phone view */
+
+  .toolbar-dates {
+    height:auto;
+  }
+
+  .toolbar-group {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    width: 28em;
+    background-color: var(--homepix-dark);
+    margin-bottom: 10px;
+  }
+
+  .toolbar-search {
+    flex: 1; /* Allows input to grow and fill space */
+    margin-right: 10px; /* Add space between input and button */
+  }
+
+  .toolbar-date-from,
+  .toolbar-date-to {
+    position: static;
+    flex: 0 0 auto; /* Do not grow or shrink */
+    order: 1; /* Ensure input comes first */
+    width: 100%; /* Ensure inputs take full width */
+    margin-right: 0; /* Reset margin */
+  }
+
+  .toolbar-date-range,
+  .toolbar-sort-button,
+  .toolbar-search-button {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    order: 2; /* Ensure button comes second */
+    align-self: flex-end; /* Align button to the right */
+  }
+
+  .toolbar-caption-date-from,
+  .toolbar-caption-date-to,
+  .toolbar-date-range,
+  .toolbar-sort,
+  .toolbar-sort-select,
+  .toolbar-sort-button,
+  .toolbar-search,
+  .toolbar-search-button {
+    position: static; /* Override absolute positioning */
+    left: auto; /* Reset left positioning */
+    top: auto; /* Reset top positioning */
+  }
+
+  .toolbar-sort {
+    display: flex;
+    flex-direction: row; /* Align children horizontally */
+    align-items: center; /* Center align vertically */
+    height:6em;
+  }
+
+  .toolbar-sort-select {
+    flex: 1; /* Allows select to grow and fill space */
+    margin-right: 10px; /* Add space between select and button */
+    width:13em;
+  }
+
+  .toolbar-sort-button {
+    flex: 0 0 auto;
+  }
+
+  .toolbar-search-button {
+    position: relative;
+    z-index: 2; /* Higher z-index */
+  }
+
+
+  .toolbar-dates-form {
+    height:20em;
   }
 }
 
@@ -8490,6 +8702,13 @@ table {
     .navbar-title {
         display: inline-block; /* Show title on smaller screens */
     }
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+
+  .toolbar-search {
+    height:6em;
+  }
 }
 
 .homepix-caption-1 {
@@ -8519,6 +8738,14 @@ table {
         text-align:center;
         color: var( --homepix-bg );
         display: inline-block;
+    }
+}
+
+@media only screen and (max-width: 992px) and (orientation: landscape) {
+
+    .toolbar-sort,
+    .toolbar-dates {
+        display: none;
     }
 }
 
@@ -8577,8 +8804,8 @@ table {
 }
 
 @media only screen and (max-width: 992px) { /* Adjust based on your navbar's breakpoint */
-    .mySlides
-    {
+
+    .mySlides {
         position:absolute;
         top:0em;
         left:0em;
@@ -8593,16 +8820,97 @@ table {
     top:0em;
     left:0em;
     width:100%;
-    height:calc(100vh - 16em);
+    height:88vh;
+}
+
+.homepix-container {
+    position:relative;
+    top:0em;
+    left:0em;
+    width:100vw;
+    height:100vh;
+}
+
+.homePIX-all {
+     position:absolute;
+     left:0px;
+     top:9vh;
+     width:100vw;
+     height:100vh;"
+}
+
+.homepix-right-buttons {
+    position:absolute;
+    left:calc(100% - 8em);
+    top:1em;
+    width:4em;
+    height:4em;
+}
+
+.homepix-login {
+    position:absolute;
+    left:calc(100% - 5em);
+    top:0em;
+    width:4em;
+    height:4em;
+}
+
+.homepix-add-photo {
+    position:absolute;
+    left:calc(100% - 10em);
+    top:0em;
+    width:4em;
+    height:4em;
 }
 
 @media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+
     .homepix-main-picture {
         position:relative;
         top:0em;
         left:0em;
+        width:100vw;
+        height:83vh;
+    }
+
+    .homepix-container {
+        position:relative;
+        top:0em;
+        left:0em;
+        width:100vw;
+        height:100vh;
+    }
+
+    .homePIX-all {
+        position:absolute;
+        left:0px;
+        top:4em;
         width:100%;
-        height:100%;
+        height:calc(100vh - 4em);"
+    }
+
+    .homepix-menu {
+        top: 0px;
+    }
+
+    .homepix-login {
+        left:calc(100% - 6em);
+    }
+
+    .homepix-right-buttons {
+        left:calc(100% - 5em);
+    }
+}
+
+/* Media query for intermediate screen sizes */
+@media only screen and (min-width: 481px) and (max-width: 992px) {
+
+    .homepix-main-picture {
+        position:relative;
+        top:0em;
+        left:0em;
+        width:100vw;
+        height:73vh;
     }
 }
 
@@ -8637,21 +8945,4 @@ table {
     }
 }
 
-.homePIX-all {
-     position:absolute;
-     left:0;
-     top:15%;
-     width:100%;
-     height:calc(100vh - 16em);"
- }
-
-@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
-.homePIX-all {
-     position:absolute;
-     left:0px;
-     top:4em;
-     width:100%;
-     height:calc(100vh - 4em);"
- }
-}
 
