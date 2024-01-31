@@ -8945,4 +8945,25 @@ table {
     }
 }
 
+.homepix-picture-frame {
+    display: inline-block;
+}
 
+.homepix-picture-standalone {
+    display: none;
+}
+
+@media only screen and (max-width: 768px) { /* Adjust based on your navbar's breakpoint */
+
+    .homepix-picture-frame {
+        display: none;
+    }
+
+    .homepix-picture-standalone {
+        display: inline-block;
+        top:0px;
+        left:0px;
+        width:100vw;
+        height:100vh;
+    }
+}

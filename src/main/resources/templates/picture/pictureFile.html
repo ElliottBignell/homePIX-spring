@@ -213,7 +213,17 @@
 
 <div class="techfont" style="width:100%;height:100%;">
   <div id="details" style="width:100%;height:100%;">
-    <table id="maintab" style="padding:0px;border:0px;width:100%;height:100%;">
+    <div id="frame" class="homepix-picture-standalone">
+      <img th:id="@{picture__${picture.id}__}"
+           class="lazyload imageinlist imageresponsive"
+           th:src="${picture.mediumFilename}"
+           th:data-src="${picture.largeFilename}"
+           th:alt="${picture.filename}"
+           style="top:0;left:0;width:100vw;height:100vh;object-fit:contain;"
+      >
+      </img>
+    </div>
+    <table id="maintab" class="homepix-picture-frame" style="padding:0px;border:0px;width:100%;height:100%;">
       <tr th:id="@{div_${picture.id}}" colspan=4 style="height:100%;">
         <td style="width:1em;vertical-align:middle;">
           <a id="back"

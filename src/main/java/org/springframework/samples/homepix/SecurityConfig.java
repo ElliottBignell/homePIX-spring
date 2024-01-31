@@ -46,21 +46,29 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-		http.authorizeRequests().requestMatchers("/login").permitAll()
-			.requestMatchers(
-				"/",
-				"/buckets/**",
-				"/albums/**",
-				"/album/**",
-				"/collection/**",
-				"/calendar/**",
-				"/web-images/**",
-				"/resources/**",
-				"/static/**",
-				"/register"
-			)
-			.permitAll()
-			.anyRequest().authenticated()
+		http
+			// Redirect to HTTPS
+			.requiresChannel()
+			.requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+			.requiresSecure()
+			.and()
+				// Authorization and Authentication configuration
+				.authorizeRequests()
+					.requestMatchers("/login").permitAll()
+					.requestMatchers(
+						"/",
+						"/buckets/**",
+						"/albums/**",
+						"/album/**",
+						"/collection/**",
+						"/calendar/**",
+						"/web-images/**",
+						"/resources/**",
+						"/static/**",
+						"/register"
+					)
+				.permitAll()
+				.anyRequest().authenticated()
 			.and()
 				.formLogin()
 				.usernameParameter("username")
