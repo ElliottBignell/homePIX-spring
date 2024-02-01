@@ -17,14 +17,18 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import javassist.bytecode.ByteArray;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.keywords.*;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,11 +43,19 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.*;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -643,7 +655,7 @@ class BucketController extends PaginationController {
 	}
 
 	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
-	@GetMapping(value = "web-images/{directory}/{file}")
+	/*@GetMapping(value = "web-images/{directory}/{file}")
 	public @ResponseBody byte[] getFileFromBucket(@PathVariable("directory") String directory,
 			@PathVariable("file") String file) {
 
@@ -657,6 +669,32 @@ class BucketController extends PaginationController {
 				return null;
 			}
 		}, directory, file);
+	}*/
+
+	@GetMapping(value = "web-images/{directory}/{file}")
+	public ResponseEntity<byte[]> getFileFromBucket(@PathVariable("directory") String directory, @PathVariable("file") String file) {
+
+		// Check if the image is restricted
+		/*if (isImageRestricted(directory, file)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+		}
+
+		// Try to serve from cache first
+		byte[] cachedImage = getCachedImage(directory, file);
+		if (cachedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(cachedImage);
+		}*/
+
+		// Apply watermark if not cached
+		try {
+			byte[] originalImage = downloadFile("jpegs/" + directory + "/" + file);
+			byte[] watermarkedImage = applyWatermark(originalImage);
+			//cacheImage(directory, file, watermarkedImage); // Implement caching logic
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(watermarkedImage);
+		} catch (IOException e) {
+			System.err.println("Error processing file: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
 	@GetMapping(value = "web-images/{directory}/200px/{file}")
@@ -673,6 +711,67 @@ class BucketController extends PaginationController {
 				return null;
 			}
 		}, directory, file);
+	}
+
+	public byte[] applyWatermark(byte[] originalImageBytes) throws IOException {
+
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		// Create a graphics instance to calculate text width
+		Graphics2D g2d = originalImage.createGraphics();
+
+		String watermarkText = "Copyright ©Elliott Bignell 2023";
+		float targetWidthRatio = 0.5f; // Target width ratio of the image width
+		int imageWidth = originalImage.getWidth();
+
+		if (originalImage.getHeight() < originalImage.getWidth()) {
+			imageWidth = originalImage.getHeight();
+		}
+
+		int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+
+		// Dynamically adjust font size
+		Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10); // Start with a base font size
+		g2d.setFont(font);
+		FontMetrics fontMetrics = g2d.getFontMetrics();
+		int textWidth = fontMetrics.stringWidth(watermarkText);
+		while (textWidth < targetWidth && font.getSize() < imageWidth * 2.0 / 3.0) { // Avoid excessively large font sizes
+			font = new Font(Font.SANS_SERIF, Font.BOLD, font.getSize() + 1);
+			g2d.setFont(font);
+			fontMetrics = g2d.getFontMetrics();
+			textWidth = fontMetrics.stringWidth(watermarkText);
+		}
+
+		// Create a mutable copy of the original image to add the watermark
+		BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+		g2d = (Graphics2D) watermarkedImage.getGraphics();
+		g2d.drawImage(originalImage, 0, 0, null);
+
+		// Add watermark with dynamically adjusted font
+		AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f); // Set transparency
+		g2d.setComposite(alphaChannel);
+		g2d.setColor(Color.WHITE); // Watermark color
+		g2d.setFont(font); // Set the dynamically adjusted font
+
+		// Calculate the position of the watermark
+		fontMetrics = g2d.getFontMetrics(font);
+		Rectangle2D rect = fontMetrics.getStringBounds(watermarkText, g2d);
+		int centerX = (int)((originalImage.getWidth() - (int) rect.getWidth()) * 2.0 / 3.0);
+		int centerY = (int)(originalImage.getHeight() * 2.0 / 3.0);
+
+		g2d.drawString(watermarkText, centerX, centerY);
+		g2d.dispose();
+
+		// Convert the watermarked BufferedImage back to a byte array
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(watermarkedImage, "jpg", baos);
+		baos.flush();
+		byte[] imageInByte = baos.toByteArray();
+		baos.close();
+
+		return imageInByte;
 	}
 
 	private List<PictureFile> loadPictureFiles(String imagePath, String name) {

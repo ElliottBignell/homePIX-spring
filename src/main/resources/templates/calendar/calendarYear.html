@@ -32,7 +32,7 @@
                   <tr th:each="quarter, iterStat : ${year.getQuarters}" style="height:48px;">
                     <td th:each="month : ${quarter.getMonths}" id="month_{{ year }}_{{ idx }}_{{day}}" style="width:calc(25%-2em);padding-left:0.1em;padding-right:0.1em;padding-top:0.1em;padding-bottom:0.1em;">
                       <div th:id="@{#quarterly-__${ year.getYear }__-__${ month.getName }__}">
-                        <table th:id="@{q_table__${ year }___${ month.name }__}" class="calendar_day_table">
+                        <table th:id="@{q_table__${ year }___${ month.name }__}" class="homepix-day-table">
                           <tr>
                             <td style="width:0.3em;"></td>
                             <td style="colspan:7;">
