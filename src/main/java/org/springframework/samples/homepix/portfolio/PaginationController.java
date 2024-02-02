@@ -440,7 +440,7 @@ public abstract class PaginationController implements AutoCloseable {
 		Map<String, Object> model
 	) {
 
-		final String format = "yyyy-M-d";
+		final String format = "yyyy-MM-dd";
 
 		Supplier<String> today = () -> {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);

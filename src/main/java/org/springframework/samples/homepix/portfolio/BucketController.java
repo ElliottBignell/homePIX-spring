@@ -263,7 +263,7 @@ class BucketController extends PaginationController {
 		}
 		else {
 
-			final String format = "yyyy-M-d";
+			final String format = "yyyy-MM-dd";
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 

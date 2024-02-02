@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 @Setter
 public class CollectionRequestDTO {
 
-	private static final String format = "yyyy-M-d";
+	private static final String format = "yyyy-MM-dd";
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
 	private Supplier<String> today = () -> {
@@ -25,6 +25,6 @@ public class CollectionRequestDTO {
 
 	private String search = "";
 	private String fromDate = "1970-01-01";
-	private String toDate = today.get();
+	private String toDate = String.format(today.get(), format);
 	private String sort = "title";
 }

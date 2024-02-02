@@ -61,7 +61,7 @@
   <meta property="og:site" content="https://elliottcb.pythonanywhere.com/">
   <meta property="article:publisher" content="https://elliottcb.pythonanywhere.com/">
 
-  <script async="" src="https://static.hotjar.com/c/hotjar-2130302.js?sv=6"></script>
+  <!--<script async="" src="https://static.hotjar.com/c/hotjar-2130302.js?sv=6"></script>-->
 
   <style>/* cyrillic-ext */ </style>
 
@@ -288,9 +288,9 @@
           </div>
         </div>
 
-        <div style="position:absolute;left:2vw;top:4.5em;width:96vw;height:4em;">
+        <div th:if="${pagination != null && totalPages > 1}" style="position:absolute;left:2vw;top:4.5em;width:96vw;height:4em;">
           <ul>
-            <div th:if="${pagination != null && totalPages > 1}" id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
+            <div id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
               <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
                 <span th:if="${pageNumber != null}">
                   <ul class="pagination" style="margin:0 0;">
@@ -325,7 +325,7 @@
                       </a>
                     </li>
                     <li>
-                      <div class="container">
+                      <div class="scroll-container">
                         <div class="vertical-center">
                           <div style="width:12em;height:100%;">
                             <ul class="pagination" style="margin: 0 0;">
@@ -342,7 +342,7 @@
                       </div>
                     </li>
                     <li>
-                      <div class="container">
+                      <div class="scroll-container">
                         <div class="vertical-center">
                           <div style="position:absolute;top:10px;width:72em;">
                             <div class="range-slider">

@@ -147,9 +147,9 @@ div.panemain {
   position: absolute;
   left: 0;
   right: 100%;
-  top: 15em;
-  height: calc( 100% - 20em );
-  width:100%;
+  top: 2em;
+  height: calc( 100vh - 20em );
+  width: calc( 100vw - 20em );
   margin-right:5%;
   margin-left:5%;
   overflow-x: hidden;
@@ -787,11 +787,19 @@ h4{
     background-position: center;
 }
 
+@media only screen and (max-width:768px) {
+
+  div.panemain {
+    top: 4em;
+  }
+}
+
 @media only screen and (max-width:992px) {
 
   div.panemain {
-    top: 0px;
+    top: 4em;
     height: calc( 100% - 5em );
+    width: calc( 100vw - 5em );
   }
 
   .drop-down-menu {

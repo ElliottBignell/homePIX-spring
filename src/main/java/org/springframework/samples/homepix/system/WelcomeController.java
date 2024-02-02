@@ -65,7 +65,7 @@ class WelcomeController extends PaginationController {
 						  BindingResult result,
 						  Map<String, Object> model
 	) {
-		final String format = "yyyy-M-d";
+		final String format = "yyyy-MM-dd";
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
 		Supplier<String> today = () -> {
@@ -74,7 +74,7 @@ class WelcomeController extends PaginationController {
 			return dtf.format(now);
 		};
 
-		String toDate = today.get();
+		String toDate = String.format(today.get(), format);
 
 		if (!requestDTO.getSearch().equals("") ||
 			!requestDTO.getFromDate().equals("1970-01-01") ||
