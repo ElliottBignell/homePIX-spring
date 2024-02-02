@@ -211,8 +211,8 @@
 <link rel="stylesheet" th:href="@{/resources/css/clearall.css}" />
 <link rel="stylesheet" th:href="@{/resources/css/dropdown.css}" />
 
-<div class="techfont" style="width:100%;height:100%;">
-  <div id="details" style="width:100%;height:100%;">
+<div class="techfont" style="position:absolute;left:0px;width:100vw;height:100vh;">
+  <div id="details" style="position:absolute;left:0px;width:100vw;height:100vh;">
     <div id="frame" class="homepix-picture-standalone">
       <img th:id="@{picture__${picture.id}__}"
            class="lazyload imageinlist imageresponsive"
@@ -223,8 +223,8 @@
       >
       </img>
     </div>
-    <table id="maintab" class="homepix-picture-frame" style="padding:0px;border:0px;width:100%;height:100%;">
-      <tr th:id="@{div_${picture.id}}" colspan=4 style="height:100%;">
+    <table id="maintab" class="homepix-picture-frame" style="padding:0px;border:0px;width:100%;height:100%;padding:0.3em;">
+      <tr th:id="@{div_${picture.id}}" colspan=4 style="height:=calc(100vh - 9em);">
         <td style="width:1em;vertical-align:middle;">
           <a id="back"
              th:href="@{__${baseLink}__/item/__${ previous }__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}">
@@ -233,14 +233,14 @@
           </a>
           <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
         </td>
-        <td id="picframe" style="position:relative;top:1em;height:100%;width:calc(100%-15em);vertical-align:top;">
+        <td id="picframe" style="position:relative;top:0em;height:calc(100vw - 9em);width:calc(100vh - 15em);vertical-align:top;">
           <!--<div class="bounding-box" style="background-image:url("/{{ picture.modpath }}/{{ picture.file }}");">-->
           <img th:id="@{picture__${picture.id}__}"
                class="lazyload imageinlist imageresponsive"
                th:src="${picture.mediumFilename}"
                th:data-src="${picture.largeFilename}"
                th:alt="${picture.filename}"
-               style="height:10em;object-fit:contain;"
+               style="position:static;top:0em;left:0em;object-fit:contain;height:calc(100vh - 3em);width:calc(100vw - 10em);"
           >
           </img>
 
@@ -310,9 +310,9 @@ i             </div>
           </a>
           <!--th:href="../{{ next.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-right"></span></a>-->
         </td>
-        <td style="width:7em;">
+        <td style="width:5em;">
 
-          <div id="picture_share"  style="position:absolute;top:3em;height:1.5em;width:5em;">
+          <div id="picture_share"  style="position:absolute;top:0.5em;height:1.5em;width:5em;">
             <span>
               <a href="https://twitter.com/intent/tweet?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on twitter">
                 <svg width="48" height="48" fill="none" class="bo">
@@ -340,7 +340,7 @@ i             </div>
             </span>
           </div>
 
-          <div id="picture_details" class="techfont" style="position:absolute;top:4.5em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
+          <div id="picture_details" class="techfont" style="position:absolute;top:2em;vertical-align:top;width:5em;line-height:0.2em;padding:0px;">
 
             <span class="titletext propertyfont">
                    ID:
@@ -481,7 +481,7 @@ i             </div>
             </span>
           </div>
 
-          <div id="keywords_and_copyright" class="techfont" style="position:relative;top:5em;left:0em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
+          <div id="keywords_and_copyright" class="techfont homepix-keywords">
             <div id="panel1" style="display:inline">
               <span class="titletext propertyfont">
                   Keywords:
@@ -527,10 +527,10 @@ i             </div>
         <td></td>
         <td></td>
         <td>
-          <div id="add_to_album" class="techfont" style="position:relative;top:1em;left:0em;vertical-align:top;width:10em;line-height:0.2em;padding:0px;">
-            <div style="height:2em;width:10em;">
+          <div id="add_to_album" class="techfont" style="position:relative;top:1em;left:0em;vertical-align:top;width:5em;line-height:0.2em;padding:0px;">
+            <div style="height:2em;width:5em;">
               <form th:action="@{/albums/3/add/__${ picture.id }__}" method="get" style="font-size:0.3em;">
-                <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:300px;"/>
+                <input name="add_to_album" type="text" value="" id="trace" placeholder="Add to album..." style="width:5em;"/>
               </form>
               <form th:each="album : ${albums}" th:action="@{/albums/__${album.id}__/add/__${ picture.id }__}" method="GET" style="font-size:0.3em;">
                 <div th:id="@{image-dropdown-__${album.id}__}" class="image-dropdown">

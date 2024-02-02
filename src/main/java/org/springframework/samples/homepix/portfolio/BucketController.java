@@ -17,7 +17,6 @@ package org.springframework.samples.homepix.portfolio;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import javassist.bytecode.ByteArray;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -53,9 +52,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -70,6 +68,9 @@ import java.util.stream.Collectors;
 class BucketController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
+
+	private static Map<String, byte[]> imageCacheMap = new HashMap<>();
+	private static Map<String, byte[]> image200pxCacheMap = new HashMap<>();
 
 	@FunctionalInterface
 	interface BucketOp<One, Two, Three, Four> {
@@ -446,31 +447,6 @@ class BucketController extends PaginationController {
 	public ResponseEntity<Map<String, Object>> importPicturesFromBucketAsync(@Valid Folder folder, @PathVariable("name") String name,
 																			 Map<String, Object> model) {
 
-		/*initialiseS3Client();
-
-		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
-
-		for (PictureFile file : files) {
-
-			try {
-
-				List<PictureFile> existingFile = pictureFiles.findByFolderName(file.getFilename());
-
-				if (existingFile.isEmpty()) {
-					pictureFiles.save(file);
-				}
-			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
-			}
-		}
-
-		model.put("collection", files);
-		model.put("baseLink", "/folders/" + name);
-		model.put("albums", this.albums.findAll());
-		*/
-
 		importPicturesFromBucket(folder, name, model);
 
 		Collection<Folder> folders = this.folders.findByName(name);
@@ -537,37 +513,6 @@ class BucketController extends PaginationController {
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
 	}
-
-	/*
-	 * @GetMapping("/buckets/{name}/file/{id}") public String
-	 * showPictureFile(@PathVariable("name") String name, @PathVariable("id") int id,
-	 * Map<String, Object> model) { // @Value("${homepix.images.path}") String imagePath,
-	 *
-	 * final String imagePath = System.getProperty("user.dir") + "/images/";
-	 *
-	 * Collection<Folder> buckets = this.folders.findByName(name);
-	 *
-	 * if (buckets.isEmpty()) { return "redirect:/buckets/" + name + "/"; } else {
-	 *
-	 * ModelAndView mav = new ModelAndView("albums/albumDetails"); Folder folder =
-	 * buckets.iterator().next();
-	 *
-	 * PictureFile picture = loadPictureFile(imagePath, folder.getName(), id);
-	 *
-	 * List<PictureFile> pictureFiles = new ArrayList<>();
-	 *
-	 * pictureFiles.add(picture); pictureFiles.add(picture); pictureFiles.add(picture);
-	 *
-	 * addParams(id, "/images/" + name + "/" + picture.getTitle(), pictureFiles, model,
-	 * false);
-	 *
-	 * // mav.addObject(pictureFiles); model.put("link_params", "");
-	 *
-	 * model.put("picture", picture); model.put("collection", pictureFiles);
-	 * model.put("baseLink", "/buckets/" + name);
-	 *
-	 * return "picture/pictureFile.html"; } }
-	 */
 
 	private List<String> listFileNames(S3Client s3Client, String subFolder) {
 
@@ -655,62 +600,75 @@ class BucketController extends PaginationController {
 	}
 
 	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
-	/*@GetMapping(value = "web-images/{directory}/{file}")
-	public @ResponseBody byte[] getFileFromBucket(@PathVariable("directory") String directory,
+	@GetMapping(value = "web-images/{directory}/{file}")
+	public ResponseEntity<byte[]> getFileFromBucket(@PathVariable("directory") String directory,
 			@PathVariable("file") String file) {
 
-		return hitBucket((client, arg1, arg2) -> {
+		String filepath = directory + '/' + file;
+
+		// Try to serve from cache first
+		byte[] cachedImage = imageCacheMap.get(filepath);
+
+		// Return watermarked image from cache
+		if (cachedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(cachedImage);
+		}
+
+		byte[] watermarkedImage = hitBucket((client, arg1, arg2) -> {
 
 			try {
-				return downloadFile("jpegs/" + arg1 + "/" + arg2);
+				return applyWatermark(downloadFile("jpegs/" + arg1 + "/" + arg2));
 			}
 			catch (IOException e) {
 				System.err.println("Error downloading file: " + e.getMessage());
 				return null;
 			}
 		}, directory, file);
-	}*/
 
-	@GetMapping(value = "web-images/{directory}/{file}")
-	public ResponseEntity<byte[]> getFileFromBucket(@PathVariable("directory") String directory, @PathVariable("file") String file) {
+		if (watermarkedImage != null) {
 
-		// Check if the image is restricted
-		/*if (isImageRestricted(directory, file)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-		}
-
-		// Try to serve from cache first
-		byte[] cachedImage = getCachedImage(directory, file);
-		if (cachedImage != null) {
-			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(cachedImage);
-		}*/
-
-		// Apply watermark if not cached
-		try {
-			byte[] originalImage = downloadFile("jpegs/" + directory + "/" + file);
-			byte[] watermarkedImage = applyWatermark(originalImage);
-			//cacheImage(directory, file, watermarkedImage); // Implement caching logic
+			imageCacheMap.put(filepath, watermarkedImage);
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(watermarkedImage);
-		} catch (IOException e) {
-			System.err.println("Error processing file: " + e.getMessage());
+		}
+		else {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
 
 	@GetMapping(value = "web-images/{directory}/200px/{file}")
-	public @ResponseBody byte[] getMediumFileFromBucket(@PathVariable("directory") String directory,
+	public ResponseEntity<byte[]> getMediumFileFromBucket(@PathVariable("directory") String directory,
 			@PathVariable("file") String file) {
 
-		return hitBucket((client, arg1, arg2) -> {
+		String filepath = directory + "/200px/" + file;
+
+		// Try to serve from cache first
+		byte[] cachedImage = image200pxCacheMap.get(filepath);
+
+		// Return watermarked image from cache
+		if (cachedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(cachedImage);
+		}
+
+		byte[] watermarkedImage = hitBucket((client, arg1, arg2) -> {
 
 			try {
 				return downloadFile("jpegs/" + arg1 + "/200px/" + arg2);
 			}
 			catch (IOException e) {
 				System.err.println("Error downloading file: " + e.getMessage());
+				e.printStackTrace();
 				return null;
 			}
 		}, directory, file);
+
+		if (watermarkedImage != null) {
+
+			image200pxCacheMap.put(filepath, watermarkedImage);
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(watermarkedImage);
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
 	public byte[] applyWatermark(byte[] originalImageBytes) throws IOException {

@@ -468,6 +468,7 @@ pre {
   overflow-y: scroll; }
 
 .container {
+  position:absolute;
   width: 100%;
   padding-right: 15px;
   padding-left: 15px;
@@ -482,22 +483,35 @@ pre {
   @media (min-width: 768px) {
     .container {
       max-width: 960px; } }
-  @media (min-width: 1200px) {
+  @media (min-width: 1600px) {
     .container {
-      max-width: 1140px; } }
+      max-width: 1580px;
+      height:calc(100vh - 11em);
+    }
+  }
+  @media (min-width: 1920px) {
+    .container {
+      max-width: 1900px;
+      height:calc(100vh - 11em);
+    }
+  }
 
 .container-fluid {
+  position:absolute;
   width: 100%;
   top:8.5em;
+  height: calc(100vh - 9.5em)
   padding-right: 15px;
   padding-left: 15px;
   margin-right: auto;
-  margin-left: auto; }
+  margin-left: auto;
+}
 
 @media only screen and (max-width:992px) { /* Adjust as needed */
     .container-fluid {
           width: 100%;
           top:4em;
+          height: calc(100vh - 9.5em)
           padding-right: 15px;
           padding-left: 15px;
           margin-right: auto;
@@ -8965,5 +8979,21 @@ table {
         left:0px;
         width:100vw;
         height:100vh;
+    }
+}
+
+.homepix-keywords {
+    position:relative;
+    top:3em;
+    left:0em;
+    vertical-align:top;
+    width:5em;
+    line-height:0.2em;
+    padding:0px;"
+}
+
+@media only screen and (max-width: 992px) { /* Adjust based on your navbar's breakpoint */
+    .homepix-keywords {
+        display: none;
     }
 }

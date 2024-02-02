@@ -8003,11 +8003,13 @@ strong {
     display: none; }
   .navbar {
     border-top-width: 0; }
-  .xd-container {
-    margin-top: 20px;
-    margin-bottom: 30px; }
   .index-page--subtitle {
     margin-top: 10px;
     margin-bottom: 30px; } }
 
+@media (max-width: 992px) {
+  .xd-container {
+    margin-top: 0px;
+    margin-bottom: 0px; }
+}
 /*# sourceMappingURL=../../../../../../target/petclinic.css.map */
