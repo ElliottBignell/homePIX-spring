@@ -21,18 +21,21 @@
         <a id="@{piclink___${folder.count}__}" th:href="@{/buckets/__${folder.name}__}">
           <section class="wrapper" id="file-number__">
               <span class="tt_subject">
-                <img th:id="@{picture_${folder.id}}"
-                     class="gallery_picture lazyloaded"
-                     th:width="${thumbnails[folder.thumbnailId]?.displayWidth}"
-                     th:height="${thumbnails[folder.thumbnailId]?.displayHeight}"
+                <img th:id="@{'picture-' + ${folder.id}}"
+                     class="gallery_picture lazyloaded variable_aspect"
+                     th:style="'--aspect-ratio: ' + (${thumbnails[folder.thumbnailId]?.width ?: 3} / ${thumbnails[folder.thumbnailId]?.height ?: 2}) + '; height: var(--base-size); width: calc(var(--base-size) * var(--aspect-ratio));'"
                      th:src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
                      th:data-src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
-                     th:alt="@{Contains __${folder.picture_count}__ shots}"
+                     th:alt="@{'Contains ' + ${folder.picture_count} + ' shots'}"
                 />
               </span>
           </section>
         </a>
-        <figcaption th:text="Thumbnail" class="count">Empty</figcaption>
+        <figcaption th:text="@{${folder.picture_count} + ' shots'}"
+                    class="folder-count"
+        >
+          Empty
+        </figcaption>
       </figure>
     </div>
   </div>

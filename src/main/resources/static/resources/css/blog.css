@@ -164,7 +164,7 @@ figure.gallery {
   color: var( --homepix-bg  );
   background-color: var( --homepix-dark);
   border: 1px solid #ccc;
-  min-height:16em;
+  min-height:1em;
   font-size: 1.5em;
   margin:2px;
 }
@@ -173,7 +173,7 @@ div.gallery {
   color: var( --homepix-bg  );
   background-color: var( --homepix-dark);
   border: 1px solid #ccc;
-  min-height:16em;
+  min-height:1em;
   font-size: 1.5em;
   margin:2px;
 }
@@ -182,7 +182,7 @@ figure.gallery:hover {
   color: var( --homepix-bg );
   background-color: var( --homepix-alarm );
   border: 1px solid #ccc;
-  min-height:16em;
+  min-height:1em;
   font-size: 1.5em;
   margin:2px;
 }
@@ -191,7 +191,7 @@ div.gallery:hover {
   color: var( --homepix-bg );
   background-color: var( --homepix-alarm );
   border: 1px solid #ccc;
-  min-height:16em;
+  min-height:1em;
   font-size: 1.5em;
   margin:2px;
 }
@@ -365,30 +365,12 @@ img.gallery_picture {
   top:100%;l
   eft:0%;
   z-index:0;
-  height:200px;
+  height:15vh;
 }
 
 .keynav {
 }
 
-
-figcaption.desc {
-  text-align: left;
-}
-
-div.desc {
-  text-align: left;
-}
-
-figcaption.count {
-  text-align: right;
-  font-size: 0.6em;
-}
-
-div.count {
-  text-align: right;
-  font-size: 0.6em;
-}
 
 * {
   box-sizing: border-box;

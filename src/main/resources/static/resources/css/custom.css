@@ -8998,3 +8998,76 @@ table {
 .scroll-container {
     height:4em;
 }
+
+.homepix-folder {
+    height:40vh;
+    width:auto;
+}
+
+@media only screen and (max-width: 768px) and (orientation: portrait) {
+
+    .homepix-folder {
+        height:10vh;
+        width:auto;
+    }
+}
+
+.variable_aspect {
+  --base-size: 20vh; /* Default size, can be overridden by media queries */
+}
+
+.folder-count {
+  font-size:1em;
+  text-align: right;
+}
+
+figcaption.count {
+  text-align: right;
+  font-size: 0.6em;
+}
+
+div.count {
+  text-align: right;
+  font-size: 0.6em;
+}
+
+figcaption.desc {
+  text-align: left;
+  font-size:2vh;
+}
+
+div.desc {
+  text-align: left;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .variable_aspect {
+    --base-size: 15vh; /* Adjust base size for smaller screens in portrait mode */
+  }
+
+  .folder-count {
+    text-align: right;
+    font-size:0.7em;
+  }
+
+  figcaption.desc {
+    text-align: left;
+    font-size:2vh;
+  }
+}
+
+@media (max-width: 992px) and (orientation: landscape) {
+  .variable_aspect {
+    --base-size: 30vh; /* Adjust base size for smaller screens in portrait mode */
+  }
+
+  .folder-count {
+    text-align: right;
+    font-size:0.7em;
+  }
+
+  figcaption.desc {
+    text-align: left;
+    font-size:3.8vh;
+  }
+}

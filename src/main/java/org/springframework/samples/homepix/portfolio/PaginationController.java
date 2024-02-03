@@ -14,10 +14,8 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -165,29 +163,6 @@ public abstract class PaginationController implements AutoCloseable {
 	@ModelAttribute(name = "albums")
 	Iterable<Album> findAllAlbums() {
 		return this.albums.findAll();
-	}
-
-	@ModelAttribute(name = "/folders/import")
-	Collection<Folder> importFolders(Folder folder, BindingResult result, Map<String, Object> model) {
-
-		folderCache = null;
-		loadBuckets(folder, result, model);
-		folderCache = this.folders.findAll();
-
-		return folderCache;
-	}
-
-	@ModelAttribute(name = "/folders")
-	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
-
-		folderCache = this.folders.findAll();
-
-		if (null == folderCache) {
-
-			loadBuckets(folder, result, model);
-			folderCache = this.folders.findAll();
-		}
-		return folderCache;
 	}
 
 	@ModelAttribute("yearNames")

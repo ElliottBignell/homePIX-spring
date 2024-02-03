@@ -372,4 +372,27 @@ class FolderController extends PaginationController {
 
 		return "failure"; // Return a response as needed
 	}
+
+	//@GetMapping(name = "/folders/import")
+	Collection<Folder> importFolders(Folder folder, BindingResult result, Map<String, Object> model) {
+
+		folderCache = null;
+		loadBuckets(folder, result, model);
+		folderCache = this.folders.findAll();
+
+		return folderCache;
+	}
+
+	//@GetMapping(name = "/folders")
+	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
+
+		folderCache = this.folders.findAll();
+
+		if (null == folderCache) {
+
+			loadBuckets(folder, result, model);
+			folderCache = this.folders.findAll();
+		}
+		return folderCache;
+	}
 }
