@@ -489,8 +489,10 @@ pre {
 
 @media (max-width: 768px) {
     .container {
+      width: calc(100vw - 1em);
+      height:calc(100vh - 11em);
       left:0;
-}
+    }
 }
 
 .container-fluid {
@@ -9040,6 +9042,11 @@ div.desc {
   text-align: left;
 }
 
+.album-main {
+    position:relative;
+    top:1em;"
+}
+
 @media (max-width: 768px) and (orientation: portrait) {
   .variable_aspect {
     --base-size: 15vh; /* Adjust base size for smaller screens in portrait mode */
@@ -9053,6 +9060,11 @@ div.desc {
   figcaption.desc {
     text-align: left;
     font-size:2vh;
+  }
+
+  .album-main {
+      position:relative;
+      top:3em;"
   }
 }
 

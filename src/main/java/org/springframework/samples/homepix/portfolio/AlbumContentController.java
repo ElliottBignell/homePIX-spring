@@ -45,6 +45,7 @@ class AlbumContentController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "albums/createOrUpdateOwnerForm";
 
 	private final AlbumContentRepository albumContent;
+	private AlbumService albumService;
 
 	@Autowired
 	public AlbumContentController(AlbumContentRepository albumContent,
@@ -53,10 +54,12 @@ class AlbumContentController extends PaginationController {
 								  PictureFileRepository pictureFiles,
 								  KeywordRepository keyword,
 								  KeywordRelationshipsRepository keywordsRelationships,
-								  FolderService folderService
+								  FolderService folderService,
+								  AlbumService albumService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContent = albumContent;
+		this.albumService = albumService;
 	}
 
 	@InitBinder
@@ -113,6 +116,15 @@ class AlbumContentController extends PaginationController {
 			.collect(Collectors.toList());
 
 		mav.addObject(album);
+
+		// Convert the collection to a map with picture IDs as keys and Picture objects as values
+		Map<Integer, PictureFile> pictureMap = content.stream()
+			.collect(Collectors.toMap(
+				PictureFile::getId,
+				picture -> picture
+			));
+
+		loadThumbnailsAndKeywords(pictureMap, model);
 
 		model.put("id", album.getId());
 		model.put("startDate", requestDTO.getFromDate());

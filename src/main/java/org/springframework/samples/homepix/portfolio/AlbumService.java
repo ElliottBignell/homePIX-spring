@@ -7,20 +7,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
-public class FolderService {
+public class AlbumService {
 
 	// Assuming you have a PictureFileRepository to fetch PictureFiles
 	@Autowired
 	private PictureFileRepository pictureFileRepository;
 
-	public Map<Integer, PictureFile> getThumbnailsMap(List<Folder> folders) {
-		// Extract thumbnail IDs
-		List<Integer> thumbnailIds = folders.stream()
-			.map(Folder::getThumbnailId)
-			.collect(Collectors.toList());
+	public Map<Integer, PictureFile> getThumbnailsMap(Iterable<Album> albums) {
+
+		List<Integer> thumbnailIds = StreamSupport.stream(albums.spliterator(), false) // Convert Iterable to Stream
+			.map(Album::getThumbnail) // Map each Album to its PictureFile thumbnail
+			.map(PictureFile::getId)
+			.collect(Collectors.toList()); // Collect the results into a List
 
 		// Fetch PictureFiles
 		List<PictureFile> thumbnails = pictureFileRepository.findAllById(thumbnailIds);

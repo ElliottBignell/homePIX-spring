@@ -67,7 +67,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 						"/css/**",
 						"/js/**",
 						"/static/**",
-						"/register"
+						"/register",
+						"/sitemap.xml"
 					)
 				.permitAll()
 				.anyRequest().authenticated()

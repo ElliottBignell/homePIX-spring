@@ -30,6 +30,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -194,4 +195,7 @@ public class Folder extends BaseEntity {
 		return title;
 	}
 
+	public LocalDate getLastModifiedDate() {
+		return java.time.LocalDate.now(); // TODO: Add a date to the folder
+	}
 }

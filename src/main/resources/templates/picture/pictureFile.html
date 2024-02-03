@@ -279,15 +279,13 @@
           >
             <span class="glyphicon glyphicon-chevron-left"></span>
           </a>
-          <!--<a id="back" href="../{{ previous.modid }}/?search={{ request.GET.search }}&sort={{ request.GET.sort }}%20&startDate{{ request.GET.startDate }}=&endDate={{ request.GET.endDate }}"><span class="glyphicon glyphicon-chevron-left"></span></a>-->
         </td>
         <td id="picframe" style="position:relative;top:0em;height:calc(100vw - 9em);width:calc(100vh - 15em);vertical-align:top;">
-          <!--<div class="bounding-box" style="background-image:url("/{{ picture.modpath }}/{{ picture.file }}");">-->
           <img th:id="@{picture__${picture.id}__}"
                class="lazyload imageinlist imageresponsive"
                th:src="${picture.mediumFilename}"
                th:data-src="${picture.largeFilename}"
-               th:alt="${picture.filename}"
+               th:alt="${picture.title + (keyword_list != '' ? ', ' + keyword_list : '')}"
                style="position:static;top:0em;left:0em;object-fit:contain;height:calc(100vh - 3em);width:calc(100vw - 10em);"
           >
           </img>

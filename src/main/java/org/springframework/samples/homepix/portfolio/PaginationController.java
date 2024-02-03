@@ -15,7 +15,6 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -1164,5 +1163,24 @@ public abstract class PaginationController implements AutoCloseable {
 
 			return template;
 		}
+	}
+
+	protected void loadThumbnailsAndKeywords(Map<Integer, PictureFile> thumbnailsMap, Map<String, Object> model) {
+
+		List<Integer> pictureIds = new ArrayList<>(thumbnailsMap.keySet());
+
+		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
+
+		Map<Integer, String> pictureIdToKeywords = relations.stream()
+			.collect(Collectors.groupingBy(
+				KeywordRelationships::getPictureId, // Group by PictureID
+				Collectors.mapping(
+					relationship -> relationship.getKeyword().getWord(), // Map each relationship to its keyword word
+					Collectors.joining(", ") // Join keywords with a comma and space
+				)
+			));
+
+		model.put("keywords", pictureIdToKeywords);
+		model.put("thumbnails", thumbnailsMap);
 	}
 }

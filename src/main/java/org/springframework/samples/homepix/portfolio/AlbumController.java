@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliott Bignell
@@ -39,6 +41,7 @@ class AlbumController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "album/createOrUpdateOwnerForm";
 
 	private final AlbumContentRepository albumContent;
+	private AlbumService albumService;
 
 	@Autowired
 	public AlbumController(AlbumRepository albums,
@@ -47,10 +50,12 @@ class AlbumController extends PaginationController {
 						   AlbumContentRepository albumContents,
 						   KeywordRepository keyword,
 						   KeywordRelationshipsRepository keywordsRelationships,
-						   FolderService folderService
+						   FolderService folderService,
+						   AlbumService albumService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContent = albumContents;
+		this.albumService = albumService;
 	}
 
 	@InitBinder
@@ -167,15 +172,15 @@ class AlbumController extends PaginationController {
 			if (thumbnail.iterator().hasNext()) {
 				nextAlbum.setThumbnail(thumbnail.iterator().next());
 			}
-
-			/*
-			 * List<PictureFile> files = contents.stream() .filter( item ->
-			 * item.getAlbum().getId() == id ) .map( item -> item.getPictureFile() )
-			 * .collect(Collectors.toList());
-			 */
 		}
 
 		model.put("selections", results);
+
+		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
+			this.albums.findAll()
+		);
+
+		loadThumbnailsAndKeywords(thumbnailsMap, model);
 
 		return "albums/albumListPictorial";
 	}

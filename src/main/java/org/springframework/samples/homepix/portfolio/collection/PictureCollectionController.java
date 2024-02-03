@@ -139,6 +139,11 @@ class PictureCollectionController extends PaginationController {
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);
 		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
+		model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureId)
+			.stream()
+			.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
+			.collect(Collectors.joining(", "))
+			);
 
 		return "picture/pictureFile.html";
 	}

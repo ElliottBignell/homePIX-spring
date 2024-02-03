@@ -64,7 +64,7 @@
 
   </script>
 
-  <div style="position:relative;top:4em;">
+  <div class="album-main">
 
     <div class="centerstage">
       <div class="techfont" id="div_centrestage" style="min-height:60px;">
@@ -97,7 +97,7 @@
                            th:height="${entry.displayHeight}"
                            th:src="${entry.mediumFilename}"
                            th:data-src="${entry.mediumFilename}"
-                           th:alt="${entry.filename}"
+                           th:alt="${entry.title + (keywords[entry.id] != '' ? ', ' + keywords[entry.id] : '')}"
                       >
 
                     </span>

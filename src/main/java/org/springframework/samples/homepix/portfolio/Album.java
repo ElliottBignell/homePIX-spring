@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -97,4 +98,7 @@ public class Album {
 		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();
 	}
 
+	public LocalDate getLastModifiedDate() {
+		return java.time.LocalDate.now(); // TODO: Add a date to the album
+	}
 }
