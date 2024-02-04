@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Juergen Hoeller
@@ -48,14 +49,18 @@ class FolderController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
+	private AlbumService albumService;
+
 	public FolderController(FolderRepository folders,
 							AlbumRepository albums,
 							PictureFileRepository pictureFiles,
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
-							FolderService folderService
+							FolderService folderService,
+							AlbumService albumService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		this.albumService = albumService;
 	}
 
 	@InitBinder
@@ -178,14 +183,6 @@ class FolderController extends PaginationController {
 				ex.printStackTrace();
 			}
 
-			/*
-			 * Keywords keywords = new Keywords(); keywords.setContent(folderName);
-			 * item.setKeywords(keywords);
-			 *
-			 * try { keywordsRepository.save(item); } catch (Exception ex) {
-			 * System.out.println(ex); }
-			 */
-
 			try {
 				pictureFiles.save(item);
 			}
@@ -194,8 +191,17 @@ class FolderController extends PaginationController {
 				ex.printStackTrace();
 			}
 
+
 			pictures.add(item);
 		}
+
+		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
+			StreamSupport.stream(pictures.spliterator(), false) // Convert Iterable to Stream
+				.map(PictureFile::getId)
+				.collect(Collectors.toList())
+		);
+
+		loadThumbnailsAndKeywords(thumbnailsMap, model);
 
 		model.put("collection", pictures);
 		model.put("baseLink", "/folders/" + folderName);

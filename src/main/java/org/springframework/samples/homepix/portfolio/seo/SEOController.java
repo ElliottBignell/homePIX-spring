@@ -4,15 +4,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
-import org.springframework.samples.homepix.portfolio.FolderRepository;
-import org.springframework.samples.homepix.portfolio.FolderService;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.*;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.util.Spliterators;
@@ -20,8 +23,12 @@ import java.util.List;
 
 @RestController
 public class SEOController extends PaginationController {
+
+	private final AlbumContentRepository albumContent;
+
 	protected SEOController(
 		AlbumRepository albums,
+		AlbumContentRepository albumContent,
 		FolderRepository folders,
 		PictureFileRepository pictureFiles,
 		KeywordRepository keyword,
@@ -29,6 +36,7 @@ public class SEOController extends PaginationController {
 		FolderService folderService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		this.albumContent = albumContent;
 	}
 
 	@GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
@@ -36,7 +44,7 @@ public class SEOController extends PaginationController {
 
 		// Example sitemap content. In a real application, generate this dynamically
 		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/</loc>\n" +
 			"       <lastmod>2024-01-01</lastmod>\n" +
@@ -54,20 +62,140 @@ public class SEOController extends PaginationController {
 		return new ResponseEntity<>(sitemapContent, httpHeaders, HttpStatus.OK);
 	}
 
+	@GetMapping(value = "/album{id}.xml", produces = MediaType.APPLICATION_XML_VALUE)
+	public ResponseEntity<String> album(@PathVariable("id") long id) {
+
+		Optional<Album> album = this.albums.findById(id);
+
+		List<String> contents;
+		String pictures = "";
+
+		if (album.isPresent()) {
+
+			contents = getAlbumContentTags(album.get());
+			pictures = String.join("\n", contents);
+		}
+
+		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"   <url>\n" +
+			"       <loc>https://www.homepix.ch/albums/1</loc>\n" +
+			"       <lastmod>2024-01-04</lastmod>\n" +
+			"       <changefreq>monthly</changefreq>\n" +
+			"       <priority>1.0</priority>\n" +
+			"   </url>\n" +
+				pictures +
+			"</urlset>";
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_XML);
+
+		return new ResponseEntity<>(sitemapContent, httpHeaders, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/folder{name}.xml", produces = MediaType.APPLICATION_XML_VALUE)
+	public ResponseEntity<String> folder(@PathVariable("name") String name) {
+
+		Collection<Folder> folder = this.folders.findByName(name);
+
+		List<String> contents;
+		String pictures = "";
+
+		if (!folder.isEmpty()) {
+
+			contents = getFolderContentTags(folder.iterator().next());
+			pictures = String.join("\n", contents);
+		}
+
+		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"   <url>\n" +
+			"       <loc>https://www.homepix.ch/buckets/" + name + "</loc>\n" +
+			"       <lastmod>2024-01-04</lastmod>\n" +
+			"       <changefreq>monthly</changefreq>\n" +
+			"       <priority>1.0</priority>\n" +
+			"   </url>\n" +
+			pictures +
+			"</urlset>";
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_XML);
+
+		return new ResponseEntity<>(sitemapContent, httpHeaders, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/index.xml", produces = MediaType.APPLICATION_XML_VALUE)
+	public ResponseEntity<String> index() {
+
+		// Example sitemap content. In a real application, generate this dynamically
+		String sitemapContent = "<sitemapindex xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">" +
+								  "<sitemap>" +
+									"<loc>https://www.homepix.ch/sitemap.xml</loc>" +
+									"<lastmod>2024-02-04</lastmod>" +
+									"</sitemap>" +
+									this.getAlbumSiteTags().stream().collect(Collectors.joining("\n")) +
+									this.getFolderSiteTags().stream().collect(Collectors.joining("\n")) +
+								 "<!-- Additional sitemap entries here -->" +
+								"</sitemapindex>";
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_XML);
+
+		return new ResponseEntity<>(sitemapContent, httpHeaders, HttpStatus.OK);
+	}
+
 	List<String> getAlbumTags() {
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
 			.map(album -> {
-				// Here you generate your XML tag string based on the album properties
-				// Adjust property names as necessary
+
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
+
 				return "<url>" +
 					"<loc>https://www.homepix.ch/album/" + album.getId() + "</loc>" +
-					"<lastmod>" + album.getLastModifiedDate().toString() + "</lastmod>" +
+					"<lastmod>" +
+					date +
+					"</lastmod>" +
 					"<changefreq>weekly</changefreq>" +
 					"<priority>0.8</priority>" +
 					"</url>";
 			})
 			.collect(Collectors.toList());
+	}
+
+	List<String> getAlbumSiteTags() {
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
+			.map(album -> {
+
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
+
+				return "<sitemap>" +
+					   "<loc>https://www.homepix.ch/album" + album.getId() + ".xml</loc>" +
+					   "<lastmod> + date + </lastmod>" +
+					   "</sitemap>";
+			})
+			.collect(Collectors.toList());
+	}
+
+	List<String> getAlbumContentTags(Album album) {
+
+		Collection<PictureFile> content = albumContent.findByAlbumId(album.getId()).stream()
+			.map(AlbumContent::getPictureFile)
+			.collect(Collectors.toList());
+
+		return content.stream().map( picture -> {
+
+			String date = picture.getTaken_on() != null ? picture.getTaken_on().toString() : "2024-02-04";
+
+			return "<url>" +
+				"<loc>https://www.homepix.ch/albums/" + album.getId() + "/item/" + picture.getId() + "</loc>" +
+				"<lastmod>" + date + "</lastmod>" +
+				"<changefreq>monthly</changefreq>" +
+				"<priority>0.8</priority>" +
+				"</url>";
+		})
+		.collect(Collectors.toList());
 	}
 
 	List<String> getAnnualTags() {
@@ -92,7 +220,7 @@ public class SEOController extends PaginationController {
 				// Here you generate your XML tag string based on the album properties
 				// Adjust property names as necessary
 				return "<url>" +
-					"<loc>https://www.homepix.ch/album/" + folder.getName() + "</loc>" +
+					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "</loc>" +
 					"<lastmod>" + folder.getLastModifiedDate().toString() + "</lastmod>" +
 					"<changefreq>monthly</changefreq>" +
 					"<priority>0.8</priority>" +
@@ -100,4 +228,40 @@ public class SEOController extends PaginationController {
 			})
 			.collect(Collectors.toList());
 	}
-}
+
+	List<String> getFolderSiteTags() {
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folders.findAll().iterator(), 0), false)
+			.map(folder -> {
+
+				String date = folder.getLastModifiedDate() != null ? folder.getLastModifiedDate().toString() : "2024-02-04";
+
+				return "<sitemap>" +
+					"<loc>https://www.homepix.ch/folder" + folder.getName() + ".xml</loc>" +
+					"<lastmod>" + date + "</lastmod>" +
+					"</sitemap>";
+			})
+			.collect(Collectors.toList());
+	}
+
+	List<String> getFolderContentTags(Folder folder) {
+
+		final String imagePath = System.getProperty("user.dir") + "/images/";
+
+		List<PictureFile> pictureFiles = this.pictureFiles.findByFolderName(folder.getName());
+
+		AtomicInteger index = new AtomicInteger();
+
+		return pictureFiles.stream().map( picture -> {
+
+				String date = picture.getTaken_on() != null ? picture.getTaken_on().toString() : "2024-02-04";
+
+				return "<url>" +
+					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "/item/" + index.getAndIncrement() + "</loc>" +
+					"<lastmod>" + date + "</lastmod>" +
+					"<changefreq>monthly</changefreq>" +
+					"<priority>0.8</priority>" +
+					"</url>";
+			})
+			.collect(Collectors.toList());
+	}}

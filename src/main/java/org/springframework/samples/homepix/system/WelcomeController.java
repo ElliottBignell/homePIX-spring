@@ -39,11 +39,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Controller
 class WelcomeController extends PaginationController {
 
 	private final AlbumContentRepository albumContents;
+
+	private AlbumService albumService;
 
 	@Autowired
 	public WelcomeController(PictureFileRepository pictureFiles,
@@ -52,10 +55,12 @@ class WelcomeController extends PaginationController {
 							 AlbumContentRepository albumContents,
 							 KeywordRepository keyword,
 							 KeywordRelationshipsRepository keywordsRelationships,
-							 FolderService folderService
+							 FolderService folderService,
+							 AlbumService albumService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContents = albumContents;
+		this.albumService = albumService;
 	}
 
 	@GetMapping("/")
@@ -111,6 +116,14 @@ class WelcomeController extends PaginationController {
 				.sorted(orderBy)
 				.collect(Collectors.toList());
 
+			Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
+				StreamSupport.stream(slides.spliterator(), false) // Convert Iterable to Stream
+					.map(PictureFile::getId)
+					.collect(Collectors.toList())
+			);
+
+			loadThumbnailsAndKeywords(thumbnailsMap, model);
+
 			model.put("collection", slides);
 		}
 
@@ -118,6 +131,7 @@ class WelcomeController extends PaginationController {
 		redirectAttributes.addAttribute("startDate", requestDTO.getSearch());
 		redirectAttributes.addAttribute("endDate", requestDTO.getSearch());
 		redirectAttributes.addAttribute("sort", requestDTO.getSearch());
+
 
 		// 1 album found
 		return "welcome";

@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Juergen Hoeller
@@ -72,6 +73,8 @@ class BucketController extends PaginationController {
 	private static Map<String, byte[]> imageCacheMap = new HashMap<>();
 	private static Map<String, byte[]> image200pxCacheMap = new HashMap<>();
 
+	private AlbumService albumService;
+
 	@FunctionalInterface
 	interface BucketOp<One, Two, Three, Four> {
 
@@ -84,9 +87,11 @@ class BucketController extends PaginationController {
 							PictureFileRepository pictureFiles,
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
-							FolderService folderService
+							FolderService folderService,
+							AlbumService albumService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		this.albumService = albumService;
 	}
 
 	@InitBinder
@@ -306,6 +311,14 @@ class BucketController extends PaginationController {
 			lastIndex= total;
 		}
 
+		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
+			StreamSupport.stream(results.spliterator(), false) // Convert Iterable to Stream
+				.map(PictureFile::getId)
+				.collect(Collectors.toList())
+		);
+
+		loadThumbnailsAndKeywords(thumbnailsMap, model);
+
 		// Add the results to the model
 		model.put("results", results);
 		model.put("pageNumber", results.getNumber());
@@ -507,7 +520,11 @@ class BucketController extends PaginationController {
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
 			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID));
-
+			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID)
+				.stream()
+				.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
+				.collect(Collectors.joining(", "))
+			);
 			Iterable<Album> albums = this.albums.findAll();
 
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");

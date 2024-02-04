@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -54,6 +56,13 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.and()
 				// Authorization and Authentication configuration
 				.authorizeRequests()
+					.requestMatchers(new RequestMatcher() {
+						@Override
+						public boolean matches(HttpServletRequest request) {
+							// Check if the request URI ends with .xml
+							return request.getRequestURI().endsWith(".xml");
+						}
+					}).permitAll()
 					.requestMatchers("/login").permitAll()
 					.requestMatchers(
 						"/",
@@ -68,7 +77,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 						"/js/**",
 						"/static/**",
 						"/register",
-						"/sitemap.xml"
+						"/**/*.xml"
 					)
 				.permitAll()
 				.anyRequest().authenticated()

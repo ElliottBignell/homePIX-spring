@@ -25,6 +25,12 @@ public class AlbumService {
 			.map(PictureFile::getId)
 			.collect(Collectors.toList()); // Collect the results into a List
 
+		// Create a map of thumbnail ID to PictureFile
+		return getThumbnailsMap(thumbnailIds);
+	}
+
+	public Map<Integer, PictureFile> getThumbnailsMap(List<Integer> thumbnailIds) {
+
 		// Fetch PictureFiles
 		List<PictureFile> thumbnails = pictureFileRepository.findAllById(thumbnailIds);
 
