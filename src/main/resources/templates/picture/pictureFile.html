@@ -104,6 +104,7 @@
         let startX, startY, startTime, moved = false;
 
         const isSwipeGesture = (moveX, moveY, elapsedTime) => {
+
             const threshold = 100; // required min distance traveled to be considered swipe
             const restraint = 100; // maximum distance allowed at the same time in perpendicular direction
             const allowedTime = 300; // maximum time allowed to travel that distance
@@ -145,9 +146,24 @@
             const moveY = touchObj.pageY;
             const elapsedTime = new Date().getTime() - startTime; // time elapsed between touchstart and touchend
 
+            console.log("Swipe detected");
+
             if (isSwipeGesture(moveX, moveY, elapsedTime)) {
-                console.log("Swipe detected");
+
+                console.log("Navigate");
                 e.preventDefault(); // prevent default only if it's a swipe gesture
+                const swipeDirection = moveX > startX ? 'right' : 'left'; // Determine swipe direction
+                navigateBasedOnSwipe(swipeDirection);
+            }
+        };
+
+        const navigateBasedOnSwipe = (direction) => {
+
+            let linkId = direction === 'left' ? 'back' : 'forth';
+            let linkElement = document.getElementById(linkId);
+
+            if (linkElement && linkElement.href) {
+                window.location.href = linkElement.href; // Navigate to the link's href
             }
         };
 

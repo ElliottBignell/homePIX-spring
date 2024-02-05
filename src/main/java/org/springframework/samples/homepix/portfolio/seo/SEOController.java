@@ -13,18 +13,27 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import java.util.Spliterators;
-import java.util.List;
 
 @RestController
 public class SEOController extends PaginationController {
 
 	private final AlbumContentRepository albumContent;
+
+	private static final String format = "yyyy-MM-dd";
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+	private Supplier<String> today = () -> {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+		LocalDateTime now = LocalDateTime.now();
+		return dtf.format(now);
+	};
 
 	protected SEOController(
 		AlbumRepository albums,
@@ -44,7 +53,7 @@ public class SEOController extends PaginationController {
 
 		// Example sitemap content. In a real application, generate this dynamically
 		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/</loc>\n" +
 			"       <lastmod>2024-01-01</lastmod>\n" +
@@ -77,7 +86,7 @@ public class SEOController extends PaginationController {
 		}
 
 		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/albums/1</loc>\n" +
 			"       <lastmod>2024-01-04</lastmod>\n" +
@@ -108,7 +117,7 @@ public class SEOController extends PaginationController {
 		}
 
 		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-			"<urlset xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/buckets/" + name + "</loc>\n" +
 			"       <lastmod>2024-01-04</lastmod>\n" +
@@ -128,7 +137,8 @@ public class SEOController extends PaginationController {
 	public ResponseEntity<String> index() {
 
 		// Example sitemap content. In a real application, generate this dynamically
-		String sitemapContent = "<sitemapindex xmlns=\"https://www.sitemaps.org/schemas/sitemap/0.9\">" +
+		String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+								"<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 								  "<sitemap>" +
 									"<loc>https://www.homepix.ch/sitemap.xml</loc>" +
 									"<lastmod>2024-02-04</lastmod>" +
@@ -151,13 +161,13 @@ public class SEOController extends PaginationController {
 
 				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
 
-				return "<url>" +
-					"<loc>https://www.homepix.ch/album/" + album.getId() + "</loc>" +
+				return "<url>\n" +
+					"<loc>https://www.homepix.ch/album/" + album.getId() + "</loc>\n" +
 					"<lastmod>" +
 					date +
-					"</lastmod>" +
-					"<changefreq>weekly</changefreq>" +
-					"<priority>0.8</priority>" +
+					"</lastmod>\n" +
+					"<changefreq>weekly</changefreq>\n" +
+					"<priority>0.8</priority>\n" +
 					"</url>";
 			})
 			.collect(Collectors.toList());
@@ -170,9 +180,9 @@ public class SEOController extends PaginationController {
 
 				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
 
-				return "<sitemap>" +
-					   "<loc>https://www.homepix.ch/album" + album.getId() + ".xml</loc>" +
-					   "<lastmod> + date + </lastmod>" +
+				return "<sitemap>\n" +
+					   "<loc>https://www.homepix.ch/album" + album.getId() + ".xml</loc>\n" +
+					   "<lastmod>" + date + "</lastmod>\n" +
 					   "</sitemap>";
 			})
 			.collect(Collectors.toList());
@@ -186,13 +196,11 @@ public class SEOController extends PaginationController {
 
 		return content.stream().map( picture -> {
 
-			String date = picture.getTaken_on() != null ? picture.getTaken_on().toString() : "2024-02-04";
-
-			return "<url>" +
-				"<loc>https://www.homepix.ch/albums/" + album.getId() + "/item/" + picture.getId() + "</loc>" +
-				"<lastmod>" + date + "</lastmod>" +
-				"<changefreq>monthly</changefreq>" +
-				"<priority>0.8</priority>" +
+			return "<url>\n" +
+				"<loc>https://www.homepix.ch/albums/" + album.getId() + "/item/" + picture.getId() + "</loc>\n" +
+				"<lastmod>" + picture.getAdded_on() + "</lastmod>\n" +
+				"<changefreq>monthly</changefreq>\n" +
+				"<priority>0.8</priority>\n" +
 				"</url>";
 		})
 		.collect(Collectors.toList());
@@ -204,10 +212,10 @@ public class SEOController extends PaginationController {
 			.flatMap(yearGroup ->
 				StreamSupport.stream(Spliterators.spliteratorUnknownSize(yearGroup.getYears().iterator(), 0), false)
 					.map(year -> "<url>" +
-						"<loc>https://www.homepix.ch/calendar/" + year.getYear() + "</loc>" +
-						"<lastmod>2024-02-03</lastmod>" +
-						"<changefreq>weekly</changefreq>" +
-						"<priority>0.8</priority>" +
+						"<loc>https://www.homepix.ch/calendar/" + year.getYear() + "</loc>\n" +
+						"<lastmod>2024-02-03</lastmod>\n" +
+						"<changefreq>weekly</changefreq>\n" +
+						"<priority>0.8</priority>\n" +
 						"</url>")
 			)
 			.collect(Collectors.toList());
@@ -219,11 +227,11 @@ public class SEOController extends PaginationController {
 			.map(folder -> {
 				// Here you generate your XML tag string based on the album properties
 				// Adjust property names as necessary
-				return "<url>" +
-					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "</loc>" +
-					"<lastmod>" + folder.getLastModifiedDate().toString() + "</lastmod>" +
-					"<changefreq>monthly</changefreq>" +
-					"<priority>0.8</priority>" +
+				return "<url>\n" +
+					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "</loc>\n" +
+					"<lastmod>" + String.format(folder.getLastModifiedDate().toString(), format) + "</lastmod>\n" +
+					"<changefreq>monthly</changefreq>\n" +
+					"<priority>0.8</priority>\n" +
 					"</url>";
 			})
 			.collect(Collectors.toList());
@@ -236,9 +244,9 @@ public class SEOController extends PaginationController {
 
 				String date = folder.getLastModifiedDate() != null ? folder.getLastModifiedDate().toString() : "2024-02-04";
 
-				return "<sitemap>" +
-					"<loc>https://www.homepix.ch/folder" + folder.getName() + ".xml</loc>" +
-					"<lastmod>" + date + "</lastmod>" +
+				return "<sitemap>\n" +
+					"<loc>https://www.homepix.ch/folder" + folder.getName() + ".xml</loc>\n" +
+					"<lastmod>" + date + "</lastmod>\n" +
 					"</sitemap>";
 			})
 			.collect(Collectors.toList());
@@ -254,13 +262,11 @@ public class SEOController extends PaginationController {
 
 		return pictureFiles.stream().map( picture -> {
 
-				String date = picture.getTaken_on() != null ? picture.getTaken_on().toString() : "2024-02-04";
-
 				return "<url>" +
-					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "/item/" + index.getAndIncrement() + "</loc>" +
-					"<lastmod>" + date + "</lastmod>" +
-					"<changefreq>monthly</changefreq>" +
-					"<priority>0.8</priority>" +
+					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "/item/" + index.getAndIncrement() + "</loc>\n" +
+					"<lastmod>" + picture.getAdded_on() + "</lastmod>\n" +
+					"<changefreq>monthly</changefreq>\n" +
+					"<priority>0.8</priority>\n" +
 					"</url>";
 			})
 			.collect(Collectors.toList());
