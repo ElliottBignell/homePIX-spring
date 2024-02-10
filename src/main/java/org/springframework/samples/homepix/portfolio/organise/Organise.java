@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.organise;
 
 import java.util.Set;
 
 import jakarta.persistence.*;
 import org.springframework.core.style.ToStringCreator;
+import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 

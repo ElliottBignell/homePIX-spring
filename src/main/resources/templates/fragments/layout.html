@@ -238,7 +238,7 @@
               <span class="toolbar-dates">
                 <form class="form-inline toolbar-dates-form" th:action="${ '#' }" method="get">
                   <section class="toolbar-group">
-                    <span class="bigbrand toolbar-caption-date-from"  th:if="${pagination}">From...</span>
+                    <span class="bigbrand toolbar-caption-date-from" style="top:1em;" th:if="${pagination}">From...</span>
                     <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${startDate}"
                            th:value="${startDate}"
                            class="form-control mr-sm-2 date-when-start-end toolbar-date-from"
@@ -247,7 +247,7 @@
                     >
                   </section>
                   <section class="toolbar-group">
-                    <span class="bigbrand toolbar-caption-date-to" th:if="${pagination}">...to...</span>
+                    <span class="bigbrand toolbar-caption-date-to" style="top:1em;" th:if="${pagination}">...to...</span>
                     <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${endDate}"
                            th:value="${endDate}"
                            class="form-control mr-sm-2 date-when-start-end toolbar-date-to"

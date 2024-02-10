@@ -16,16 +16,14 @@
 
 package org.springframework.samples.homepix.system;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.*;
-import org.springframework.samples.homepix.portfolio.Album;
-import org.springframework.samples.homepix.portfolio.AlbumContent;
-import org.springframework.samples.homepix.portfolio.AlbumContentRepository;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Controller;
@@ -131,7 +129,8 @@ class WelcomeController extends PaginationController {
 		redirectAttributes.addAttribute("startDate", requestDTO.getSearch());
 		redirectAttributes.addAttribute("endDate", requestDTO.getSearch());
 		redirectAttributes.addAttribute("sort", requestDTO.getSearch());
-
+		model.put("albums", this.albums.findAll());
+		model.put("folders", this.folders.findAll());
 
 		// 1 album found
 		return "welcome";

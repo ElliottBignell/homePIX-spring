@@ -18,6 +18,7 @@ package org.springframework.samples.homepix;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * PetClinic Spring Boot Application.
@@ -26,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication(proxyBeanMethods = false)
+@EnableJpaRepositories(basePackages = "org.springframework.samples.homepix")
 public class homePIXApplication {
 
 	// https://api.flickr.com/services/rest/?method=flickr.photosets.getList&api_key=4653c7a47e46e9c6f0ff19388000b524&user_id=50027087@N00&format=json&nojsoncallback=1

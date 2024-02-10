@@ -26,8 +26,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.homepix.model.BaseEntity;
-import org.springframework.samples.homepix.portfolio.AlbumContent;
-import org.springframework.samples.homepix.portfolio.Folder;
+import org.springframework.samples.homepix.portfolio.album.AlbumContent;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
 
 /**
  * Simple business object representing a pet.

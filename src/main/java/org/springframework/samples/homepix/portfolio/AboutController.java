@@ -15,7 +15,11 @@
  */
 package org.springframework.samples.homepix.portfolio;
 
+import org.springframework.samples.homepix.portfolio.album.Album;
+import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Controller;
@@ -37,11 +41,11 @@ class AboutController extends PaginationController {
 	private static final String ABOUT_FORM = "picture/about";
 
 	AboutController(AlbumRepository albums,
-					FolderRepository folders,
-					PictureFileRepository pictureFiles,
-					KeywordRepository keyword,
-					KeywordRelationshipsRepository keywordsRelationships,
-					FolderService folderService
+                    FolderRepository folders,
+                    PictureFileRepository pictureFiles,
+                    KeywordRepository keyword,
+                    KeywordRelationshipsRepository keywordsRelationships,
+                    FolderService folderService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 	}

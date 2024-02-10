@@ -5,15 +5,6 @@
 <body>
 
   <div id="div_collection" style="overflow-y: auto; max-height: 75vh;">
-    <table>
-      <tr th:each="yearGroup : ${years}">
-        <td th:each="year : ${yearGroup}">
-          <a th:href="@{/calendar/__${year}__}" class="bigmenu" th:text="${year}" style="font-size:12px;">
-            year
-          </a>
-        </td>
-      </tr>
-    </table>
     <table th:id="@{quarterly__${ year.getYear }__}" class="calendar_year_table" style="width:100%;bg-color:red;">
       <tr style="height:10em;">
           <td>

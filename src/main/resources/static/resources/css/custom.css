@@ -8494,7 +8494,6 @@ table {
 
 .toolbar-caption-date-from {
     position:absolute;
-    top:10pt;
     left:0pt;
     color:var( --homepix-bg );
 }
@@ -8647,6 +8646,7 @@ table {
   .toolbar-date-from,
   .toolbar-date-to {
     position: static;
+    left:3em;
     flex: 0 0 auto; /* Do not grow or shrink */
     order: 1; /* Ensure input comes first */
     width: 100%; /* Ensure inputs take full width */

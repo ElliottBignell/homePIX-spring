@@ -1,11 +1,10 @@
 package org.springframework.samples.homepix.portfolio;
 
 import org.springframework.samples.homepix.UserService;
+import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;

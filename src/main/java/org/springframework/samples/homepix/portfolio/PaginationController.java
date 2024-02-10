@@ -5,15 +5,23 @@ import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
+import org.springframework.samples.homepix.portfolio.album.Album;
+import org.springframework.samples.homepix.portfolio.album.AlbumContent;
+import org.springframework.samples.homepix.portfolio.album.AlbumContentRepository;
+import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -44,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Controller
 public abstract class PaginationController implements AutoCloseable {
 
 	protected Pagination pagination;
@@ -66,7 +75,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected static final String region = "ch-dk-2";
 
-	Collection<Folder> folderCache = null;
+	protected Collection<Folder> folderCache = null;
 
 	protected static S3Client s3Client = null;
 
@@ -155,17 +164,16 @@ public abstract class PaginationController implements AutoCloseable {
 	}
 
 	@ModelAttribute(name = "pagination")
-	Pagination getPagination() {
+	protected Pagination getPagination() {
 		return this.pagination;
 	}
 
-	@ModelAttribute(name = "albums")
 	Iterable<Album> findAllAlbums() {
 		return this.albums.findAll();
 	}
 
 	@ModelAttribute("yearNames")
-	public List<List<String>> populateDates() {
+	protected List<List<String>> populateDates() {
 
 		List<String> years = this.pictureFiles.findYears();
 
@@ -248,34 +256,6 @@ public abstract class PaginationController implements AutoCloseable {
 			ex.printStackTrace();
 		}
 	}
-
-	/*
-	 * private void load() {
-	 *
-	 * try {
-	 *
-	 * List<String> folderNames = Stream.of(Objects.requireNonNull(new
-	 * File(this.imagePath).listFiles()))
-	 * .filter(File::isDirectory).map(File::getName).sorted().collect(Collectors.toList())
-	 * ;
-	 *
-	 * folders.deleteAll();
-	 *
-	 * for (String name : folderNames) {
-	 *
-	 * Folder item = new Folder();
-	 *
-	 * item.setName(name); item.setThumbnailId(36860);
-	 *
-	 * final Pattern JPEGS = Pattern.compile(".*jpg$");
-	 *
-	 * long count = Stream.of(new File(this.imagePath + name).listFiles()).filter(file ->
-	 * !file.isDirectory()) .filter(file -> JPEGS.matcher(file.getName()).find()).count();
-	 * item.setPicture_count((int) count);
-	 *
-	 * folders.save(item); } } catch (Exception ex) { System.out.println(ex);
-	 * ex.printStackTrace(); } }
-	 */
 
 	protected String loadBuckets(Folder folder, BindingResult result, Map<String, Object> model) {
 
@@ -506,17 +486,7 @@ public abstract class PaginationController implements AutoCloseable {
 	}
 
 	private void processMetadata(Map<String, String> properties, String name, String subFolder, List<PictureFile> results) {
-		// Your existing logic for processing metadata and creating/updating PictureFile objects
-		// ...
 
-		// Example:
-		// PictureFile picture = new PictureFile();
-		// picture.setTitle(properties.get("title"));
-		// picture.setFilename(name);
-		// ...
-
-		// results.add(picture);
-		// this.pictureFiles.save(picture);
 	}
 
 	protected List<PictureFile> listFiles(S3Client s3Client, String subFolder) {
@@ -597,9 +567,6 @@ public abstract class PaginationController implements AutoCloseable {
 							picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
 							picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
 							picture.setAdded_on(java.time.LocalDate.now());
-							// picture.setLocation(properties.get("title")));
-							// picture.setPrimaryCategory(properties.get("title")));
-							// picture.setSecondaryCategory(properties.get("title")));
 						}
 						catch (Exception ex) {
 							System.out.println(ex);
@@ -708,8 +675,6 @@ public abstract class PaginationController implements AutoCloseable {
 			relation.setKeyword(newKeyword);
 			this.keywordRelationships.save(relation);
 		}
-
-		//picture.setKeywords(newKeywords);
 	}
 
 	protected List<PictureFile> listFilteredFiles(List<PictureFile> files,
@@ -799,56 +764,6 @@ public abstract class PaginationController implements AutoCloseable {
 		Set<String> keywords = keywordMap.getOrDefault(item.getId(), Collections.emptySet());
 		return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
 	}
-
-	/*protected List<PictureFile> listFilteredFiles_(List<PictureFile> files,
-												  CollectionRequestDTO requestDTO,
-												  Authentication authentication) {
-
-		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
-
-		Pattern pattern = Pattern.compile(
-			"\\b" + requestDTO.getSearch() + "\\b",
-			Pattern.CASE_INSENSITIVE
-		);
-
-		return files.stream()
-			.filter(item -> isAuthorised(item, authentication))
-			.filter( item -> {
-
-				Matcher matcher = pattern.matcher(item.getTitle());
-				boolean matchFound = matcher.find();
-
-				if (!matchFound) {
-
-					matcher = pattern.matcher(item.getFolder().getDisplayName());
-					matchFound = matcher.find();
-
-					if (!matchFound) {
-
-						Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureId(item.getId());
-
-						for (KeywordRelationships relationship : relations) {
-
-							Keyword keyword = relationship.getKeyword();
-
-							if (null != keyword) {
-
-								matcher = pattern.matcher(keyword.getWord());
-								matchFound = matcher.find();
-
-								if (matchFound) {
-									break;
-								}
-							}
-						}
-					}
-				}
-
-				return matchFound;
-			})
-			.sorted( orderBy )
-			.collect(Collectors.toList());
-	}*/
 
 	private boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
 

@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.album;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
+import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -38,6 +42,7 @@ import java.util.stream.Collectors;
  * @author Ken Krebs
  * @author Arjen Poutsma
  * @author Michael Isvy
+ * @author Elliott Bignell
  */
 @Controller
 class AlbumContentController extends PaginationController {
@@ -131,6 +136,8 @@ class AlbumContentController extends PaginationController {
 		model.put("endDate", requestDTO.getToDate());
 		model.put("sort", requestDTO.getSort());
 		model.put("search", requestDTO.getSearch());
+		model.put("albums", this.albums.findAll());
+		model.put("folders", this.folders.findAll());
 
 		model.put("collection", content);
 		model.put("link_params", "");
@@ -238,6 +245,8 @@ class AlbumContentController extends PaginationController {
 
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album);
+		model.put("albums", this.albums.findAll());
+		model.put("folders", this.folders.findAll());
 
 		return "picture/pictureFile.html";
 	}
@@ -306,7 +315,7 @@ class AlbumContentController extends PaginationController {
 	@Secured("ROLE_ADMIN")
 	@PostMapping("/albums/{name}/curate/")
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
-										   Map<String, Object> model) {
+                                           Map<String, Object> model) {
 		return "folders/folderList.html";
 	}
 

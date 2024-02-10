@@ -16,8 +16,10 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.samples.homepix.portfolio.*;
-import org.springframework.samples.homepix.portfolio.Album;
-import org.springframework.samples.homepix.portfolio.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.album.Album;
+import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Controller;

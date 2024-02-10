@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.folder;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -24,8 +24,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.album.Album;
+import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.album.AlbumService;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -152,6 +159,7 @@ class BucketController extends PaginationController {
 
 		model.put("folders", folderCache);
 		model.put("thumbnails", thumbnailsMap);
+		model.put("albums", this.albums.findAll());
 
 		// User is not authenticated or not an admin
 		return "folders/folderListPictorial";
@@ -321,6 +329,8 @@ class BucketController extends PaginationController {
 
 		// Add the results to the model
 		model.put("results", results);
+		model.put("folders", this.folders.findAll());
+		model.put("albums", this.albums.findAll());
 		model.put("pageNumber", results.getNumber());
 		model.put("pageSize", results.getSize());
 		model.put("totalPages", results.getTotalPages());
@@ -516,6 +526,7 @@ class BucketController extends PaginationController {
 			model.put("picture", file);
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
+			model.put("folders", this.folders.findAll());
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
