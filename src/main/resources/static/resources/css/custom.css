@@ -9044,7 +9044,13 @@ div.desc {
 
 .album-main {
     position:relative;
-    top:1em;"
+    top:1em;
+}
+
+.album-left {
+    position:relative;
+    top:1em;
+    width:30vw;
 }
 
 @media (max-width: 768px) and (orientation: portrait) {

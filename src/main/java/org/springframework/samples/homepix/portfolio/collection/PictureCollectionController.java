@@ -18,10 +18,10 @@ package org.springframework.samples.homepix.portfolio.collection;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
-import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.core.Authentication;
@@ -32,8 +32,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Elliott Bignell
@@ -45,17 +57,21 @@ class PictureCollectionController extends PaginationController {
 
 	private final PictureCollectionRepository pictures;
 
+	private final PictureElasticSearchService pictureElasticSearchService;
+
 	public PictureCollectionController(PictureFileRepository pictureFiles,
 									   PictureCollectionRepository pictures,
 									   AlbumRepository albums,
 									   FolderRepository folders,
 									   KeywordRepository keyword,
 									   KeywordRelationshipsRepository keywordsRelationships,
-									   FolderService folderService
+									   FolderService folderService,
+									   PictureElasticSearchService pictureElasticSearchService
 	) {
 
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.pictures = pictures;
+		this.pictureElasticSearchService = pictureElasticSearchService;
 	}
 
 	@InitBinder
@@ -174,4 +190,99 @@ class PictureCollectionController extends PaginationController {
 
 	}
 
+	public static String buildJsonPayload(Iterable<PictureFile> pictureFiles) {
+		return StreamSupport.stream(pictureFiles.spliterator(), false)
+			.flatMap(pictureFile ->
+				Stream.of(
+					String.format("{ \"index\" : { \"_index\" : \"images\", \"_id\" : \"%s\" } }", pictureFile.getId()),
+					String.format("{ \"id\": \"%s\", \"filename\": \"%s\", \"description\": \"%s\" }",
+						pictureFile.getId(), pictureFile.getFilename(),
+						pictureFile.getTitle().split("\n", 2)[0]) // Split the title at the first newline and take the first part
+				)
+			)
+			.collect(Collectors.joining("\n")) + "\n";
+	}
+
+
+	@GetMapping("/elastic/index")
+	public String bulkIndexElastic() throws Exception {
+
+		HttpClient client = pictureElasticSearchService.getHttpClient();
+		String encodedCredentials = pictureElasticSearchService.getEncodedCredentials();
+
+		String esUrl = "https://localhost:9200/_bulk";
+
+		// Manually formatted JSON payload for bulk insertion
+		String jsonPayload = buildJsonPayload(this.pictureFiles.findAll());
+
+		System.out.println(jsonPayload);
+
+		// Manually formatted JSON payload for bulk insertion
+		HttpRequest request = HttpRequest.newBuilder()
+			.uri(URI.create(esUrl))
+			.header("Content-Type", "application/x-ndjson")
+			.header("Authorization", "Basic " + encodedCredentials)
+			.POST(BodyPublishers.ofString(jsonPayload))
+			.build();
+
+        HttpResponse<String> response = null;
+
+        try {
+            response = client.send(request, BodyHandlers.ofString());
+        }
+		catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+		catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Response status code: " + response.statusCode());
+		System.out.println("Response body: " + response.body());
+
+		return "redirect:/buckets";
+	}
+
+	@GetMapping("/elastic/retrieve")
+	public String retrieveElastic() throws Exception {
+
+		HttpClient client = pictureElasticSearchService.getHttpClient();
+		String encodedCredentials = pictureElasticSearchService.getEncodedCredentials();
+
+		String esUrl = "https://localhost:9200/images/_search";
+
+		String jsonQuery =
+			"{\n" +
+				"  \"query\": {\n" +
+				"    \"query_string\" : {\n" +
+				"      \"query\" : \"(chiesa OR bergamo)\",\n" +
+				"      \"fields\" : [\"description\"]\n" +
+				"    }\n" +
+				"  }\n" +
+				"}\n";
+
+		HttpRequest request = HttpRequest.newBuilder()
+			.uri(URI.create(esUrl))
+			.header("Content-Type", "application/json")
+			.header("Authorization", "Basic " + encodedCredentials)
+			.POST(BodyPublishers.ofString(jsonQuery))
+			.build();
+
+        HttpResponse<String> response = null;
+
+        try {
+            response = client.send(request, BodyHandlers.ofString());
+        }
+		catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+		catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Response status code: " + response.statusCode());
+		System.out.println("Response body: " + response.body());
+
+		return "redirect:/buckets";
+	}
 }
