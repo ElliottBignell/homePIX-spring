@@ -30,9 +30,6 @@ import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumService;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
-import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
-import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -157,7 +154,10 @@ class BucketController extends PaginationController {
 		List<Folder> folders = new ArrayList<>(this.folders.findAll());
 		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
 
-		model.put("folders", folderCache);
+		model.put("folders", folderCache.stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 		model.put("thumbnails", thumbnailsMap);
 		model.put("albums", this.albums.findAll());
 
@@ -178,8 +178,10 @@ class BucketController extends PaginationController {
 		loadBuckets(folder, result, model);
 
 		// multiple folders found
-		model.put("folders", folderCache);
-
+		model.put("folders", folderCache.stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication != null && authentication.isAuthenticated()) {
@@ -329,7 +331,10 @@ class BucketController extends PaginationController {
 
 		// Add the results to the model
 		model.put("results", results);
-		model.put("folders", this.folders.findAll());
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 		model.put("albums", this.albums.findAll());
 		model.put("pageNumber", results.getNumber());
 		model.put("pageSize", results.getSize());
@@ -526,7 +531,10 @@ class BucketController extends PaginationController {
 			model.put("picture", file);
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
-			model.put("folders", this.folders.findAll());
+			model.put("folders", this.folders.findAll().stream()
+				.sorted(Comparator.comparing(Folder::getName))
+				.collect(Collectors.toList())
+			);
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
@@ -827,4 +835,130 @@ class BucketController extends PaginationController {
 		return item;
 	}
 
+	@PostMapping("/moveFile")
+	public ResponseEntity<?> moveFile(@RequestBody MoveFileRequest request) {
+
+		initialiseS3Client();
+		S3FileMover s3FileMover = new S3FileMover(s3Client);
+
+		String[] idStrings = request.getFileName().split(",");
+		List<Integer> ids = Arrays.stream(idStrings)
+			.map(Integer::parseInt)
+			.collect(Collectors.toList());
+		List<PictureFile> pictures = this.pictureFiles.findAllById(ids);
+
+		Folder leftFolder = this.folders.findByName(request.sourceTag).iterator().next();
+		Folder rightFolder = this.folders.findByName(request.destinationTag).iterator().next();
+
+		if (leftFolder != null && rightFolder != null) {
+
+			for (PictureFile picture : pictures) {
+
+				String from = "";
+				String to = "";
+				Folder fromFolder = null;
+				Folder toFolder = null;
+
+				if (picture.getFolder().getName().equals(leftFolder.getName())) {
+
+					from = request.getSourceTag();
+					to = request.getDestinationTag();
+					fromFolder = leftFolder;
+					toFolder = rightFolder;
+				}
+				else if (picture.getFolder().getName().equals(rightFolder.getName())) {
+
+					from = request.getDestinationTag();
+					to = request.getSourceTag();
+					fromFolder = rightFolder;
+					toFolder = leftFolder;
+				}
+				else {
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error moving file : folder not correctly assigned");
+				}
+
+				String baseDirectory = "jpegs/";
+				String originalImagePath = baseDirectory + from + "/" + picture.getFilename();
+				String newImagePath = baseDirectory + to + "/" + picture.getFilename();
+
+				// Assuming the thumbnail follows a consistent naming pattern: filename_200px.extension
+				String originalThumbnailPath = picture.getMediumFilename().replace("/web-images/", "jpegs/");
+				String newThumbnailPath = picture.getMediumFilename()
+					.replace("/web-images/", "jpegs/")
+					.replace(from, to);
+
+				try {
+
+					String bucketName = "picture-files";
+
+					s3FileMover.moveFile(bucketName, originalThumbnailPath, newThumbnailPath);
+					s3FileMover.moveFile(bucketName, originalImagePath, newImagePath);
+
+					fromFolder.setPicture_count(fromFolder.getPicture_count() - 1);
+					toFolder.setPicture_count(toFolder.getPicture_count() + 1);
+
+					picture.setFolder(toFolder);
+
+					this.pictureFiles.save(picture);
+					this.folders.save(fromFolder);
+					this.folders.save(toFolder);
+
+				}
+				catch (Exception e) {
+
+					e.printStackTrace();
+
+					// Log the exception
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error moving file and thumbnail: " + e.getMessage());
+				}
+			}
+
+			return ResponseEntity.ok("File and thumbnail successfully moved.");
+		}
+
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error moving file : folder does not exist");
+	}
+
+	static class MoveFileRequest {
+		private String sourceTag;
+		private String destinationTag;
+		private String fileName;
+
+		// Getters and setters for sourceTag, destinationTag, and fileName
+
+		public String getSourceTag() {
+			return sourceTag;
+		}
+
+		public void setSourceTag(String sourceTag) {
+			this.sourceTag = sourceTag;
+		}
+
+		public String getDestinationTag() {
+			return destinationTag;
+		}
+
+		public void setDestinationTag(String destinationTag) {
+			this.destinationTag = destinationTag;
+		}
+
+		public String getFileName() {
+			return fileName;
+		}
+
+		public void setFileName(String fileName) {
+			this.fileName = fileName;
+		}
+
+		// Helper methods to extract file name without extension and file extension
+		public String getFileNameWithoutExtension() {
+			int dotIndex = fileName.lastIndexOf(".");
+			return dotIndex != -1 ? fileName.substring(0, dotIndex) : fileName;
+		}
+
+		public String getFileExtension() {
+			int dotIndex = fileName.lastIndexOf(".");
+			return dotIndex != -1 ? fileName.substring(dotIndex + 1) : "";
+		}
+	}
 }

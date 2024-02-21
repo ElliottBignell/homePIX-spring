@@ -199,6 +199,10 @@ public class PictureFile extends BaseEntity {
 
 	public Integer getDisplayWidth() {
 
+		if (null == width || null == height) {
+			return 300;
+		}
+
 		float aspectRratio = (float) width / (float) height;
 		return (int) (200.0 * aspectRratio);
 	}
@@ -208,6 +212,11 @@ public class PictureFile extends BaseEntity {
 	}
 
 	public float getAspectRatio() {
+
+		if (null == width || null == height) {
+			return 1.5f;
+		}
+
 		return (float)this.width / (float)this.height;
 	}
 

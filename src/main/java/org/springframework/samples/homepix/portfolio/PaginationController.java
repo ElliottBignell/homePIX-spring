@@ -283,7 +283,10 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 			else {
 				// multiple folders found
-				model.put("folders", folderCache);
+				model.put("folders", folderCache.stream()
+					.sorted(Comparator.comparing(Folder::getName))
+					.collect(Collectors.toList())
+				);
 				return "folders/folderList";
 			}
 		}

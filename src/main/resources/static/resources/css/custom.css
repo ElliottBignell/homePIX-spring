@@ -496,9 +496,9 @@ pre {
 }
 
 .container-fluid {
-  position:absolute;
+  position:relative;
   width: 100%;
-  top:8.5em;
+  top:4.5em;
   height: calc(100vh - 9.5em)
   padding-right: 15px;
   padding-left: 15px;
@@ -9047,10 +9047,22 @@ div.desc {
     top:1em;
 }
 
-.album-left {
-    position:relative;
+.organise-left {
+    position:absolute;
     top:1em;
-    width:30vw;
+    width:45vw;
+}
+.organise-mid {
+    position:absolute;
+    top:10em;
+    left:45vw;
+    width:10vw;
+}
+.organise-right {
+    position:absolute;
+    top:1em;
+    left: 50vw;
+    width:45vw;
 }
 
 @media (max-width: 768px) and (orientation: portrait) {

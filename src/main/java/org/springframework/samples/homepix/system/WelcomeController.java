@@ -22,6 +22,7 @@ import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -130,7 +131,10 @@ class WelcomeController extends PaginationController {
 		redirectAttributes.addAttribute("endDate", requestDTO.getSearch());
 		redirectAttributes.addAttribute("sort", requestDTO.getSearch());
 		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll());
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 
 		// 1 album found
 		return "welcome";

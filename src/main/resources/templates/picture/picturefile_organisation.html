@@ -4,1323 +4,209 @@
 
 <body>
 
-<h2>Folders</h2>
+<style>
+  figure {
+      width:30vw;
+      height:10vh;
+      display: flex; /* Ensures the figure behaves as a flex container */
+      justify-content: center; /* Center the image horizontally */
+      align-items: center; /* Center the image vertically */
+  }
+
+  figure img {
+      width:30vw;
+      height:10vh;
+      max-height: 100%; /* Ensure the image's maximum height matches the figure's */
+      max-width: 100%; /* Ensure the image's maximum width fits within the figure */
+      object-fit: scale-down; /* Use scale-down to avoid stretching small images */
+      object-position: left center; /* Align the image to the left, centered vertically */
+      border-radius: 6px;
+  }
+
+  .selected {
+      border: 2px solid blue;
+  }
+
+  .active {
+      outline: 2px solid red;
+      width:30vw;
+      height:30vh;
+  }
+
+  .active img {
+      height:30vh;
+  }
+
+  .inactive {
+      height:10vh;
+  }
+
+  .inactive img {
+      height:10vh;
+  }
+</style>
 
 <script>
-
-        //const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
-        var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-        var index = 1;
-        var count = 0;
-        var  file = getQueryVariable( "file"  );
-        var   dir = getQueryVariable( "dir"   );
-        var dragObj;
-        var isShiftPressed = false;
-        var isCtrlPressed  = false;
-        var currentIndex   = -1;
-
-        //document.addEventListener( "touchstart", handleTouchStart, false);
-        //document.addEventListener( "touchmove",  handleTouchMove,  false);
-        //document.addEventListener( "keydown",    doKeyDown,        false );
-        //document.addEventListener( "keyup",      doKeyUp,          false );
-
-        // jQuery.event.props.push('dataTransfer');
-
-        $(document).ready(function() {
-
-          $('div[id^=selectable_]').draggable({
-            cursor: 'move',
-            helper: "clone",
-            containment: 'document',
-            opacity: 0.70,
-            appendTo:"body"
-          });
-
-          $('div[id^=album]').droppable(); 
-
-          $('div[id^=album]').bind('dragleave', function(){
-              console.log("dragentere");
-              $(this).removeClass('dragleave');
-          });
-
-          $('div[id^=album]').bind('drop', function(){
-              console.log("dragentere");
-              $(this).removeClass('drop');
-          });
-        });
-
-        //$( 'body' ).delegate( 'div[id^=selectable_]', '*', 'keydown', function() {
-         //   alert("delegated");
-        //});
-
-        $.ajaxSetup({
-             beforeSend: function(xhr, settings) {
-                 function getCookie(name) {
-                     var cookieValue = null;
-                     if (document.cookie && document.cookie != '') {
-                         var cookies = document.cookie.split(';');
-                         for (var i = 0; i < cookies.length; i++) {
-                             var cookie = jQuery.trim(cookies[i]);
-                             // Does this cookie string begin with the name we want?
-                             if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                 break;
-                             }
-                         }
-                     }
-                     return cookieValue;
-                 }
-                 if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                     // Only send the token to relative URLs i.e. locally.
-                     xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-                 }
-             }
-        });
-
-          
-        $('.selectable').click( function( e ) {
-          
-              $( ".tt_focussed" ).removeClass( "tt_focussed" );
-          
-              var img = $(this).find( "img[id^=picture_]" )
-              img.addClass( "tt_focussed" );
-          
-              if ( !isCtrlPressed ) {
-          
-                  $( ".tt_selected" ).addClass( "tt_unselected" );
-                  $( ".tt_unselected" ).removeClass( "tt_selected" );
-              }
-          
-              currentIndex = parseInt( this.id.match(/\d+/) );
-          
-              img.removeClass( "tt_unselected" );
-              img.addClass( "tt_selected" );
-        });
-
-        $( '.keynav' ).keydown( function( e ) {
-
-            alert( "key" );
-            var code = (e.keyCode ? e.keyCode : e.which);
-            var evtobj = window.event? event : e;
-
-            switch ( code ) {
-
-            case 9: //Tab
-
-                event.preventDefault();
-                break;
-
-            default:
-                //alert( e.which );
-            }
-        });
-
-        $( 'body' ).keydown( function( e ) {
-
-            var code = (e.keyCode ? e.keyCode : e.which);
-            var evtobj = window.event? event : e;
-
-            if ( e.target == document.body ||
-               ( e.target. nodeType == 1 && e.target.tagName == 'A' )
-               )
-            {
-                switch ( code ) {
-                case 13: //Return
-                    event.preventDefault();
-                    //document.getElementById( 'piclink_' + index ).click();
-                    break;
-                case 16: //Shift
-                    event.preventDefault();
-                    isShiftPressed = true;
-                    break;
-                case 17: //Ctrl
-                    event.preventDefault();
-                    isCtrlPressed = true;
-                    break;
-                case 35: //End
-                    imgnav.navigate( count, e );
-                    break;
-                case 36: //Home
-                    imgnav.navigate( 1, e );
-                    break;
-
-                case 32: //Spacebar
-
-                    //if ( e.target == document.body ) {
-
-                        select();
-                        e.preventDefault();
-                    //}
-
-                    break;
-
-                case 'h':
-                case 37: //Left
-                    event.preventDefault();
-                    if ( currentIndex >= 0 ) {
-                        retreat( e );
-                    }
-                    break;
-
-                case 'l':
-                case 39: //Right
-                    event.preventDefault();
-                    if ( currentIndex >= 0 ) {
-                        advance( e );
-                    }
-                    break;
-
-                case 38:
-                case 'k':
-                    retreatY( e );
-                    break;
-                case 40:
-                case 'j':
-                    advanceY( e );
-                    break;
-                case 'G':
-                    break;
-
-                case 'F': // F
-                case 'f': // f
-
-                    if ( e ) {
-
-                        e.preventDefault();
-                        $( "#find" ).focus();
-                    }
-                    break;
-
-                case 114: // F3
-                    e.preventDefault();
-                    $( "#find" ).focus();
-                    break;
-
-                case 46: //Return
-
-                    var ids    = get_selected_ids();
-                    var url    = window.location.href
-                    var params   = url.split( '?' )[ 1 ]
-                    var albums = params.split( '=' );
-                    var album  = albums[ albums.length - 1 ];
-
-                    delete_ids_from_album( album, ids );
-
-                    event.preventDefault();
-
-                    break;
-
-                default:
-                    //alert( e.which );
-                }
-            }
-        });
-
-
-        $( 'body' ).keyup( function( e ) {
-
-            var code = (e.keyCode ? e.keyCode : e.which);
-            var evtobj = window.event? event : e;
-
-            if ( e.target == document.body ||
-               ( e.target. nodeType == 1 && e.target.tagName == 'A' )
-               )
-            {
-                switch ( code ) {
-                case 13: //Return
-                    event.preventDefault();
-                    //document.getElementById( 'piclink_' + index ).click();
-                    break;
-                case 16: //Shift
-                    event.preventDefault();
-                    isShiftPressed = false;
-                    break;
-                case 17: //Ctrl
-                    event.preventDefault();
-                    isCtrlPressed = false;
-                    break;
-                default:
-                }
-            }
-        });
-
-        function advance( evtobj )
-        {
-            moveTo( currentIndex + 1 );
-        }
-
-        function retreat( evtobj )
-        {
-            moveTo( currentIndex - 1 );
-        }
-
-        function moveTo( index )
-        {
-            var oldIndex = "[id^=selectable_" + ( currentIndex ).toString() + "_]";
-
-            if ( $( oldIndex ).length ) { // Element exists
-
-                var oldPic = $( oldIndex ).find( "img[id^=picture_]" )
-
-                oldPic.removeClass( "tt_focussed"   );
-
-                var newIndex = "[id^=selectable_" + ( index ).toString() + "_]";
-
-                if ( $( newIndex ).length ) { // Element exists
-
-                    currentIndex = index;
-
-                    var newPic = $( newIndex ).find( "img[id^=picture_]" )
-
-                    if ( isShiftPressed ) {
-
-                        if ( newPic.hasClass( "tt_selected" ) ) {
-
-                            oldPic.removeClass( "tt_selected"   );
-                            oldPic.addClass(    "tt_unselected" );
-                        }
-                        else {
-
-                            oldPic.removeClass( "tt_unselected" );
-                            oldPic.addClass(    "tt_selected"   );
-                        }
-
-                        newPic.addClass(    "tt_selected"   );
-                        newPic.removeClass( "tt_unselected" );
-                    }
-
-                    newPic.addClass( "tt_focussed" );
-                }
-            }
-        }
-
-        function select()
-        {
-            var index = "[id^=selectable_" + ( currentIndex ).toString() + "_]";
-
-            if ( $( index ).length ) { // Element exists
-
-                var pic = $( index ).find( "img[id^=picture_]" )
-
-                if ( pic.hasClass( "tt_selected" ) ) {
-
-                    pic.removeClass( "tt_selected"   );
-                    pic.addClass(    "tt_unselected" );
-                }
-                else {
-
-                    pic.removeClass( "tt_unselected"   );
-                    pic.addClass(    "tt_selected" );
-                }
-            }
-        }
-
-        $("#removeClass").click(function () {
-              $('#para1').removeClass('highlight');
-        });
-
-        $( "div[id^=selectable_]" ).draggable({
-            revert: 'invalid'
-        });
-
-        $('div[id^=selectable_]').on('dragstart', function( event ) {
-
-            console.log( event );
-            if ( event.originalEvent && event.originalEvent.dataTransfer ) {
-
-                $( this ).css( 'z-order', 0 );
-                event.originalEvent.dataTransfer.setData( 'text', get_selected_ids() );
-            }
-        });
-
-        $('img[id^=picture_]').on('dragstart', function( event ) {
-
-            console.log( event );
-            if ( event.dataTransfer ) {
-
-                $( this ).css( 'z-order', 0 );
-                event.originalEvent.dataTransfer.setData( 'text', get_selected_ids() );
-            }
-        });
-
-        $('div[id^=selectable_]').on('drop dragdrop', function( event ) {
-
-            var data = event.originalEvent.dataTransfer.getData('text');
-            event.preventDefault();
-        });
-
-        $('div[id^=album_], div[id^=universe_]').on('dragover', function( event ) {
-
-            console.log("Second drag ovber");
-            $(this).removeClass( "organise_gallery" );
-            $(this).addClass( "drop_gallery" );
-            event.preventDefault();
-        });
-
-        $('div[id^=album_], div[id^=universe_]').on('dragleave', function( event ) {
-
-            $(this).removeClass( "drop_gallery" );
-            $(this).addClass( "organise_gallery" );
-            event.preventDefault();
-        });
-
-        $('div[id^=album_], div[id^=universe_]').on('dragenter', function( event ) {
-
-            Console.log("Drag ove");
-            $(this).removeClass( "organise_gallery" );
-            $(this).addClass( "drop_gallery" );
-            event.preventDefault();
-        });
-
-        $('div[id^=universe_]').on('drop dragdrop', function( event ) {
-
-            var ids = event.originalEvent.dataTransfer.getData("text");
-            var album = $(this).attr( 'id' ).split( '_' )[ 1 ];
-
-            add_ids_to_universe( ids );
-
-            event.preventDefault();
-        });
-
-        $('div[id^=album_]').on('drop dragdrop', function( event ) {
-
-            var ids = event.originalEvent.dataTransfer.getData("text");
-            var album = $(this).attr( 'id' ).split( '_' )[ 1 ];
-
-            add_ids_to_album( album, ids );
-
-            console.log( "Dropped" );
-
-            event.preventDefault();
-        });
-
-        $( '#content_organise' ).on( 'click', function( event ) {
-
-            event.target.classList.remove( 'selectable' );
-            event.target.classList.add( 'selected' );
-            event.preventDefault();
-        });
-
-        $( '#paneright' ).on('click', '.selected', function( event ) {
-
-            event.target.classList.remove( 'selected' );
-            event.target.classList.add( 'selectable' );
-            event.preventDefault();
-        });
-
-        $( '#paneleft' ).on('click', '.keyword', function( event ) {
-
-            event.preventDefault();
-
-            var btn = event.target;
-            var div = document.getElementById( 'select_keywords' );
-            var src = document.getElementById( 'all_keywords' );
-            var addClass = 'selected_keyword';
-            var delClass = 'dictionary_keyword';
-
-            if ( div == btn.parentElement ) {
-
-                var tmp = div;
-                div = src;
-                src = tmp;
-
-                tmp = addClass;
-                addClass = delClass;
-                delClass = tmp;
-            }
-
-            if ( 'No keywords loaded' == div.innerText )
-                div.innerText = '';
-
-            div.appendChild( btn );
-
-            btn.classList.remove( delClass );
-            btn.classList.add( addClass );
-
-            if ( '' == src.innerText )
-                src.innerText = 'No keywords loaded';
-        });
-
-        function get_selected_ids() {
-
-            var myRegexp = /picture_([0-9]*)_([0-9]*)/;
-            var data = $('.tt_selected').get();
-            var items = [];
-
-            $.each( data, function( index, value ) {
-
-                var id = value.id
-                var match = myRegexp.exec( id );
-
-                items = items.concat( [ match[ 2 ] ] )
-            });
-
-            items.sort();
-            items = jQuery.unique( items );
-
-            var ret = items.join( ',' );
-
-            return ret;
-        }
-
-        function add_ids_to_universe( ids ) {
-
-            $.ajax({
-                url: '../organisation/bubble/' + ids + '/',
-                type: "GET",
-                data: { 
-                    csrfmiddlewaretoken: csrftoken,
-                    ids: ids
-                },
-                cache:false,
-                dataType: "json",
-                success: function(data) {
-                  window.location.replace( '../organisation/' );
-                }
-            });
-        }
-
-        function add_ids_to_album( album, ids ) {
-
-            $.ajax({
-                url: '../albums/add_multiple/' + album + '/' + ids + '/',
-                type: "GET",
-                data: { 
-                    csrfmiddlewaretoken: csrftoken,
-                    ids: ids
-                },
-                cache:false,
-                dataType: "json",
-                success: function(data) {
-                  $( '#albumcount_' + album ).html( data[ 'count' ] + ' pictures' );
-                }
-            });
-        }
-
-        function delete_ids_from_album( album, ids ) {
-
-            $.ajax({
-                url:  '../albums/del_multiple/' + album + '/' + ids + '/',
-                type: "GET",
-                data: { 
-                    csrfmiddlewaretoken: csrftoken,
-                    ids: ids
-                },
-                cache:false,
-                dataType: "json",
-                success: function(data) {
-
-                    $( '#albumcount_' + album ).html( data[ 'count' ] + ' pictures' );
-
-                    ids = data[ 'deleted' ].split( ',' )
-
-                    ids.forEach( function( item, index ) {
-                        $( 'div[id^=selectable_]' ).filter( 'div[id$=_' + item + ']' ).hide();
-                    });
-                }
-            });
-        }
-
-        function reload_keyword_buttons( results, pic_id ) {
-
-          if (results) {
-
-            var str = '';
-
-            $.each(results, function() {
-
-                $.each(this, function() {
-
-                    str += '<button onClick="remove_keyword(\''
-                         + this
-                         + '\','
-                         + pic_id
-                         + ')" type="button" data-react-toolbox="button">\n';
-                    str += this + ' ';
-                    str += '<i class="glyphicon glyphicon-remove"></i>\n';
-                    str += '</button>\n';
-                });
-            });
-
-            console.log( str );
-            jQuery('#keywords').html(str);
+  function movePicture(files, from, to) {
+
+      var requestData = {
+          sourceTag: from,
+          destinationTag: to,
+          fileName: files
+      };
+
+      $.ajax({
+          url: "/moveFile",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(requestData),
+          accept: "application/json",
+          success: function(response) {
+            $('figure.selected').hide();
+            $('figure.selected').toggleClass('selected');
+          },
+          error: function(xhr, status, error) {
+              console.log("Error: " + status + " " + error);
+              console.log("Response Text: " + xhr.responseText);
           }
-        }
-
-        function addKeywords( txt )
-        {
-            var words = txt.split( ',' );
-
-            words.forEach( function( item, index ) {
-
-                var btn = document.createElement("button");
-                btn.setAttribute( "data-react-toolbox", "button" );
-                btn.classList.add( 'droppable' );
-                btn.classList.add( 'draggable' );
-                btn.classList.add( 'keyword' );
-                btn.classList.add( 'selected_keyword' );
-                btn.innerHTML = item + '<i class="glyphicon glyphicon-remove"></i>';
-
-                var div = document.getElementById( 'select_keywords' );
-                div.appendChild( btn );
-            });
-        }
-
-        $( '#paneleft' ).on('click', '.glyph', function( event ) {
-
-            if ( "btn_keywords_apply" == event.target.id ) {
-
-                var arrayOfIds = $.map($('.selected'), function(n, i){
-                  return n.id;
-                });
-
-                var vocabulary = '';
-
-                $( '.selected_keyword' ).each( function() {
-
-                    if ( vocabulary.length > 0 ) {
-                        vocabulary += ',';
-                    }
-
-                    vocabulary += $( this ).text().trim();
-                });
-
-                arrayOfIds.forEach( function( pic_id, index ) {
-
-                  var myRegexp = /picture_([0-9]*)/;
-                  var match = myRegexp.exec( pic_id );
-                  var id = match[ 1 ];
-
-                  $.ajax({
-                    url: '/keywords/add/' + id,
-                    data: {
-                      'vocabulary': vocabulary
-                    },
-                    success: function (results) {
-                      $( '#art_keywords_' + id ).text( results.keywords.join( ',' ) );
-                    }
-                  });
-                });
-            }
-            else if ( "btn_keywords_del" == ebtn_keywords_delvent.target.id ) {
-            }
-            else if ( "btn_keywords_reset" == event.target.id ) {
-            }
-        });
-
-        $( "#select_keywords" ).keydown( function( e ) {
-
-            var code = (e.keyCode ? e.keyCode : e.which);
-
-            switch ( code ) {
-            case 13: //Return
-
-                var src = e.target;
-                addKeywords( src.value );
-                src.value = "";
-
-                event.preventDefault();
-                break;
-
-            default:
-                //alert( e.keyCode + " " + e.which );
-            }
-        });
-
-        $( "#find" ).keydown( function( e ) {
-
-            var code = (e.keyCode ? e.keyCode : e.which);
-
-            switch ( code ) {
-            case 13: //Return
-            case 17: //Ctrl
-            case 37: //Left-arrow
-            case 39: //Right-arrow
-                break;
-            default:
-                //alert( e.keyCode + " " + e.which );
-            }
-        });
-
-        function togglePanel()
-        {
-          $('#slideout').toggleClass('on');
-        }
-
-        $('#find').on('search', function(e) {
-            e.preventDefault();
-        });
-
-        $( '#slider' ).on( 'input', function( e ) {
-            $( '#page_no' ).html(
-                "<a href=\"?page=" + $( this ).val() + "\">" + $( this ).val() + "</a>"
-            );
-        });
-
-        function dispatchOp( value )
-        {
-            var substr = value.match( /(g|v|[0-9\^]*,[0-9$]*|[0-9]+|\%)([\W])((.*)\2)*(s|m([0-9]+)|\>|\<|[kta](\+|\-)*\=\".*\")/i );
-
-            if ( null != substr ) {
-
-                var index = 1;
-
-                var filter    = substr[ index++ ];
-
-                index++;
-
-                var text      = substr[ index++ ];
-                index++
-                var operation = substr[ index++ ];
-
-                var regexp = new RegExp( ".*" + text + ".*", "i" );
-                var patterns = [];
-                var selval = ( filter.match( /(g|v)/ ) && 'g' == filter );
-
-                function bindLate(funcName, fixThis) { // instead of bind
-
-                    return function() {
-                        return fixThis[ funcName ].apply( fixThis, arguments );
-                    }
-                }
-
-                var selectGorV = function( i )
-                {
-                    var keys = $( "#keywords"+ ( i + 1 ) ).html() + "," +
-                               $( "#title"   + ( i + 1 ) ).html() + "," +
-                               $( "#comment" + ( i + 1 ) ).html() + "," +
-                               $( "#header_" + ( i + 1 ) ).html();
-
-                    return ( ( "" != keys && keys.match( regexp ) ) ? selval : !selval );
-                }
-
-                var selectRange = function( range, i )
-                {
-                    return ( ( i <= range.last && i >= range.first ) ? true : false );
-                }
-
-                var keyDate  = function(        i ) { return document.getElementById( 'datetime' + ( i + 1 ) ).innerHTML; }
-
-                var nullRange = function( range, i ) { return 0; }
-                var   nullKey = function(        i ) { return 0; }
-
-                var rangeFun = nullRange;
-                var   keyFun = nullKey;
-
-                var vimRange = function()
-                {
-                    imgnav.setFunction( function( x, i )
-                        {
-                            var entry = {
-                                html: document.getElementById( 'div_' + ( i + 1 ) ).innerHTML,
-                                selected: rangeFun( i ),
-                                oldindex: i + 1,
-                                newindex: i + 1
-                            };
-
-                            return entry;
-                        }
-                    );
-                }
-
-                //var callback1 = function() { alert( "Invalid range in search" ); }
-
-                var vimMove = function()
-                {
-                    vimRange();
-
-                    var idx = 0;
-
-                    var place = substr[ index ];
-
-                    switch ( place ) {
-                    case '^':
-                        idx = 1;
-                        break;
-                    case '$':
-                        idx = count;
-                        break;
-                    default:
-                        idx = parseInt( place ) + 1;
-                        break;
-                    }
-
-                    var event = new MouseEvent('click', {
-                            'view': window,
-                            'bubbles': true,
-                            'cancelable': true,
-                            'ctrlKey': true
-                            });
-
-                    imgnav.navigate( idx, event );
-                }
-
-                var vimSort = function( forwards )
-                {
-                    rangeFun = nullRange;
-                      keyFun = keyDate;
-
-                    vimRange();
-
-                    var one = forwards ? 1 : -1;
-
-                    imgnav.sortFun = function( obj, forth, a, b ) {
-                        return (a.sortkey < b.sortkey) ? forth : ((a.sortkey > b.sortkey) ? forth : 0);
-                    }.bind( null, imgnav, forwards );
-
-                    var event = new MouseEvent('click', {
-                            'view': window,
-                            'bubbles': true,
-                            'cancelable': true,
-                            'ctrlKey': true
-                            });
-
-                    imgnav.navigate( 1, event );
-                }
-
-                var exifSet = function( word, first, last )
-                {
-                    var keywords  = word.match( /[kta](\+|\-)*\=\"(.*)\"/ );
-                    var filelist  = "";
-                    var albumName = "";
-
-                    for ( var i = first; i <= last; i++ ) {
-
-                        var url = $( "#piclink_" + i ).attr( "href" );
-                        var files = url.match( /.*file=(.*)\&dir=(.*)\&index=.*/ );
-
-                        if ( null != files ) {
-
-                            var filepath = files[ 2 ] + files[ 1 ];
-
-                            var setTitle = function() {
-
-                                return {
-                                    opcode:    0, // Flag for Title, interpreted server-side
-                                    path:      filepath,
-                                    title:     keywords[ 3 ],
-                                    index:     i
-                                };
-                            };
-
-                            var setKeywords = function( op ) {
-
-                                return {
-                                    opcode:    op, // Flag for Keywords, interpreted server-side
-                                    path:      filepath,
-                                    keyword:   keywords[ 3 ],
-                                    index:     i
-                                };
-                            };
-
-                            var setAlbum = function() {
-
-                                return {
-                                    files:   filelist,
-                                    album:   albumName
-                                };
-                            };
-
-                            var retTitle = function( result ) {
-
-                                var items = result.match( /(.*)\t(.*)/ );
-
-                                if ( null != items ) {
-                                    $( "#header_" + items[ 1 ] ).html( "<h1>" + items[ 2 ] + "</h1>" );
-                                }
-                            };
-
-                            var retKeywords = function( result ) {
-
-                                var items = result.match( /(.*)\t(.*)/ );
-
-                                if ( null != items ) {
-
-                                    $( "#keywords"      + items[ 1 ] ).html( items[ 2 ] );
-                                    $( "#art_keywords_" + items[ 1 ] ).text( items[ 2 ] );
-                                }
-                            };
-
-                            var retAlbum = function( result ) {
-                            };
-
-                            var dataFn = setTitle;
-                            var  retFn = retTitle;
-                            var serverPHP = "keywords.php";
-
-                            switch ( true ) {
-                            case  /k\=\"(.*)\"/.test( keywords ):
-                                dataFn = setKeywords.bind( null, 1 );
-                                retFn  = retKeywords;
-                                break;
-                            case  /k\+\=\"(.*)\"/.test( keywords ):
-                                dataFn = setKeywords.bind( null, 2 );
-                                retFn  = retKeywords;
-                                break;
-                            case  /k\-\=\"(.*)\"/.test( keywords ):
-                                dataFn = setKeywords.bind( null, 3 );
-                                retFn  = retKeywords;
-                                break;
-                            case  /a\+\=\"(.*)\"/.test( keywords ):
-                                filelist += ( ( "" != filelist ) ? ";" : "" ) + filepath;
-                                albumName = keywords[2];
-                                continue;
-                                break;
-                            default:
-                                break;
-                            }
-
-                            $.ajax({
-                                url: serverPHP,
-                                data: dataFn(),
-                                success: retFn
-                            });
-                        }
-                    }
-
-                    switch ( true ) {
-                    case  /a\+\=\"(.*)\"/.test( keywords ):
-
-                        serverPHP = 'newalbum.php';
-                        dataFn = setAlbum.bind( null );
-                        retFn  = retAlbum;
-
-                        $.ajax({
-                            url: serverPHP,
-                            data: dataFn(),
-                            success: retFn
-                        });
-                        break;
-
-                    default:
-                        break;
-                    }
-                }
-
-                var firstN = -1;
-                var  lastN = -1;
-
-                switch ( true ) {
-                case /(g|v)/.test( filter ):
-                    rangeFun = selectGorV;
-                    break;
-                case /[0-9\^]*,[0-9$]*/.test( filter ):
-                    var indices = filter.match( /([0-9\^]*)(,([0-9$]*)*)/i );
-                    firstN = ( null == indices[ 1 ] || '^' == indices[ 1 ] ) ?     1 : Number( indices[ 1 ] );
-                    lastN  = ( null == indices[ 3 ] || '^' == indices[ 3 ] ) ? count : Number( indices[ 3 ] );
-                    rangeFun = selectRange.bind( null, { current: -1, first: firstN, last: lastN } );
-                    break;
-                case /^[0-9]+$/.test( filter ):
-                    firstN = filter + 1;
-                    lastN  = filter + 1;
-                    rangeFun = selectRange.bind( null, { current: -1, first: firstN, last: lastN } );
-                    break;
-                case /\%/.test( filter ):
-                    firstN = 1;
-                    lastN  = count + 1;
-                    rangeFun = selectRange.bind( null, { current: -1, first: firstN, last: lastN } );
-                    break;
-                default:
-                    console.log( "Invalid pattern in search submit" );
-                    break;
-                }
-
-                patterns.push( { 'pattern':new RegExp(/s/),               'callback': vimRange } );
-                patterns.push( { 'pattern':new RegExp(/m([0-9]+|\$|\^)/), 'callback': vimMove  } );
-                patterns.push( { 'pattern':new RegExp(/\<|\>/),           'callback': vimSort.bind( null, operation == '>' ? true : false ) } );
-                patterns.push( { 'pattern':new RegExp(/\=\".*\"/),        'callback': exifSet.bind( null, operation, firstN, lastN ) } );
-
-                for ( var i=0; i<patterns.length; i++ ) {
-
-                    if ( patterns[ i ].pattern.test( operation ) ){
-                        patterns[ i ].callback();
-                    }
-                }
-            }
-            else {
-
-                var retSearch =
-
-                $.ajax({
-                    url: 'search.php',
-                    data: { search:value },
-                    success: function( result ) {
-                            window.location.href = "index.php?dir=/pics&file=" + result;
-                        }
-                    });
-            }
-        }
-
-        $('#multisearch').submit(function( e ) {
-
-            dispatchOp( $('#find').val() );
-            e.preventDefault();
-        });
-
-        var xDown = null;
-        ////////////////////////////////////////////////////////////////
-        function handleTouchStart(evt)
-        {
-            xDown = evt.touches[0].clientX;
-            yDown = evt.touches[0].clientY;
-        };
-
-        function handleTouchMove(evt)
-        {
-            if ( ! xDown || ! yDown ) {
-                return;
-            }
-
-            var xUp = evt.touches[0].clientX;
-            var yUp = evt.touches[0].clientY;
-
-            var xDiff = xDown - xUp;
-            var yDiff = yDown - yUp;
-
-            if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
-
-                if ( xDiff > 0 ) {
-                    //advance();
-                }
-                else {
-                    //retreat();
-                }
-            }
-            else {
-
-                if ( yDiff > 0 ) {
-                    //advance();
-                }
-                else {
-                    //retreat();
-                }
-            }
-
-            /* reset values */
-            xDown = null;
-            yDown = null;
-        };
-
-        function resizeImg( img )
-        {
-            stylestr = "display:block;margin-left:auto;margin-right:auto;border:0px;ipadding:0px;object-fit:contain";
-
-            $( "#main" ).attr("style",   stylestr );
-            $( "#main" ).load( self );
-
-            var width  = $( window ).width() - 200;
-            var height = $( window ).height() - 50;
-
-            var aspectRatio =     width / height;
-            var imgRatio    = $( "#aspectRatio" + index ).attr( "innerHTML" );
-
-            if ( aspectRatio < imgRatio ) {
-
-                $( "#main" ).attr("width", width );
-                $( "#main" ).attr("height", width / imgRatio < height ? height : width / imgRatio );
-            }
-            else {
-
-                $( "#main" ).attr("width", height * imgRatio );
-                $( "#main" ).attr("height", height );
-            }
-
-            $( "#main" ).attr("style",   stylestr );
-            $( "#main" ).load( self );
-            $( "#sidebar" ).attr( "width", 200 );
-
-            $( "#maintab" ).load( self );
-            $( "#title" ).load( self );
-        }
-
-        function doKeyUp(e)
-        {
-        }
-
-        /*
-        function doKeyDown(e)
-        {
-            var code = (e.keyCode ? e.keyCode : e.which);
-            var evtobj = window.event? event : e;
-
-            switch ( code ) {
-            case 37:
-            case 'b':
-                retreat( e );
-                break;
-            case 39:
-            case 'w':
-                advance( e );
-                break;
-            }
-        }
-        */
-
-        function doSubmit()
-        {
-            //alert( $( "find" ).attr( "innerText" ) );
-        }
-
-        /*function advance( evtobj ) { imgnav.navigate( parseInt( index ) + parseInt( 1 ) % parseInt( count ), evtobj ); }
-        function retreat( evtobj ) { imgnav.navigate( parseInt( index ) - parseInt( 1 ) % parseInt( count ), evtobj ); }*/
-
-        function panel1() { panelSwitch( 1 ); }
-        function panel2() { panelSwitch( 2 ); }
-
-        function panelSwitch( idx )
-        {
-            $( "#panel1" ).attr( "style", "display:" + (( idx == 2) ? "inline" : "none" ) + ";" );
-            $( "#panel2" ).attr( "style", "display:" + (( idx == 1) ? "inline" : "none" ) + ";" );
-        }
-
-        function getQueryVariable(variable)
-        {
-            var query = window.location.search.substring(1);
-            var vars = query.split("&");
-            for (var i=0;i<vars.length;i++) {
-                var pair = vars[i].split("=");
-                if(pair[0] == variable){return pair[1];}
-            }
-            return(false);
-        }
-
-        function detectswipe(el,func)
-        {
-            swipe_det = new Object();
-
-            swipe_det.sX = 0;
-            swipe_det.sY = 0;
-            swipe_det.eX = 0;
-            swipe_det.eY = 0;
-
-            var min_x = 30;  //min x swipe for horizontal swipe
-            var max_x = 30;  //max x difference for vertical swipe
-            var min_y = 50;  //min y swipe for vertical swipe
-            var max_y = 60;  //max y difference for horizontal swipe
-            var direc = "";
-
-            ele = document.getElementById(el);
-
-            ele.addEventListener('touchstart',function(e){
-                    var t = e.touches[0];
-                    swipe_det.sX = t.screenX;
-                    swipe_det.sY = t.screenY;
-                },false);
-
-            ele.addEventListener('touchmove',function(e){
-                    e.preventDefault();
-                    var t = e.touches[0];
-                    swipe_det.eX = t.screenX;
-                    swipe_det.eY = t.screenY;
-                },false);
-
-            ele.addEventListener('touchend',function(e) {
-
-                    if ((((swipe_det.eX - min_x > swipe_det.sX) ||
-                          (swipe_det.eX + min_x < swipe_det.sX) ) &&
-                         ((swipe_det.eY < swipe_det.sY + max_y) &&
-                          (swipe_det.sY > swipe_det.eY - max_y) &&
-                          (swipe_det.eX > 0))
-                    )) {
-
-                        //horizontal detection
-                        if(swipe_det.eX > swipe_det.sX)
-                            retreat();
-                        else
-                            advance();
-                    }
-                    else if ((((swipe_det.eY - min_y > swipe_det.sY) ||
-                               (swipe_det.eY + min_y < swipe_det.sY)) &&
-                              ((swipe_det.eX < swipe_det.sX + max_x) &&
-                               (swipe_det.sX > swipe_det.eX - max_x) &&
-                               (swipe_det.eY > 0))
-                    )) {
-
-                        //vertical detection
-                        if(swipe_det.eY > swipe_det.sY)
-                            advance();
-                        else
-                            retreat();
-                    }
-
-                    if (direc != "") {
-                        if(typeof func == 'function')
-                            func(el,direc);
-                    }
-                    direc = "";
-                    swipe_det.sX = 0; swipe_det.sY = 0; swipe_det.eX = 0; swipe_det.eY = 0;
-                },false);
-        }
-
-        function myfunction(el,d)
-        {
-            switch ( d ) {
-            case "r":
-                advance();
-                break;
-            case "l":
-                retreat();
-                break;
-            }
-        }
+      });
+  }
 </script>
 
-<div class="centerstage">
-  <div class="techfont" id="div_" style="min-height:100px;">
-    <div class="row">
-      <div class="col-md-6">
-        <h1>Organisation</h1>
-        <h3>Under heavy construction. You cannot actually do much organising yet.</h3>
-      </div>
-      <div class="col-md-6">
-        <span class="pull-right">
-          <form action="{% url 'picture_list' %}" method="get" class="float-right">
-            {% csrf_token %}
-            <input name="sort"   type="text" placeholder="Sort by...">
-          </form>
-        </span>
-        <span class="pull-right">
-          <form action="{% url 'picturefile_organise' %}" method="get" class="float-right">
-            {% csrf_token %}
-            <input name="organise"   type="text" placeholder="Organise">
-          </form>
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Fragment definition -->
+<th:block th:if="${false}">
+  <th:block th:fragment="organiseContent(collection, album, other_album, select)">
+    <div class="techfont" id="div_centrestage" style="min-height:60px;">
+      <div class="container-fluid">
+        <div class="centerstage">
+          <div class="techfont" id="div_centrestage" style="min-height:60px;">
+            <div class="container-fluid"> <!-- Ensure proper container setup -->
+              <div class="row"> <!-- Row for the heading -->
+                <div class="col-md-12"> <!-- Full width column for the heading -->
+                  <form action="switch">
+                    <select name="folders" th:id="${select}" th:value="${album.name}" placeholder="Select..." style="font-size:16px;">
+                      <option th:each="folder : ${ folders }"
+                              th:value="${folder.name}"
+                              th:selected="${ folder.name ==  album?.name }"
+                              th:text="${folder.name}">
+                        Folder
+                      </option>
+                    </select>
+                  </form>
+                </div>
+              </div>
+              <div class="row"> <!-- New row for the content below "Castles" -->
+                <div class="col-md-12"> <!-- Full width column for the content -->
+                  <div style="overflow-y: auto; max-height: 75vh;">
+                    <c th:each="entry : ${collection}">
+                      <figure th:if="entry != null"
+                              th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                              th:id="@{figure-__${entry.id}__}">
+                        <a th:id="@{picture__${entry.id}__}"
+                        >
+                          <!-- th:onclick="'movePicture(\'__${entry.mediumFilename}__\', \'__${album.name}__\', \'__${other_album.name}__\');'" -->
+                          <section class="wrapper" th:id=" @{file-number_${entry.id}}">
+                          <span class="tt_subject">
+                            <img th:id="@{picture__${entry.id}__}"
+                                 class="lazyload imageinlist"
+                                 th:src="${entry.mediumFilename}"
+                                 th:data-src="${entry.mediumFilename}"
+                                 th:alt="${entry?.title}"
+                            >
 
-<div class="pane">
-  <div class="split left draggable droppable">
-    <a id="universelink_{{ forloop.counter }}" href="?universe">
-      <div class="tt_base draggable droppable techfont organise_gallery" id="universe_{{ forloop.counter }}">
-        <div class="desc" style="position:absolute;top:5px;height:100px;left:5px;width:60%;">
-          <section class="wrapper" id="universesect_{{ forloop.counter }}">
-            <span class="tt_subject">
-              <img id="picture_{{ forloop.counter }}"
-                   class="lazyload"
-                   src="{{ universe.0.modthumb.modtinyfile }}"
-                   data-src="{{ universe.0.modthumb.modsmallfile }}"
-                   alt="{{ universe.count }} shots in whole pictureCollection"
-                   style="border:2px solid white;z-index:0;position:relative;top:0px;left:0px;height:100px;">
-              </img>
-            </span>
-          </section>
-          <div class="desc" style="position:absolute;top:5px;height:100%;left:150px;width:90%;text-align:right;">
-            <div style="position:absolute;top:5px;height:calc(100%-25px);width:100%;font-size:2em;">
-                {{ universe.modname }}
-            </div>
-            <div style="position:absolute;top:50%;height:25px;width:100%;">
-                <span id="universecount_{{ forloop.counter }}" style="text-align:right;">{{ universe.count }} Pictures</span>
+                          </span>
+                          </section>
+                        </a>
+                        <a th:id="@{btn__${entry.id}__}"
+                          <figcaption class="tt_subject">
+                            <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
+                          </figcaption>
+                        </a>
+                      </figure>
+                    </c>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="desc" style="position:absolute;top:5px;height:90%;left:91%;width:5%;text-align:right;">
-          <i class="material-icons small-icon" style="position:absolute;top:5px;right:5px;width:20px;">universe</i>
-        </div>
       </div>
-    </a>
-    {% for album in album_list %}
-       <a id="albumlink_{{ forloop.counter }}" href="?album={{ album.modid }}">
-         <div class="tt_base draggable droppable techfont organise_gallery justified" id="album_{{ forloop.counter }}">
-           <div class="desc" style="position:absolute;top:5px;height:100px;left:5px;width:20em;">
-               <section class="wrapper" id="albumsect_{{ forloop.counter }}">
-                 <span class="tt_subject">
-                   <img id="picture_{{ forloop.counter }}"
-                        class="lazyload"
-                        src="{{ album.modthumb.modfile }}"
-                        data-src="{{ album.modthumb.modfile }}"
-                        alt="{{ album.count }} shots in {{ album.modpath }}"
-                        style="border:2px solid white;z-index:0;position:relative;top:0px;left:0px;height:100px;">
-                   </img>
-                 </span>
-               </section>
-               <div class="desc" style="position:absolute;top:5px;height:100%;left:150px;width:90%;text-align:right;">
-                 <div style="position:absolute;top:5px;height:calc(100%-25px);width:100%;font-size:2em;">
-                     {{ album.modname }}
-                 </div>
-                 <div style="position:absolute;top:50%;height:25px;width:100%;">
-                     <span id="albumcount_{{ forloop.counter }}" style="text-align:right;">{{ album.modcount }} Pictures</span>
-                 </div>
-               </div>
-             </div>
-             <div class="desc" style="position:absolute;top:5px;height:90%;left:85%;width:10%;text-align:right;">
-               <i class="material-icons small-icon" style="position:absolute;top:5px;right:5px;width:20px;">album</i>
-             </div>
-        </div>
-       </a>
-       <a href="javascript:add_ids_to_album( {{ forloop.counter }}, get_selected_ids() );">
-         <div style="position:absolute;left:41em;top:{% album_top 3 20 20 %};width:3em;height:10em;fill:red;outline:1px solid #ccc;" id="add_{{ forloop.counter }}">
-           <i class="material-icons medium-icon">add_to_photos</i>
-         </div>
-       </a>
-    {% empty %}
-      No folders loaded
-    {% endfor %}
+    </div>
+  </th:block>
+</th:block>
 
-    {% for directory in directory_list %}
-       {% if directory.modcount > 0 %}
-         <a id="albumlink_{{ forloop.counter }}" href="?directory={{ directory.modid }}">
-           <div class="tt_base draggable droppable techfont organise_gallery" id="album_{{ forloop.counter }}">
-             <div class="desc" style="position:absolute;top:5px;height:100px;left:5px;width:60%;">
-               <section class="wrapper" id="albumsect_{{ forloop.counter }}">
-                 <span class="tt_subject">
-                   <img id="picture_{{ forloop.counter }}"
-                        class="lazyload"
-                        src="{{ directory.modthumb.modfile }}"
-                        data-src="{{ directory.modthumb.modfile }}"
-                        alt="{{ directory.count }} shots in {{ directory.modpath }}"
-                        style="border:2px solid white;z-index:0;position:relative;top:0px;left:0px;height:100px;">
-                   </img>
-                 </span>
-               </section>
-               <div class="desc" style="position:absolute;top:5px;height:100%;left:150px;width:90%;text-align:right;">
-                 <div style="position:absolute;top:5px;height:calc(100%-25px);width:100%;font-size:2em;">
-                     {{ directory.modname }}
-                 </div>
-                 <div style="position:absolute;top:50%;height:25px;width:100%;">
-                     <span id="albumcount_{{ forloop.counter }}" style="text-align:right;">{{ directory.modcount }} Pictures</span>
-                 </div>
-               </div>
-             </div>
-             <div class="desc" style="position:absolute;top:5px;height:90%;left:91%;width:5%;text-align:right;">
-               <i class="material-icons small-icon" style="position:absolute;top:5px;right:5px;width:20px;">folder</i>
-             </div>
-           </div>
-         </a>
-      {% endif %}
-    {% empty %}
-      No folders loaded
-    {% endfor %}
-
-  </div>
+<div class="organise-left">
+  <div th:replace="this::organiseContent(${leftCollection}, ${leftFolder}, ${rightFolder}, 'leftSelect')"></div>
+</div>
+<div class="organise-mid">
+  <button id="moveBtn">Move Selected</button>
+</div>
+<div class="organise-right">
+  <div th:replace="this::organiseContent(${rightCollection}, ${rightFolder}, ${leftFolder}, 'rightSelect')"></div>
 </div>
 
-<div class="pane">
-  <div id="content_organise" class="split right droppable" style="user-select: none;">
-    {% for picture in object_list %}
-      <div class="tt_base draggable droppable keynav" draggable="true" id="selectable_{{ forloop.counter }}_{{ picture.modthumb.modid }}">
-        <!-- <a id="piclink_{{ forloop.counter }}" href="{{ picture.modpath }}/{{ picture.modfile }}"> -->
-         <section class="wrapper keynav" id="file-number_{{ forloop.counter }}" style="padding:6px;">
-           <span class="tt_subject">
-             <img id="picture_{{ forloop.counter }}_{{ picture.modthumb.modid }}"
-                  class="lazyload tt_unselected keynav selectable"
-                  draggable="true"
-                  src="{{ picture.modthumb.modfile }}"
-                  data-src="{{ picture.modthumb.modfile }}"
-                  alt="{{ picture.modthumb.modfile }}"
-                  >
-               </img>
-           </span>
-         </section>
-      </div>
-    {% empty %}
-      No picture files in this picture
-    {% endfor %}
-  </div>
-</div>
+<script th:inline="javascript">
 
+  $(document).ready(function() {
+
+  $('#leftSelect').change(function() {
+      var selectedValue = $(this).val();
+      var otherValue = $('#rightSelect').val();
+      // Navigate to a new URL using the selected value
+      window.location.href = '/organise/' + encodeURIComponent(selectedValue) + '/' + encodeURIComponent(otherValue);
+  });
+
+  $('#rightSelect').change(function() {
+      var selectedValue = $(this).val();
+      var otherValue = $('#leftSelect').val();
+      // Navigate to a new URL using the selected value
+      window.location.href = '/organise/' + encodeURIComponent(otherValue) + '/' + encodeURIComponent(selectedValue);
+  });
+
+  $('figure').click(function() {
+
+      // Toggle 'selected' class on the clicked figure
+      $(this).toggleClass('selected');
+
+      // Remove 'active' class from all figures and add 'inactive'
+      $('figure').removeClass('active').addClass('inactive');
+
+      // Add 'active' class to the last clicked figure and remove 'inactive'
+      $(this).addClass('active').removeClass('inactive');
+  });
+
+  $('#moveBtn').click(function() {
+
+    // Initialize an array to hold the numerical IDs
+    var numericalIds = [];
+
+    // Get all figures with the 'selected' class
+    var selectedFigures = $('figure.selected');
+
+    // Process each selected figure to extract the numerical ID
+    selectedFigures.each(function() {
+        // Split the ID by hyphen and get the second part (the numerical ID)
+        var figureIdParts = $(this).attr('id').split('-');
+        var numericalId = figureIdParts[1]; // Assuming the ID format is always 'figure-12345'
+
+        // Add the numerical ID to the array
+        numericalIds.push(numericalId);
+    });
+
+    // Join the array of numerical IDs into a comma-delimited string
+    var idsString = numericalIds.join(',');
+
+    // Now you have a comma-delimited string of all selected numerical IDs
+    console.log(idsString);
+
+    // Model attributes injected directly into JavaScript
+    var leftFolder = /*[[${leftFolder}]]*/ 'defaultLeftFolder';
+    var rightFolder = /*[[${rightFolder}]]*/ 'defaultRightFolder';
+
+    movePicture(idsString, leftFolder.name, rightFolder.name);
+  });
+});
+
+</script>
 </body>
 </html>

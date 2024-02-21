@@ -110,7 +110,10 @@ public class AlbumContentBaseController extends PaginationController {
 		model.put("sort", requestDTO.getSort());
 		model.put("search", requestDTO.getSearch());
 		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll());
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 
 		model.put("collection", content);
 		model.put("link_params", "");

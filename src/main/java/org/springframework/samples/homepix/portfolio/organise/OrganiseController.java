@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio.organise;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
@@ -26,6 +27,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileRepos
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
+import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -37,6 +39,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Juergen Hoeller
@@ -72,24 +75,61 @@ class OrganiseController extends AlbumContentBaseController {
 	}
 
 	@Secured("ROLE_ADMIN")
-	@GetMapping("/organise/")
-	public String initCreationFormSLash(Map<String, Object> model) {
-		return initCreationForm(model);
+	@GetMapping("/organise/{left}/{right}/")
+	public String initCreationFormSLash(Map<String, Object> model,
+										@PathVariable("left") String left,
+										@PathVariable("right") String right
+	) {
+		return initCreationForm(model, left, right);
 	}
 
 	@Secured("ROLE_ADMIN")
-	@GetMapping("/organise")
-	public String initCreationForm(Map<String, Object> model) {
+	@GetMapping("/organise/{left}/{right}")
+	public String initCreationForm(Map<String, Object> model,
+								   @PathVariable("left") String left,
+								   @PathVariable("right") String right
+	) {
+
 		Organise organise = new Organise();
-		model.put("organise", organise);
+
+		List<PictureFile> leftFolder = this.pictureFiles.findByFolderName(left);
+		List<PictureFile> rightFolder = this.pictureFiles.findByFolderName(right);
+		Folder folderLeft = this.folders.findByName(left).iterator().next();
+		Folder folderRight = this.folders.findByName(right).iterator().next();
+
+		model.put("leftFolder", folderLeft);
+		model.put("leftCollection", leftFolder);
+		model.put("rightFolder", folderRight);
+		model.put("rightCollection", rightFolder);
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
+
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
 	@Secured("ROLE_ADMIN")
 	@GetMapping("/organise/album/{id}")
-	public ModelAndView organiseAlbum(@PathVariable("id") long id) {
-		ModelAndView mav = new ModelAndView("organise/organiseAlbumDetails");
-		return mav;
+	public ModelAndView organiseAlbum(@ModelAttribute CollectionRequestDTO requestDTO,
+									  @PathVariable("id") long id,
+									  Map<String, Object> model
+	) {
+
+		Optional<Album> album = this.albums.findById(id);
+
+		if (album.isPresent()) {
+
+			List<Keyword> keywords = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+				.collect(Collectors.toList()); // Collect the results into a List
+
+			model.put("total_keywords", keywords);
+
+			return showAlbumContent(album.get(), requestDTO, id, model,"organise/organiseAlbumDetails");
+		}
+		else {
+			return new ModelAndView("redirect:/album/");
+		}
 	}
 
 	@Override
@@ -170,7 +210,10 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album);
 		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll());
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 
 		return "picture/pictureFile.html";
 	}
