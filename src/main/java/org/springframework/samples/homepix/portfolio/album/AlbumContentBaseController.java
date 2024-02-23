@@ -25,6 +25,8 @@ import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.Keyword;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -104,6 +106,38 @@ public class AlbumContentBaseController extends PaginationController {
 
 		loadThumbnailsAndKeywords(pictureMap, model);
 
+		// Fetch the KeywordRelationships for the PictureFiles.
+		// This would be a method on your repository that fetches the relationships based on a collection of PictureFile IDs.
+		Collection<KeywordRelationships> keywordRelationships = this.keywordRelationships.findByPictureIds(
+			content.stream()
+				.map(PictureFile::getId)
+				.collect(Collectors.toList())
+		);
+
+		// Now create a Map<Integer, List<Keyword>> from the KeywordRelationships.
+		Map<Integer, List<Keyword>> pictureKeywordsMap = content.stream()
+			.collect(Collectors.toMap(
+				PictureFile::getId,
+				pf -> this.keywordRelationships.findByPictureId(pf.getId())
+					.stream()
+					.map(KeywordRelationships::getKeyword) // Assuming getKeyword() gives you the Keyword object
+					.collect(Collectors.toList()),
+				(existing, replacement) -> existing, // Merge function in case of duplicates
+				HashMap::new // Supplier for the map
+			));
+
+		Map<Integer, String> pictureKeywordsStringMap = pictureKeywordsMap.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> entry.getValue().stream()
+					.map(Keyword::getWord) // Assuming you have a method getKeywordText() to get the keyword string
+					.collect(Collectors.joining(", "))
+			));
+
+		// Now, ensure every picture ID has an entry in the map, even if it's an empty list
+		content.forEach(pf -> pictureKeywordsMap.putIfAbsent(pf.getId(), new ArrayList<>()));
+
+
 		model.put("id", album.getId());
 		model.put("startDate", requestDTO.getFromDate());
 		model.put("endDate", requestDTO.getToDate());
@@ -116,6 +150,8 @@ public class AlbumContentBaseController extends PaginationController {
 		);
 
 		model.put("collection", content);
+		model.put("keyword_map", pictureKeywordsMap);
+		model.put("keyword_lists", pictureKeywordsStringMap);
 		model.put("link_params", "");
 
 		return mav;

@@ -4,47 +4,7 @@
 
 <body>
 
-<style>
-  figure {
-      width:30vw;
-      height:10vh;
-      display: flex; /* Ensures the figure behaves as a flex container */
-      justify-content: center; /* Center the image horizontally */
-      align-items: center; /* Center the image vertically */
-  }
-
-  figure img {
-      width:30vw;
-      height:10vh;
-      max-height: 100%; /* Ensure the image's maximum height matches the figure's */
-      max-width: 100%; /* Ensure the image's maximum width fits within the figure */
-      object-fit: scale-down; /* Use scale-down to avoid stretching small images */
-      object-position: left center; /* Align the image to the left, centered vertically */
-      border-radius: 6px;
-  }
-
-  .selected {
-      border: 2px solid blue;
-  }
-
-  .active {
-      outline: 2px solid red;
-      width:30vw;
-      height:30vh;
-  }
-
-  .active img {
-      height:30vh;
-  }
-
-  .inactive {
-      height:10vh;
-  }
-
-  .inactive img {
-      height:10vh;
-  }
-</style>
+<link rel="stylesheet" th:href="@{/resources/css/organise.css}" />
 
 <script>
   function movePicture(files, from, to) {
@@ -104,17 +64,15 @@
                               th:id="@{figure-__${entry.id}__}">
                         <a th:id="@{picture__${entry.id}__}"
                         >
-                          <!-- th:onclick="'movePicture(\'__${entry.mediumFilename}__\', \'__${album.name}__\', \'__${other_album.name}__\');'" -->
                           <section class="wrapper" th:id=" @{file-number_${entry.id}}">
-                          <span class="tt_subject">
-                            <img th:id="@{picture__${entry.id}__}"
-                                 class="lazyload imageinlist"
-                                 th:src="${entry.mediumFilename}"
-                                 th:data-src="${entry.mediumFilename}"
-                                 th:alt="${entry?.title}"
-                            >
-
-                          </span>
+                            <span class="tt_subject">
+                              <img th:id="@{picture__${entry.id}__}"
+                                   class="lazyload imageinlist"
+                                   th:src="${entry.mediumFilename}"
+                                   th:data-src="${entry.mediumFilename}"
+                                   th:alt="${entry?.title}"
+                              >
+                            </span>
                           </section>
                         </a>
                         <a th:id="@{btn__${entry.id}__}"
@@ -145,68 +103,7 @@
   <div th:replace="this::organiseContent(${rightCollection}, ${rightFolder}, ${leftFolder}, 'rightSelect')"></div>
 </div>
 
-<script th:inline="javascript">
+<script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>
 
-  $(document).ready(function() {
-
-  $('#leftSelect').change(function() {
-      var selectedValue = $(this).val();
-      var otherValue = $('#rightSelect').val();
-      // Navigate to a new URL using the selected value
-      window.location.href = '/organise/' + encodeURIComponent(selectedValue) + '/' + encodeURIComponent(otherValue);
-  });
-
-  $('#rightSelect').change(function() {
-      var selectedValue = $(this).val();
-      var otherValue = $('#leftSelect').val();
-      // Navigate to a new URL using the selected value
-      window.location.href = '/organise/' + encodeURIComponent(otherValue) + '/' + encodeURIComponent(selectedValue);
-  });
-
-  $('figure').click(function() {
-
-      // Toggle 'selected' class on the clicked figure
-      $(this).toggleClass('selected');
-
-      // Remove 'active' class from all figures and add 'inactive'
-      $('figure').removeClass('active').addClass('inactive');
-
-      // Add 'active' class to the last clicked figure and remove 'inactive'
-      $(this).addClass('active').removeClass('inactive');
-  });
-
-  $('#moveBtn').click(function() {
-
-    // Initialize an array to hold the numerical IDs
-    var numericalIds = [];
-
-    // Get all figures with the 'selected' class
-    var selectedFigures = $('figure.selected');
-
-    // Process each selected figure to extract the numerical ID
-    selectedFigures.each(function() {
-        // Split the ID by hyphen and get the second part (the numerical ID)
-        var figureIdParts = $(this).attr('id').split('-');
-        var numericalId = figureIdParts[1]; // Assuming the ID format is always 'figure-12345'
-
-        // Add the numerical ID to the array
-        numericalIds.push(numericalId);
-    });
-
-    // Join the array of numerical IDs into a comma-delimited string
-    var idsString = numericalIds.join(',');
-
-    // Now you have a comma-delimited string of all selected numerical IDs
-    console.log(idsString);
-
-    // Model attributes injected directly into JavaScript
-    var leftFolder = /*[[${leftFolder}]]*/ 'defaultLeftFolder';
-    var rightFolder = /*[[${rightFolder}]]*/ 'defaultRightFolder';
-
-    movePicture(idsString, leftFolder.name, rightFolder.name);
-  });
-});
-
-</script>
 </body>
 </html>

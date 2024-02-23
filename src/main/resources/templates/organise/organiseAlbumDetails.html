@@ -3,9 +3,9 @@
 <html xmlns:th="https://www.thymeleaf.org"
   th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
 
-  <head>
-  </head>
   <body>
+
+  <link rel="stylesheet" th:href="@{/resources/css/organise.css}" />
 
   <div class="organise-left">
 
@@ -21,117 +21,100 @@
           <div class="row"> <!-- New row for the content below "Castles" -->
             <div class="col-md-12"> <!-- Full width column for the content -->
               <div style="overflow-y: auto; max-height: 75vh;">
-                <figure th:each="entry : ${collection}"
-                        th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
-                        th:id="@{figure-__${entry.id}__}">
-                  <a th:id="@{picture__${entry.id}__}"
-                     th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
-                  >
-                    <section class="wrapper" th:id=" @{file-number_${entry.id}}">
-                      <span class="tt_subject">
-                        <img th:id="@{picture__${entry.id}__}"
-                             class="lazyload imageinlist imageresponsive"
-                             th:width="${entry.displayWidth}"
-                             th:height="${entry.displayHeight}"
-                             th:src="${entry.mediumFilename}"
-                             th:data-src="${entry.mediumFilename}"
-                             th:alt="${entry.title + (keywords[entry.id] != '' ? ', ' + keywords[entry.id] : '')}"
-                        >
-
-                      </span>
-                    </section>
-                  </a>
-                  <a th:id="@{btn__${entry.id}__}"
-                     th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
-                  >
-                    <figcaption class="tt_edit">
-                      <form id="editprops">
-                        <fieldset>
-                            <button type="button" class="tt_title imageresponsive_">
-                              <span style="text-align:left;" th:text="${entry.title}"></span>
-                            </button>
-                        </fieldset>
-                      </form>
-                    </figcaption>
-                  </a>
-                  <div th:id="@{header_o__${album.id}__}" class="tt_left tt_text tt_header">
-                    <a class="tt_icon tt_small_icon_anchor" th:href="@{./make_thumbnail/${request.GET.ID}/__${album.id}__/}" style="color:black;height:1em;">
-                      <i class="material-icons tt_icon">
-                        album
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor"
-                       href="#"
-                       th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-                       th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', 0);'"
-                       th:id="@{raise-__${entry.id}__}"
+                <c th:each="entry : ${collection}">
+                  <figure th:if="entry != null"
+                          th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                          th:id="@{figure-__${entry.id}__}">
+                    <a th:id="@{picture__${entry.id}__}"
                     >
-                      <i class="material-icons tt_icon">
-                        <span class="material-symbols-outlined">
+                      <section class="wrapper" th:id=" @{file-number_${entry.id}}">
+                              <span class="tt_subject">
+                                <img th:id="@{picture__${entry.id}__}"
+                                     class="lazyload imageinlist"
+                                     th:src="${entry.mediumFilename}"
+                                     th:data-src="${entry.mediumFilename}"
+                                     th:alt="${entry?.title}"
+                                >
+                              </span>
+                      </section>
+                    </a>
+                    <a th:id="@{btn__${entry.id}__}">
+                      <figcaption class="tt_edit">
+                        <figcaption class="tt_subject">
+                          <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
+                        </figcaption>
+                      </figcaption>
+                    </a>
+                    <div th:id="@{header_o__${album.id}__}" class="tt_left tt_text tt_header">
+                      <a class="tt_icon tt_small_icon_anchor"
+                         href="#"
+                         th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                         th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', 0);'"
+                         th:id="@{raise-__${entry.id}__}"
+                         th:alt="${keyword_lists[entry.id]}"
+                      >
+                        <i class="material-icons tt_icon">
                           <span class="material-symbols-outlined">
-                            first_page
+                            <span class="material-symbols-outlined">
+                              first_page
+                            </span>
                           </span>
-                        </span>
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor"
-                       href="#"
-                       th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-                       th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', -1);'"
-                       th:id="@{raise-__${entry.id}__}"
-                    >
-                      <i class="material-icons tt_icon">
-                        <span class="material-symbols-outlined">
+                        </i>
+                      </a>
+                      <a class="tt_icon tt_small_icon_anchor"
+                         href="#"
+                         th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                         th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', -1);'"
+                         th:id="@{raise-__${entry.id}__}"
+                      >
+                        <i class="material-icons tt_icon">
                           <span class="material-symbols-outlined">
-                            navigate_before
+                            <span class="material-symbols-outlined">
+                              navigate_before
+                            </span>
                           </span>
-                        </span>
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor"
-                       href="#"
-                       th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-                       th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', +1);'"
-                       th:id="@{raise-__${entry.id}__}"
-                    >
-                      <i class="material-icons tt_icon">
-                        <span class="material-symbols-outlined">
+                        </i>
+                      </a>
+                      <a class="tt_icon tt_small_icon_anchor"
+                         href="#"
+                         th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                         th:onclick="'movePicture(event, \'__${album.id}__\', \'' + ${entry.id} + '\', +1);'"
+                         th:id="@{raise-__${entry.id}__}"
+                      >
+                        <i class="material-icons tt_icon">
                           <span class="material-symbols-outlined">
-                            navigate_next
+                            <span class="material-symbols-outlined">
+                              navigate_next
+                            </span>
                           </span>
-                        </span>
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor"
-                       href="#"
-                       th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-                       th:onclick="'movePicture(event, \'__${album.id}__\', \'' + __${entry.id}__ + '\', __${collection?.size()}__);'"
-                       th:id="@{raise-__${entry.id}__}"
-                    >
-                      <i class="material-icons tt_icon">
-                        <span class="material-symbols-outlined">
+                        </i>
+                      </a>
+                      <a class="tt_icon tt_small_icon_anchor"
+                         href="#"
+                         th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                         th:onclick="'movePicture(event, \'__${album.id}__\', \'' + __${entry.id}__ + '\', __${collection?.size()}__);'"
+                         th:id="@{raise-__${entry.id}__}"
+                      >
+                        <i class="material-icons tt_icon">
                           <span class="material-symbols-outlined">
-                            last_page
+                            <span class="material-symbols-outlined">
+                              last_page
+                            </span>
                           </span>
-                        </span>
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
-                      <i class="material-icons tt_icon">
-                        bedtime
-                      </i>
-                    </a>
-                    <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.id}__ );}">
-                      <i class="material-icons tt_icon">
-                        delete
-                      </i>
-                    </a>
-                    <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
-                      <div th:id="@{header__${album.id}__}" class="tt_lefttextnooff" th:value="${album.id}">
-                      </div>
-                    </figcaption>
-                  </div>
-                </figure>
+                        </i>
+                      </a>
+                      <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.id}__ );}">
+                        <i class="material-icons tt_icon">
+                          delete
+                        </i>
+                      </a>
+                      <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+                        <div th:id="@{header__${album.id}__}" class="tt_lefttextnooff" th:value="${album.id}">
+                        </div>
+                      </figcaption>
+                    </div>
+                  </figure>
+                </c>
               </div>
             </div>
           </div>
@@ -150,6 +133,23 @@
             <div class="col-md-12">
               <h1>Keywords</h1>
               <input type="text" id="keywordFilter" placeholder="Filter keywords..." class="form-control"/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div style="overflow-y: auto; max-height: 75vh;">
+                <span th:each="keyword : ${total_keywords}">
+                  <button type="button" class="large-buttonfont keyword-btn" data-react-toolbox="button" th:data-keyword="${keyword.word}">
+                    <span th:text="${keyword.word}"></span>
+                    <span>
+                      <a href="/remove">
+                        <i class='glyphicon glyphicon-add'>
+                        </i>
+                      </a>
+                    </span>
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
           <div class="row">
@@ -200,7 +200,45 @@
           });
         });
       });
+
+      document.addEventListener("DOMContentLoaded", function() {
+          // Function to update keywords display
+          function updateKeywordsDisplay() {
+              const selectedImages = document.querySelectorAll('img.selected'); // Adjust selector as needed
+              let allKeywords = [];
+
+              // Collect keywords from each selected image
+              selectedImages.forEach(img => {
+                  const keywords = img.alt.split(',').map(kw => kw.trim());
+                  allKeywords = allKeywords.concat(keywords);
+              });
+
+              // Remove duplicates and sort
+              const uniqueKeywords = [...new Set(allKeywords)].sort();
+
+              // Clear existing keywords
+              const keywordsDisplayArea = document.querySelector('.keywords-display-area'); // Adjust selector as needed
+              keywordsDisplayArea.innerHTML = '';
+
+              // Create and append buttons for each keyword
+              uniqueKeywords.forEach(keyword => {
+                  const buttonHTML = `<button type="button" class="large-buttonfont keyword-btn" data-react-toolbox="button" data-keyword="${keyword}">
+                                          <span>${keyword}</span>
+                                          <span><a href="/remove"><i class='glyphicon glyphicon-add'></i></a></span>
+                                      </button>`;
+                  keywordsDisplayArea.innerHTML += buttonHTML;
+              });
+          }
+
+          // Example trigger: Call updateKeywordsDisplay() when a certain event happens, e.g., when images are selected
+          // You'll need to bind this to the actual event that marks images as selected
+          const triggerElement = document.querySelector('.some-trigger-element'); // Adjust selector as needed
+          triggerElement.addEventListener('click', updateKeywordsDisplay);
+      });
     </script>
+
+    <script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>
+
   </body>
 
 </html>

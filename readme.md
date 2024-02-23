@@ -4,7 +4,8 @@
 
 ## Acknowledgements
 
-homePIX is forked from the PetClinic application.
+homePIX is forked from the PetClinic application. Many source files retain JavaDoc comments crediting other
+authors for the code. Everything that works is their contribution. Everything that goes wrong is my own. 
 
 ## Running homePIX locally
 homePIX is a [Spring Boot](https://spring.io/guides/gs/spring-boot) application built using [Maven](https://spring.io/guides/gs/maven/) or [Gradle](https://spring.io/guides/gs/gradle/). You can build a jar file and run it from the command line (it should work just as well with Java 11 or newer):

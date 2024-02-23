@@ -6,12 +6,13 @@
       <env name="AWS_ACCESS_KEY_ID" value="EXO7fcb325260e0ca21fbabab95" />
       <env name="AWS_SECRET_ACCESS_KEY" value="x3R7Je97rOn40Zpjj41UD0QmrdBZB_VUIS8bhM8hjOM" />
       <env name="DBCONFIG" value="Debug" />
+      <env name="ELASTICSEARCH_PASSWORD" value="tVOzP=PY11n=fgkVeAM9" />
       <env name="KEYSTORE_PASSWORD" value="Bobby the cat" />
       <env name="spring.datasource.password" value="AVNS_WbKfVj1HNhgrMLgBba2" />
       <env name="spring.datasource.url" value="jdbc:mysql://homepix-db-exoscale-2da4e244-e568-49ca-82e2-2987cf441726.a.aivencloud.com:21699/defaultdb?useSSL=true&amp;requireSSL=true" />
       <env name="spring.datasource.username" value="avnadmin" />
       <env name="spring.profiles.active" value="mysql" />
-      <env name="ELASTICSEARCH_PASSWORD" value="tVOzP=PY11n=fgkVeAM9" />
+      <env name="INSTANCE_PASSWORD" value="jU2pcbuxtrbkjpg" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homepix" />
