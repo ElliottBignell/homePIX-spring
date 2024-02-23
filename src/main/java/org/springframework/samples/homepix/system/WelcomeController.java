@@ -123,6 +123,16 @@ class WelcomeController extends PaginationController {
 
 			loadThumbnailsAndKeywords(thumbnailsMap, model);
 
+			setStructuredDataForModel(
+					requestDTO,
+					model,
+					"homePIX Photo-sharing Site",
+					"ImageGallery",
+					"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+					slides,
+					"photo, sharing, portfolio, elliott, bignell"
+			);
+
 			model.put("collection", slides);
 		}
 

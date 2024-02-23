@@ -1070,6 +1070,16 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		else {
 
+			setStructuredDataForModel(
+				requestDTO,
+				model,
+				"homePIX Photo-sharing Site",
+				"ImageGallery",
+				"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+				results,
+				"photo, sharing, portfolio, elliott, bignell"
+			);
+
 			model.put("startDate", requestDTO.getFromDate());
 			model.put("endDate", requestDTO.getToDate());
 			model.put("sort", requestDTO.getSort());
@@ -1100,5 +1110,58 @@ public abstract class PaginationController implements AutoCloseable {
 
 		model.put("keywords", pictureIdToKeywords);
 		model.put("thumbnails", thumbnailsMap);
+	}
+
+	protected void setStructuredDataForModel(@ModelAttribute CollectionRequestDTO requestDTO,
+											 Map<String, Object> model,
+											 String title,
+											 String type,
+											 String description,
+											 Collection<PictureFile> pictures,
+											 String keywords
+	) {
+		String baseURL = "https://www.homepix.ch";
+		String filepath = pictures.isEmpty()
+			? pictures.iterator().next().getFilename()
+			: baseURL + "/web-images/Stuff/200px/dsc_185760_200px.jpg";
+
+		String structuredData = "{\n"
+			+ "    \"@context\": \"http://schema.org\",\n"
+			+ "    \"@type\": \"" + type + "\",\n"
+			+ "    \"name\": \"" + title + "\",\n"
+			+ "    \"description\": \"" + description + "\",\n"
+			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
+			+ "    \"datePublished\": \"2024-01-01\",\n"
+			+ "    \"thumbnailUrl\": \"" + filepath + "\",\n"
+			+ "    \"image\": [\n"
+			+ pictures.stream().map( item -> {
+				return "        {\n"
+					+ "            \"@context\": \"http://schema.org\",\n"
+					+ "            \"@type\": \"ImageObject\",\n"
+					+ "            \"contentUrl\": \"" + baseURL + item.getLargeFilename() + "\",\n"
+					+ "            \"thumbnail\": \"" + baseURL + item.getMediumFilename() + "\",\n"
+					+ "            \"description\": \"" + item.getTitle() + "\",\n"
+					+ "            \"datePublished\": \"" + item.getTaken_on() + "\",\n"
+					+ "            \"name\": \"" + item.getTitle() + "\",\n"
+					+ "            \"creditText\": \"Photography by Elliott Bignell\",\n"
+					+ "            \"creator\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
+					+ "            \"copyrightNotice\": \"Elliott Bignell\"\n"
+					+ "        }";
+			})
+			.collect(Collectors.joining(",\n"))
+			+ "\n    ]}\n";
+
+			//"license": "https://example.com/license",
+			//"acquireLicensePage": "https://example.com/how-to-use-my-images",
+
+		model.put("structuredData", structuredData);
+
+		model.put("pageTitle", "homePIX Photo Server");
+		model.put("pageDescription", description);
+		model.put("pageKeywords", keywords);
+		model.put("startDate", requestDTO.getFromDate());
+		model.put("endDate", requestDTO.getToDate());
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
 	}
 }

@@ -154,7 +154,22 @@ class BucketController extends PaginationController {
 		List<Folder> folders = new ArrayList<>(this.folders.findAll());
 		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
 
-		model.put("folders", folderCache.stream()
+		List<PictureFile> files = folders.stream().map(item -> {
+				return this.pictureFiles.findById(item.getThumbnailId()).orElse(null);
+		})
+		.collect(Collectors.toList());
+
+	    setStructuredDataForModel(
+				requestDTO,
+				model,
+				"homePIX Photo-sharing Site",
+				"ImageGallery",
+				"Photo collection",
+				files,
+				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
+		);
+
+	    model.put("folders", folderCache.stream()
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);

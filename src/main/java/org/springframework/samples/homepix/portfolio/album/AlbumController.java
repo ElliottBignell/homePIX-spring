@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 
 /**
  * @author Elliott Bignell
@@ -110,12 +112,23 @@ class AlbumController extends PaginationController {
 	}
 
 	@GetMapping("/albums/")
-	public String processFindFormSlash(Album album, BindingResult result, Map<String, Object> model) {
-		return processFindForm(album, result, model);
+	public String processFindFormSlash(
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		Album album,
+		BindingResult result,
+		Map<String, Object> model
+	) {
+		return processFindForm(requestDTO, album, result, model);
 	}
 
 	@GetMapping("/albums")
-	public String processFindForm(Album album, BindingResult result, Map<String, Object> model) {
+	public String processFindForm(
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		Album album,
+		BindingResult result,
+		Map<String, Object> model
+	) {
+
 
 		// allow parameterless GET request for /albums to return all records
 		if (album.getName() == null) {
@@ -143,12 +156,22 @@ class AlbumController extends PaginationController {
 	}
 
 	@GetMapping("/album/")
-	public String processFindAlbumsSlash(Album album, BindingResult result, Map<String, Object> model) {
-		return processFindAlbums(album, result, model);
+	public String processFindAlbumsSlash(
+		@ModelAttribute CollectionRequestDTO requestDTO,
+		Album album,
+		BindingResult result,
+		Map<String, Object> model
+	) {
+		return processFindAlbums(requestDTO, album, result, model);
 	}
 
 	@GetMapping("/album")
-	public String processFindAlbums(Album album, BindingResult result, Map<String, Object> model) {
+	public String processFindAlbums(
+		CollectionRequestDTO requestDTO,
+		Album album,
+		BindingResult result,
+		Map<String, Object> model
+	) {
 
 		// allow parameterless GET request for /albums to return all records
 		if (album.getName() == null) {
@@ -186,6 +209,18 @@ class AlbumController extends PaginationController {
 
 		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
 			this.albums.findAll()
+		);
+
+	   setStructuredDataForModel(
+				requestDTO,
+				model,
+				"homePIX photo album collection",
+				"ImageGallery",
+				"Collection of photo albums",
+				StreamSupport.stream(results.spliterator(), false) // Convert Iterable to Stream
+						.map(Album::getThumbnail)
+						.collect(Collectors.toList()),
+				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
 		);
 
 		loadThumbnailsAndKeywords(thumbnailsMap, model);

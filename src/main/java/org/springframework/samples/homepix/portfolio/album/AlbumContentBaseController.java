@@ -15,25 +15,22 @@
  */
 package org.springframework.samples.homepix.portfolio.album;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
-import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
-import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
@@ -105,6 +102,16 @@ public class AlbumContentBaseController extends PaginationController {
 			));
 
 		loadThumbnailsAndKeywords(pictureMap, model);
+
+		setStructuredDataForModel(
+				requestDTO,
+				model,
+				"homePIX photo album collection",
+				"ImageGallery",
+				"Collection of photo albums",
+				content,
+				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
+		);
 
 		// Fetch the KeywordRelationships for the PictureFiles.
 		// This would be a method on your repository that fetches the relationships based on a collection of PictureFile IDs.
