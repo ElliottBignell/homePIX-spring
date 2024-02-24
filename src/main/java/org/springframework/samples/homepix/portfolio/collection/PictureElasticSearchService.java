@@ -20,27 +20,35 @@ public class PictureElasticSearchService {
 		this.httpClient = createHttpClientWithCustomTrustStore();
 	}
 
-	private HttpClient createHttpClientWithCustomTrustStore() throws Exception {
+	private HttpClient createHttpClientWithCustomTrustStore() {
 
-		String trustStorePath = "/usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts";
-		String trustStorePassword = "changeit";
+		try {
 
-		// Load the TrustStore
-		KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		try (FileInputStream trustStoreIS = new FileInputStream(trustStorePath)) {
-			trustStore.load(trustStoreIS, trustStorePassword.toCharArray());
+			String trustStorePath = "/usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts";
+			String trustStorePassword = "changeit";
+
+			// Load the TrustStore
+			KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			try (FileInputStream trustStoreIS = new FileInputStream(trustStorePath)) {
+				trustStore.load(trustStoreIS, trustStorePassword.toCharArray());
+			}
+
+			// Initialize TrustManagerFactory
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			tmf.init(trustStore);
+
+			// Create SSLContext
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, tmf.getTrustManagers(), null);
+
+			// Return HttpClient with custom SSLContext
+			return HttpClient.newBuilder().sslContext(sslContext).build();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		// Initialize TrustManagerFactory
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(trustStore);
-
-		// Create SSLContext
-		SSLContext sslContext = SSLContext.getInstance("TLS");
-		sslContext.init(null, tmf.getTrustManagers(), null);
-
-		// Return HttpClient with custom SSLContext
-		return HttpClient.newBuilder().sslContext(sslContext).build();
+		return null;
 	}
 
 	String getEncodedCredentials() {

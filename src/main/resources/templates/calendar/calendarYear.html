@@ -46,36 +46,36 @@
                             </td>
                             <td></td>
                           </tr>
-                          <tr th:each="week : ${month.getWeeks}">
+                          <tr th:each="week : ${month.getWeeks}" style="height:3em;">
                             <td></td>
                             <td th:each="day : ${week.getDays}"
                                 class="stretch-background"
                                 th:style="@{day.thumbnail != null ? 'background-image: url(__${day.thumbnail?.mediumFilename}__);' : ''}"
                             >
-                              <a  th:id="@{daylink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
-                                  th:href="@{../collection/?fromDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&toDate=__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__&ID=&Key=&search=&sort=}"
-                                  th:if="${day.thumbnail != null}"
-                              >
-                                <div class="calendar_tile calendar_tile_small">
-                                  <div class="scrim scrim_small"
-                                       style="font-size:1em;font-weight:bolder;left:0px;" th:text="${day.getDayOfMonth}"
-                                       th:if="${day.getDayOfMonth != 0}"
-                                  >
+                              <c th:if="${day.getDayOfMonth != 0}">
+                                <a  th:id="@{daylink-__${ year.getYear }__-__${ month.getIndex }__-__${ day.getDayOfMonth }__}"
+                                    th:href="@{../collection/?fromDate=__${day.getFormattedDate(year.getYear(), month?.getIndex(), day?.getDayOfMonth())}__&amp;toDate=__${day.getFormattedDate(year.getYear(), month?.getIndex(), day?.getDayOfMonth())}__&amp;ID=&amp;Key=&amp;search=&amp;sort=}"
+                                    th:if="${day.thumbnail != null}"
+                                >
+                                  <div class="calendar_tile calendar_tile_small">
+                                    <div class="scrim scrim_small"
+                                         style="font-size:1em;font-weight:bolder;left:0px;"
+                                         th:text="${day.getDayOfMonth}"
+                                    >
+                                    </div>
+                                  </div>
+                                </a>
+                                <div class="calendar_tile calendar_tile_small"
+                                     th:if="${day.thumbnail == null}"
+                                >
+                                  <div th:text="${day.getDayOfMonth}">
                                   </div>
                                 </div>
-                              </a>
-                              <div class="calendar_tile calendar_tile_small"
-                                   th:if="${day.thumbnail == null}"
-                              >
-                                <div th:text="${day.getDayOfMonth}"
-                                     th:if="${day.getDayOfMonth != 0}"
-                                >
-                                </div>
-                              </div>
+                              </c>
                             </td>
                             <td></td>
                           </tr>
-                          <tr th:if="${month.count <= 6}">
+                          <tr th:if="${month.count <= 5}" style="height:3em;">
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>

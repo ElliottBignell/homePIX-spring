@@ -2,6 +2,8 @@ package org.springframework.samples.homepix.portfolio.calendar;
 
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 
+import java.time.LocalDateTime;
+
 public class CalendarDay {
 
 	private String name;
@@ -40,4 +42,7 @@ public class CalendarDay {
 		this.dayOfMonth = dayOfMonth;
 	}
 
+	public String getFormattedDate(int year, int month, int day) {
+		return String.format("%04d-%02d-%02d", year, month, day);
+	}
 }
