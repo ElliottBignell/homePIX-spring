@@ -24,6 +24,8 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 
 import java.util.Date;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Elliott Bignell
@@ -107,7 +109,7 @@ public class Calendar extends BaseEntity {
 
 			List<CalendarQuarter> quarters = new ArrayList<>();
 
-			Map<LocalDateTime, Long> objectsOnDates = this.pictureFiles.getCountByTakenOn();
+			Map<LocalDate, Long> objectsOnDates = this.pictureFiles.getCountByTakenOn();
 
 			int monthIndex = 0;
 
@@ -157,7 +159,7 @@ public class Calendar extends BaseEntity {
 
 								PictureFile thumbnail = null;
 
-								LocalDateTime date = LocalDateTime.of(calendarYear.getYear(), monthOfYear + 1, dayOfMonth, 0, 0, 0);
+								LocalDate date = LocalDate.of(calendarYear.getYear(), monthOfYear + 1, dayOfMonth);
 
 								if (objectsOnDates.containsKey(date)) {
 
@@ -177,20 +179,6 @@ public class Calendar extends BaseEntity {
 									}
 								}
 
-								/*try {
-
-									LocalDate date = LocalDate.of(calendarYear.getYear(), monthOfYear + 1, dayOfMonth);
-
-									List<PictureFile> pictures = this.pictureFiles.findByDate(date);
-
-									if (!pictures.isEmpty()) {
-										thumbnail = pictures.get(0);
-									}
-								}
-								catch (DateTimeException ex) {
-									System.out.println(ex);
-								}*/
-
 								newDay = new CalendarDay(this.dayNames[day], thumbnail);
 								newDay.setDayOfMonth(dayOfMonth);
 								c.add(java.util.Calendar.DAY_OF_YEAR, 1);
@@ -202,17 +190,6 @@ public class Calendar extends BaseEntity {
 
 							java.util.Calendar cal = java.util.Calendar.getInstance();
 							cal.setTime(d);
-
-							/*if (cal.get(java.util.Calendar.MONTH) != monthOfYear) {
-
-								while (days.size() < 7) {
-
-									newDay = new CalendarDay(this.dayNames[day], null);
-									days.add(newDay);
-								}
-								addWeek(days, weeks);
-								break weekLoop;
-							}*/
 						}
 
 						addWeek(days, weeks);

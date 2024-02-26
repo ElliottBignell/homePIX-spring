@@ -35,6 +35,7 @@ import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
@@ -144,7 +145,8 @@ public class CalendarPageIntegrationTest {
 											.flatMap(week ->
 												week.getDays().stream()
 													.filter(day -> !pictureFiles.findByDate(LocalDate.of(year.getYear(), Integer.valueOf(month.getIndex()), day.getDayOfMonth() + 1)).isEmpty())
-													.map(day -> String.format("%d.%02d.%02d", year.getYear(), Integer.valueOf(month.getIndex()), day.getDayOfMonth() + 1))
+													.limit(1) // Limit to the first record
+													.map(day -> String.format("%d-%02d-%02d", year.getYear(), Integer.valueOf(month.getIndex()), day.getDayOfMonth() + 1))
 											)
 									)
 							)
@@ -160,6 +162,7 @@ public class CalendarPageIntegrationTest {
 	public Stream<Arguments> calendarDayEndpoints() {
 		return getCalendarDayEndpoints();
 	}
+
 	@ParameterizedTest
 	@MethodSource("calendarEndpoints")
 	public void testCalendarEndpoint(String endpoint) {
@@ -175,14 +178,14 @@ public class CalendarPageIntegrationTest {
 		String responseBody = response.getBody();
 
 		// Assert that the body contains the endpoint text
-		assertThat(responseBody.contains(endpoint));
+		assertTrue(responseBody.contains(endpoint));
 	}
 
 	@ParameterizedTest
 	@MethodSource("calendarDayEndpoints")
 	public void testCalendarDayEndpoint(String endpoint) {
 
-		String url = "https://localhost:8443/collection/?fromDate=" + "2011-03-28" + "&toDate=" + "2011-03-28" + "&ID=&Key=&search=&sort=";
+		String url = "https://localhost:8443/collection/?fromDate=" + endpoint + "&toDate=" + endpoint + "&ID=&Key=&search=&sort=";
 
 		ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
@@ -193,8 +196,11 @@ public class CalendarPageIntegrationTest {
 		String responseBody = response.getBody();
 
 		// Assert that the body contains the endpoint text
-		assertThat(responseBody.contains("58429"));
+		assertTrue(responseBody.contains("Collection from " + endpoint));
+
+		assertTrue(responseBody.contains("img id=\"picture"));
 	}
+
 	@Test
 	public void testCalendarPageLinks() throws Exception {
 

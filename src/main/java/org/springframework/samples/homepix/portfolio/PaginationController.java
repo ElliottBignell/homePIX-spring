@@ -372,11 +372,13 @@ public abstract class PaginationController implements AutoCloseable {
 		);
 
 		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+		LocalDate endDate = dates.getSecond();
+		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
 		Page<PictureFile> files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
 			requestDTO.getSearch(),
 			dates.getFirst(),
-			dates.getSecond(),
+			endOfDay,
 			isAdmin(authentication),
 			userRoles,
 			pageRequest
@@ -397,7 +399,7 @@ public abstract class PaginationController implements AutoCloseable {
 		Map<String, Object> model
 	) {
 
-		final String format = "yyyy-MM-dd";
+		final String format = "yyyy-M-d";
 
 		Supplier<String> today = () -> {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);

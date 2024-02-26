@@ -30,6 +30,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import java.sql.Date;
 
 /**
  * Repository class for <code>PictureFile</code> domain objects All method names are
@@ -108,7 +109,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);
 
-	@Query("SELECT p.taken_on, COUNT(p) FROM PictureFile p GROUP BY p.taken_on")
+	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p GROUP BY DATE(p.taken_on)")
 	List<Object[]> countByTakenOn();
 
 	@Query("SELECT p FROM PictureFile p WHERE p.filename LIKE %:searchText% AND p.taken_on BETWEEN :startDate AND :endDate")
@@ -175,19 +176,20 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	Page<PictureFile> findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
 		@Param("searchText") String searchText,
 		@Param("startDate") LocalDate startDate,
-		@Param("endDate") LocalDate endDate,
+		@Param("endDate") LocalDateTime endDate,
 		@Param("isAdmin") boolean isAdmin,
 		@Param("userRoles") String userRoles,
 		Pageable pageable
 	);
 
 
-	default Map<LocalDateTime, Long> getCountByTakenOn() {
+	default Map<LocalDate, Long> getCountByTakenOn() {
+
 		List<Object[]> result = countByTakenOn();
 
 		return result.stream()
 			.collect(Collectors.toMap(
-				entry -> (LocalDateTime) entry[0],
+				entry -> ((Date) entry[0]).toLocalDate(),
 				entry -> (Long) entry[1]
 			));
 	}
