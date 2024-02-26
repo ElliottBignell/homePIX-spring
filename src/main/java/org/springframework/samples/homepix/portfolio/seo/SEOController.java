@@ -16,6 +16,7 @@ import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,7 +80,9 @@ public class SEOController extends PaginationController {
 	}
 
 	@GetMapping(value = "/album{id}.xml", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<String> album(@PathVariable("id") long id) {
+	public ResponseEntity<String> album(@PathVariable("id") long id,
+										Authentication authentication
+	) {
 
 		Optional<Album> album = this.albums.findById(id);
 
@@ -88,7 +91,7 @@ public class SEOController extends PaginationController {
 
 		if (album.isPresent()) {
 
-			contents = getAlbumContentTags(album.get());
+			contents = getAlbumContentTags(album.get(),authentication);
 			pictures = String.join("\n", contents);
 		}
 
@@ -96,7 +99,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/albums/1</loc>\n" +
-			"       <lastmod>2024-01-04</lastmod>\n" +
+			"       <lastmod>2024-02-25</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -110,7 +113,9 @@ public class SEOController extends PaginationController {
 	}
 
 	@GetMapping(value = "/folder{name}.xml", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<String> folder(@PathVariable("name") String name) {
+	public ResponseEntity<String> folder(@PathVariable("name") String name,
+										 Authentication authentication
+	) {
 
 		Collection<Folder> folder = this.folders.findByName(name);
 
@@ -119,7 +124,7 @@ public class SEOController extends PaginationController {
 
 		if (!folder.isEmpty()) {
 
-			contents = getFolderContentTags(folder.iterator().next());
+			contents = getFolderContentTags(folder.iterator().next(), authentication);
 			pictures = String.join("\n", contents);
 		}
 
@@ -127,7 +132,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/buckets/" + name + "</loc>\n" +
-			"       <lastmod>2024-01-04</lastmod>\n" +
+			"       <lastmod>2024-02-25</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -148,7 +153,7 @@ public class SEOController extends PaginationController {
 								"<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 								  "<sitemap>" +
 									"<loc>https://www.homepix.ch/sitemap.xml</loc>" +
-									"<lastmod>2024-02-04</lastmod>" +
+									"<lastmod>2024-02-25</lastmod>" +
 									"</sitemap>" +
 									this.getAlbumSiteTags().stream().collect(Collectors.joining("\n")) +
 									this.getFolderSiteTags().stream().collect(Collectors.joining("\n")) +
@@ -166,7 +171,7 @@ public class SEOController extends PaginationController {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
 			.map(album -> {
 
-				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-25";
 
 				return "<url>\n" +
 					"<loc>https://www.homepix.ch/album/" + album.getId() + "</loc>\n" +
@@ -185,7 +190,7 @@ public class SEOController extends PaginationController {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
 			.map(album -> {
 
-				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-04";
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-25";
 
 				return "<sitemap>\n" +
 					   "<loc>https://www.homepix.ch/album" + album.getId() + ".xml</loc>\n" +
@@ -195,13 +200,16 @@ public class SEOController extends PaginationController {
 			.collect(Collectors.toList());
 	}
 
-	List<String> getAlbumContentTags(Album album) {
+	List<String> getAlbumContentTags(Album album, Authentication authentication) {
 
 		Collection<PictureFile> content = albumContent.findByAlbumId(album.getId()).stream()
 			.map(AlbumContent::getPictureFile)
 			.collect(Collectors.toList());
 
-		return content.stream().map( picture -> {
+		return content.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
+			.map( picture -> {
 
 			return "<url>\n" +
 				"<loc>https://www.homepix.ch/albums/" + album.getId() + "/item/" + picture.getId() + "</loc>\n" +
@@ -220,7 +228,7 @@ public class SEOController extends PaginationController {
 				StreamSupport.stream(Spliterators.spliteratorUnknownSize(yearGroup.getYears().iterator(), 0), false)
 					.map(year -> "<url>" +
 						"<loc>https://www.homepix.ch/calendar/" + year.getYear() + "</loc>\n" +
-						"<lastmod>2024-02-03</lastmod>\n" +
+						"<lastmod>2024-02-25</lastmod>\n" +
 						"<changefreq>weekly</changefreq>\n" +
 						"<priority>0.8</priority>\n" +
 						"</url>")
@@ -259,7 +267,7 @@ public class SEOController extends PaginationController {
 			.collect(Collectors.toList());
 	}
 
-	List<String> getFolderContentTags(Folder folder) {
+	List<String> getFolderContentTags(Folder folder, Authentication authentication) {
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -267,7 +275,10 @@ public class SEOController extends PaginationController {
 
 		AtomicInteger index = new AtomicInteger();
 
-		return pictureFiles.stream().map( picture -> {
+		return pictureFiles.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
+			.map( picture -> {
 
 				return "<url>" +
 					"<loc>https://www.homepix.ch/buckets/" + folder.getName() + "/item/" + index.getAndIncrement() + "</loc>\n" +

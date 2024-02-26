@@ -768,7 +768,7 @@ public abstract class PaginationController implements AutoCloseable {
 		return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
 	}
 
-	private boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
+	protected boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
 
 		if (authentication != null && authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"))) {
 			return true;

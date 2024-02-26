@@ -61,6 +61,9 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.util.logging.Logger;
+
+// Define a class-level logger
 
 /**
  * @author Juergen Hoeller
@@ -71,6 +74,8 @@ import java.util.stream.StreamSupport;
  */
 @Controller
 class BucketController extends PaginationController {
+
+	private static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
@@ -538,7 +543,25 @@ class BucketController extends PaginationController {
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
 
-			PictureFile file = pictureFiles.get(id);
+			PictureFile file = null;
+
+			try {
+				// Attempt to access the element at index 'id'
+				file = pictureFiles.get(id);
+			}
+			catch (IndexOutOfBoundsException e) {
+
+				// Log the size of the pictureFiles list
+				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + pictureFiles.size());
+				// Optionally, you can log the value of 'id' as well
+				logger.severe("IndexOutOfBoundsException occurred. Attempted index: " + id);
+				// Optionally, you can log the entire pictureFiles list
+				//logger.severe("IndexOutOfBoundsException occurred. PictureFiles list: " + pictureFiles);
+
+				// Log the exception if needed
+				model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
+				return "picture/pictureFile"; // Assuming you have an error page view named "errorPage"
+			}
 
 			int count = pictureFiles.size();
 			int pictureID = file.getId();
@@ -724,63 +747,78 @@ class BucketController extends PaginationController {
 
 	public byte[] applyWatermark(byte[] originalImageBytes) throws IOException {
 
-		// Convert byte array to BufferedImage
-		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
-		BufferedImage originalImage = ImageIO.read(in);
+		try {
 
-		// Create a graphics instance to calculate text width
-		Graphics2D g2d = originalImage.createGraphics();
+			// Convert byte array to BufferedImage
+			ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+			BufferedImage originalImage = ImageIO.read(in);
 
-		String watermarkText = "Copyright ©Elliott Bignell 2023";
-		float targetWidthRatio = 0.5f; // Target width ratio of the image width
-		int imageWidth = originalImage.getWidth();
+			// Create a graphics instance to calculate text width
+			Graphics2D g2d = originalImage.createGraphics();
 
-		if (originalImage.getHeight() < originalImage.getWidth()) {
-			imageWidth = originalImage.getHeight();
-		}
+			String watermarkText = "Copyright ©Elliott Bignell 2023";
+			float targetWidthRatio = 0.5f; // Target width ratio of the image width
+			int imageWidth = originalImage.getWidth();
 
-		int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+			if (originalImage.getHeight() < originalImage.getWidth()) {
+				imageWidth = originalImage.getHeight();
+			}
 
-		// Dynamically adjust font size
-		Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10); // Start with a base font size
-		g2d.setFont(font);
-		FontMetrics fontMetrics = g2d.getFontMetrics();
-		int textWidth = fontMetrics.stringWidth(watermarkText);
-		while (textWidth < targetWidth && font.getSize() < imageWidth * 2.0 / 3.0) { // Avoid excessively large font sizes
-			font = new Font(Font.SANS_SERIF, Font.BOLD, font.getSize() + 1);
+			int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+
+			// Dynamically adjust font size
+			Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10); // Start with a base font size
 			g2d.setFont(font);
-			fontMetrics = g2d.getFontMetrics();
-			textWidth = fontMetrics.stringWidth(watermarkText);
+			FontMetrics fontMetrics = g2d.getFontMetrics();
+			int textWidth = fontMetrics.stringWidth(watermarkText);
+			while (textWidth < targetWidth && font.getSize() < imageWidth * 2.0 / 3.0) { // Avoid excessively large font sizes
+				font = new Font(Font.SANS_SERIF, Font.BOLD, font.getSize() + 1);
+				g2d.setFont(font);
+				fontMetrics = g2d.getFontMetrics();
+				textWidth = fontMetrics.stringWidth(watermarkText);
+			}
+
+			// Create a mutable copy of the original image to add the watermark
+			BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+			g2d = (Graphics2D) watermarkedImage.getGraphics();
+			g2d.drawImage(originalImage, 0, 0, null);
+
+			// Add watermark with dynamically adjusted font
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f); // Set transparency
+			g2d.setComposite(alphaChannel);
+			g2d.setColor(Color.WHITE); // Watermark color
+			g2d.setFont(font); // Set the dynamically adjusted font
+
+			// Calculate the position of the watermark
+			fontMetrics = g2d.getFontMetrics(font);
+			Rectangle2D rect = fontMetrics.getStringBounds(watermarkText, g2d);
+			int centerX = (int) ((originalImage.getWidth() - (int) rect.getWidth()) * 2.0 / 3.0);
+			int centerY = (int) (originalImage.getHeight() * 2.0 / 3.0);
+
+			g2d.drawString(watermarkText, centerX, centerY);
+			g2d.dispose();
+
+			// Convert the watermarked BufferedImage back to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(watermarkedImage, "jpg", baos);
+			baos.flush();
+			byte[] imageInByte = baos.toByteArray();
+			baos.close();
+
+			return imageInByte;
+		}
+		catch (OutOfMemoryError oome) {
+
+			oome.printStackTrace();
+			logger.severe("Clearing image chaches");
+			imageCacheMap.clear();
+			image200pxCacheMap.clear();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		// Create a mutable copy of the original image to add the watermark
-		BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-		g2d = (Graphics2D) watermarkedImage.getGraphics();
-		g2d.drawImage(originalImage, 0, 0, null);
-
-		// Add watermark with dynamically adjusted font
-		AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f); // Set transparency
-		g2d.setComposite(alphaChannel);
-		g2d.setColor(Color.WHITE); // Watermark color
-		g2d.setFont(font); // Set the dynamically adjusted font
-
-		// Calculate the position of the watermark
-		fontMetrics = g2d.getFontMetrics(font);
-		Rectangle2D rect = fontMetrics.getStringBounds(watermarkText, g2d);
-		int centerX = (int)((originalImage.getWidth() - (int) rect.getWidth()) * 2.0 / 3.0);
-		int centerY = (int)(originalImage.getHeight() * 2.0 / 3.0);
-
-		g2d.drawString(watermarkText, centerX, centerY);
-		g2d.dispose();
-
-		// Convert the watermarked BufferedImage back to a byte array
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(watermarkedImage, "jpg", baos);
-		baos.flush();
-		byte[] imageInByte = baos.toByteArray();
-		baos.close();
-
-		return imageInByte;
+		return null;
 	}
 
 	private List<PictureFile> loadPictureFiles(String imagePath, String name) {

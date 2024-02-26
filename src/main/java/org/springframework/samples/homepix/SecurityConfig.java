@@ -1,9 +1,12 @@
 package org.springframework.samples.homepix;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -14,7 +17,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.io.IOException;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -93,7 +99,17 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				.logout()
 				.permitAll()
 			.and()
-				.csrf()
+			.exceptionHandling()
+			.accessDeniedHandler(new AccessDeniedHandler() {
+				@Override
+				public void handle(HttpServletRequest request, HttpServletResponse response,
+								   AccessDeniedException accessDeniedException) throws IOException, ServletException {
+					// Customize the response for access denied exception
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied: You do not have permission to access this resource.");
+				}
+			})
+			.and()
+			.csrf()
 				.disable(); // For simplicity; handle CSRF properly in a production environment
 
 		http.headers().frameOptions().sameOrigin();

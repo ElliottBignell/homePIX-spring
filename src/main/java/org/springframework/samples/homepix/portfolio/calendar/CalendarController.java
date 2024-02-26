@@ -88,6 +88,7 @@ class CalendarController extends PaginationController {
 		}
 
 		model.put("albums", this.albums.findAll());
+		model.put("calendar", this.calendar);
 		model.put("folders", this.folders.findAll().stream()
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
@@ -114,11 +115,6 @@ class CalendarController extends PaginationController {
 		);
 
 		return "calendar/calendar";
-	}
-
-	@ModelAttribute(name = "calendar")
-	Calendar getCalendar() {
-		return super.calendar;
 	}
 
 	@ModelAttribute("years")
