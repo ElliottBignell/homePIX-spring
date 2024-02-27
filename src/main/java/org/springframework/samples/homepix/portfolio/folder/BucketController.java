@@ -42,9 +42,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -59,10 +57,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import java.util.logging.Logger;
-
 // Define a class-level logger
 
 /**
@@ -79,7 +76,6 @@ class BucketController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
-	private static Map<String, byte[]> imageCacheMap = new HashMap<>();
 	private static Map<String, byte[]> image200pxCacheMap = new HashMap<>();
 
 	private AlbumService albumService;
@@ -692,29 +688,42 @@ class BucketController extends PaginationController {
 			@PathVariable("file") String file) {
 
 		String filepath = directory + '/' + file;
+		String watermarkedPath = directory + "/watermark/" + file;
 
-		// Try to serve from cache first
-		byte[] cachedImage = imageCacheMap.get(filepath);
+		byte[] watermarkedImage = null;
 
-		// Return watermarked image from cache
-		if (cachedImage != null) {
-			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(cachedImage);
+		try {
+			watermarkedImage = downloadFile("jpegs/" + directory + "/watermark/" + file);
+		}
+		catch (NoSuchKeyException ex) {
+			System.err.println("Watermarked file missing; creating");
+		}
+		catch (IOException ex) {
+			System.err.println("Error accessing watermarked file");
 		}
 
-		byte[] watermarkedImage = hitBucket((client, arg1, arg2) -> {
+		if (null == watermarkedImage) {
 
-			try {
-				return applyWatermark(downloadFile("jpegs/" + arg1 + "/" + arg2));
-			}
-			catch (IOException e) {
-				System.err.println("Error downloading file: " + e.getMessage());
-				return null;
-			}
-		}, directory, file);
+			watermarkedImage = hitBucket((client, arg1, arg2) -> {
+
+				try {
+					return applyWatermark(downloadFile("jpegs/" + arg1 + "/" + arg2));
+				} catch (IOException e) {
+					System.err.println("Error downloading file: " + e.getMessage());
+					return null;
+				}
+			}, directory, file);
+
+// Save watermarked image to the S3-compatible bucket
+			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+				.bucket(bucketName)
+				.key("jpegs/" + watermarkedPath)
+				.build();
+
+			s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
+		}
 
 		if (watermarkedImage != null) {
-
-			imageCacheMap.put(filepath, watermarkedImage);
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(watermarkedImage);
 		}
 		else {
@@ -824,7 +833,6 @@ class BucketController extends PaginationController {
 
 			oome.printStackTrace();
 			logger.severe("Clearing image chaches");
-			imageCacheMap.clear();
 			image200pxCacheMap.clear();
 		}
 		catch (Exception e) {
