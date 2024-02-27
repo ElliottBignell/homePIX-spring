@@ -539,6 +539,7 @@ class BucketController extends PaginationController {
 			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 			List<PictureFile> pictureFiles = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
+			int count = pictureFiles.size();
 
 			mav.addObject(pictureFiles);
 			model.put("link_params", "");
@@ -552,18 +553,30 @@ class BucketController extends PaginationController {
 			catch (IndexOutOfBoundsException e) {
 
 				// Log the size of the pictureFiles list
-				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + pictureFiles.size());
+				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
 				// Optionally, you can log the value of 'id' as well
-				logger.severe("IndexOutOfBoundsException occurred. Attempted index: " + id);
-				// Optionally, you can log the entire pictureFiles list
-				//logger.severe("IndexOutOfBoundsException occurred. PictureFiles list: " + pictureFiles);
+				logger.severe("                                    Attempted bucket: " + name);
+				logger.severe("                                    Attempted index: " + id);
 
-				// Log the exception if needed
-				model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
-				return "picture/pictureFile"; // Assuming you have an error page view named "errorPage"
+				if (count > 0) {
+
+					try {
+						// Attempt to access the element at index 'id'
+						file = pictureFiles.get(id % pictureFiles.size());
+					}
+					catch (IndexOutOfBoundsException e2) {
+
+						model.put("errorMessage", "Failed to retrieve picture using backup wrap; index number overflowed end of collection");
+						return "picture/pictureFile";
+					}
+				}
+				else {
+
+					model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
+					return "picture/pictureFile";
+				}
 			}
 
-			int count = pictureFiles.size();
 			int pictureID = file.getId();
 
 			model.put("picture", file);
