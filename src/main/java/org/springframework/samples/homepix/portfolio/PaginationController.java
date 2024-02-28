@@ -51,9 +51,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.logging.Logger;
 
 @Controller
 public abstract class PaginationController implements AutoCloseable {
+
+	private static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	protected Pagination pagination;
 
@@ -949,6 +952,8 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected byte[] downloadFile(String objectKey) throws IOException {
 
+		initialiseS3Client();
+
 		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
 		ResponseBytes<GetObjectResponse> responseResponseBytes = s3Client.getObjectAsBytes(objectRequest);
@@ -1066,6 +1071,11 @@ public abstract class PaginationController implements AutoCloseable {
 							  List<PictureFile> results,
 							  String template
 	) {
+		logger.info("setModel for folders:");
+
+		buckets.stream()
+			.map(Folder::getName) // Map Folder objects to their names
+			.forEach(logger::info); // Log each name
 
 		if (buckets.isEmpty()) {
 			return "redirect:/buckets";
@@ -1124,8 +1134,8 @@ public abstract class PaginationController implements AutoCloseable {
 	) {
 		String baseURL = "https://www.homepix.ch";
 		String filepath = pictures.isEmpty()
-			? pictures.iterator().next().getFilename()
-			: baseURL + "/web-images/Stuff/200px/dsc_185760_200px.jpg";
+			? baseURL + "/web-images/Stuff/200px/dsc_185760_200px.jpg"
+			: pictures.iterator().next().getFilename();
 
 		String structuredData = "{\n"
 			+ "    \"@context\": \"http://schema.org\",\n"

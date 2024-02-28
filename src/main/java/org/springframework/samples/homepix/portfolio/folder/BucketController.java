@@ -294,7 +294,7 @@ class BucketController extends PaginationController {
 		}
 		else {
 
-			final String format = "yyyy-MM-dd";
+			final String format = "yyyy-M-d";
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
@@ -701,6 +701,9 @@ class BucketController extends PaginationController {
 		catch (IOException ex) {
 			System.err.println("Error accessing watermarked file");
 		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
 
 		if (null == watermarkedImage) {
 
@@ -714,13 +717,16 @@ class BucketController extends PaginationController {
 				}
 			}, directory, file);
 
-// Save watermarked image to the S3-compatible bucket
-			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-				.bucket(bucketName)
-				.key("jpegs/" + watermarkedPath)
-				.build();
+			if (null != watermarkedImage) {
 
-			s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
+				// Save watermarked image to the S3-compatible bucket
+				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+					.bucket(bucketName)
+					.key("jpegs/" + watermarkedPath)
+					.build();
+
+				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
+			}
 		}
 
 		if (watermarkedImage != null) {
