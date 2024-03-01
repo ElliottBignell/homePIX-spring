@@ -17,10 +17,8 @@ package org.springframework.samples.homepix.portfolio.organise;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -50,7 +48,8 @@ import java.util.stream.StreamSupport;
 @Controller
 class OrganiseController extends AlbumContentBaseController {
 
-	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "picture/picturefile_organisation.html";
+	private static final String VIEWS_ORGANISATION_FORM = "picture/picturefile_organisation.html";
+	private static final String VIEWS_WHOLE_PANE_ORGANISATION_FORM = "organise/full-pane-organise.html";
 
 	private final OrganiseRepository organiseRepository;
 
@@ -106,7 +105,7 @@ class OrganiseController extends AlbumContentBaseController {
 			.collect(Collectors.toList())
 		);
 
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+		return VIEWS_ORGANISATION_FORM;
 	}
 
 	@Secured("ROLE_ADMIN")
@@ -130,6 +129,27 @@ class OrganiseController extends AlbumContentBaseController {
 		else {
 			return new ModelAndView("redirect:/album/");
 		}
+	}
+
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/organise/{folder}/")
+	public String organiseSinglePane(Map<String, Object> model,
+								   @PathVariable("folder") String left
+	) {
+
+		Organise organise = new Organise();
+
+		List<PictureFile> folder = this.pictureFiles.findByFolderName(left);
+		Folder folderLeft = this.folders.findByName(left).iterator().next();
+
+		model.put("folder", folderLeft);
+		model.put("collection", folder);
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
+
+		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
 	}
 
 	@Override
@@ -426,6 +446,6 @@ class OrganiseController extends AlbumContentBaseController {
 									  Model model) {
 		// AlbumContent albumContent = this.albums.findById(ownerId);
 		// model.addAttribute(albumContent);
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+		return VIEWS_ORGANISATION_FORM;
 	}
 }

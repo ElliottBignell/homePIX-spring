@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+<link rel="stylesheet" th:href="@{/resources/css/organise.css}" />
+
+<script>
+  function movePicture(files, from, to) {
+
+      var requestData = {
+          sourceTag: from,
+          destinationTag: to,
+          fileName: files
+      };
+
+      $.ajax({
+          url: "/moveFile",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(requestData),
+          accept: "application/json",
+          success: function(response) {
+            $('figure.selected').hide();
+            $('figure.selected').toggleClass('selected');
+          },
+          error: function(xhr, status, error) {
+              console.log("Error: " + status + " " + error);
+              console.log("Response Text: " + xhr.responseText);
+          }
+      });
+  }
+</script>
+
+<!-- Fragment definition -->
+<th:block th:if="${false}">
+  <th:block th:fragment="organiseContent(collection, album, other_album, select)">
+    <div class="techfont" id="div_centrestage" style="min-height:60px;">
+      <div class="container-fluid">
+        <div class="centerstage">
+          <div class="techfont" id="div_centrestage" style="min-height:60px;">
+            <div class="container-fluid"> <!-- Ensure proper container setup -->
+              <div class="row"> <!-- Row for the heading -->
+                <div class="col-md-12"> <!-- Full width column for the heading -->
+                  <form action="switch">
+                    <select name="folders" th:id="${select}" th:value="${album.name}" placeholder="Select..." style="font-size:16px;">
+                      <option th:each="folder : ${ folders }"
+                              th:value="${folder.name}"
+                              th:selected="${ folder.name ==  album?.name }"
+                              th:text="${folder.name}">
+                        Folder
+                      </option>
+                    </select>
+                  </form>
+                </div>
+              </div>
+              <div class="row"> <!-- New row for the content below "Castles" -->
+                <div class="col-md-12"> <!-- Full width column for the content -->
+                  <div style="overflow-y: auto; max-height: 75vh;">
+                    <c th:each="entry : ${collection}">
+                      <figure th:if="entry != null"
+                              th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                              th:id="@{figure-__${entry.id}__}">
+                        <a th:id="@{picture__${entry.id}__}"
+                        >
+                          <section class="wrapper" th:id=" @{file-number_${entry.id}}">
+                            <span class="tt_subject">
+                              <img th:id="@{picture__${entry.id}__}"
+                                   class="lazyload imageinlist"
+                                   th:src="${entry.mediumFilename}"
+                                   th:data-src="${entry.mediumFilename}"
+                                   th:alt="${entry?.title}"
+                              >
+                            </span>
+                          </section>
+                        </a>
+                        <a th:id="@{btn__${entry.id}__}"
+                        <figcaption class="tt_subject">
+                          <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
+                        </figcaption>
+                        </a>
+                      </figure>
+                    </c>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</th:block>
+
+<div class="organise-left">
+  <div th:replace="this::organiseContent(${collection}, ${folder}, ${folder}, 'leftSelect')"></div>
+</div>
+<div class="organise-mid">
+  <button id="moveBtn">Move Selected</button>
+</div>
+<div class="organise-right">
+  <figure th:if="entry != null"
+          th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+          th:id="@{figure-__${entry.id}__}">
+    <a th:id="@{picture__${entry.id}__}"
+    >
+      <section class="wrapper" th:id=" @{file-number_${entry.id}}">
+                            <span class="tt_subject">
+                              <img th:id="@{picture__${entry.id}__}"
+                                   class="lazyload imageinlist"
+                                   th:src="${entry.mediumFilename}"
+                                   th:data-src="${entry.mediumFilename}"
+                                   th:alt="${entry?.title}"
+                              >
+                            </span>
+      </section>
+    </a>
+    <a th:id="@{btn__${entry.id}__}"
+    <figcaption class="tt_subject">
+      <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
+    </figcaption>
+    </a>
+  </figure>
+</div>
+
+<script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>
+
+</body>
+</html>

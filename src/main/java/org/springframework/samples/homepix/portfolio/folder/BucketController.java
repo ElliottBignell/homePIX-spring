@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio.folder;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -279,8 +280,11 @@ class BucketController extends PaginationController {
 		Pageable pageable,
 		Map<String, Object> model,
 		Authentication authentication,
-		boolean reload
+		boolean reload,
+		HttpServletRequest request
 	) {
+		String userAgent = request.getHeader("User-Agent");
+		logger.info("Request from User-Agent to showFolder: " + userAgent);
 
 		model.put("showScary", true);
 
@@ -368,8 +372,11 @@ class BucketController extends PaginationController {
 		@PathVariable("name")
 		String name,
 		Authentication authentication,
-		Map<String, Object> model
+		Map<String, Object> model,
+		HttpServletRequest request
 	) {
+		String userAgent = request.getHeader("User-Agent");
+		logger.info("Request from User-Agent to showFolderSlideshow: " + userAgent);
 
 		initialiseS3Client();
 
@@ -391,9 +398,10 @@ class BucketController extends PaginationController {
 							  @PathVariable("name") String name,
 							  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 							  Authentication authentication,
-							  Map<String, Object> model
+							  Map<String, Object> model,
+							  HttpServletRequest request
 	) {
-		return showFolder(requestDTO, name, pageable, model, authentication,false);
+		return showFolder(requestDTO, name, pageable, model, authentication,false, request);
 	}
 
 	@GetMapping("/buckets/{name}/")
@@ -401,27 +409,30 @@ class BucketController extends PaginationController {
 									@PathVariable("name") String name,
 									@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 									Authentication authentication,
-									Map<String, Object> model
+									Map<String, Object> model,
+									HttpServletRequest request
 	) {
-		return showFolder(requestDTO, name, pageable, model, authentication, false);
+		return showFolder(requestDTO, name, pageable, model, authentication, false, request);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow")
 	public String showbucketsSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
 							  @PathVariable("name") String name,
 							  Authentication authentication,
-							  Map<String, Object> model
+							  Map<String, Object> model,
+							  HttpServletRequest request
 	) {
-		return showFolderSlideshow(requestDTO, name, authentication, model);
+		return showFolderSlideshow(requestDTO, name, authentication, model, request);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow/")
 	public String showbucketsByNameSlideshow(@ModelAttribute CollectionRequestDTO requestDTO,
 									@PathVariable("name") String name,
 									Authentication authentication,
-									Map<String, Object> model
+									Map<String, Object> model,
+									HttpServletRequest request
 	) {
-		return showFolderSlideshow(requestDTO, name, authentication, model);
+		return showFolderSlideshow(requestDTO, name, authentication, model, request);
 	}
 
 	@Secured("ROLE_ADMIN")
@@ -517,8 +528,11 @@ class BucketController extends PaginationController {
 								  @PathVariable("id") Integer id,
 			/* @Value("${homepix.images.path}") String imagePath, */
 								  Map<String, Object> model,
-								  Authentication authentication
+								  Authentication authentication,
+								  HttpServletRequest request
 	) {
+		String userAgent = request.getHeader("User-Agent");
+		logger.info("Request from User-Agent to showPictureFile: " + userAgent);
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -696,10 +710,10 @@ class BucketController extends PaginationController {
 			watermarkedImage = downloadFile("jpegs/" + directory + "/watermark/" + file);
 		}
 		catch (NoSuchKeyException ex) {
-			System.err.println("Watermarked file missing; creating");
+			logger.info("Watermarked file missing; creating " + directory + '/' + file);
 		}
 		catch (IOException ex) {
-			System.err.println("Error accessing watermarked file");
+			logger.info("Error accessing watermarked file \" + directory + '/' + file");
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
@@ -712,7 +726,7 @@ class BucketController extends PaginationController {
 				try {
 					return applyWatermark(downloadFile("jpegs/" + arg1 + "/" + arg2));
 				} catch (IOException e) {
-					System.err.println("Error downloading file: " + e.getMessage());
+					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
 					return null;
 				}
 			}, directory, file);

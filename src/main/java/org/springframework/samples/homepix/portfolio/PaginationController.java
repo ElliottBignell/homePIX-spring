@@ -1071,12 +1071,6 @@ public abstract class PaginationController implements AutoCloseable {
 							  List<PictureFile> results,
 							  String template
 	) {
-		logger.info("setModel for folders:");
-
-		buckets.stream()
-			.map(Folder::getName) // Map Folder objects to their names
-			.forEach(logger::info); // Log each name
-
 		if (buckets.isEmpty()) {
 			return "redirect:/buckets";
 		}
