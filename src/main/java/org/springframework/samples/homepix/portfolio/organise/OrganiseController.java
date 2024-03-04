@@ -132,16 +132,39 @@ class OrganiseController extends AlbumContentBaseController {
 	}
 
 	@Secured("ROLE_ADMIN")
+	@GetMapping("/organise/")
+	public String organise(Map<String, Object> model) {
+
+		Collection<Folder> folder = this.folders.findAll();
+		Folder folderLeft = folder.iterator().next();
+
+		List<PictureFile> collection = this.pictureFiles.findByFolderName(folderLeft.getName());
+		PictureFile file = collection.iterator().next();
+
+		model.put("current_picture", file);
+		model.put("folder", folderLeft);
+		model.put("collection", collection);
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
+
+		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
+	}
+
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/organise/{folder}/")
 	public String organiseSinglePane(Map<String, Object> model,
-								   @PathVariable("folder") String left
+									 @PathVariable("folder") String left
 	) {
-
-		Organise organise = new Organise();
 
 		List<PictureFile> folder = this.pictureFiles.findByFolderName(left);
 		Folder folderLeft = this.folders.findByName(left).iterator().next();
 
+		List<PictureFile> collection = this.pictureFiles.findByFolderName(folderLeft.getName());
+		PictureFile file = collection.iterator().next();
+
+		model.put("current_picture", file);
 		model.put("folder", folderLeft);
 		model.put("collection", folder);
 		model.put("folders", this.folders.findAll().stream()

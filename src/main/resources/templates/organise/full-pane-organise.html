@@ -6,82 +6,70 @@
 
 <link rel="stylesheet" th:href="@{/resources/css/organise.css}" />
 
-<script>
-  function movePicture(files, from, to) {
+<style>
+  .active {
+       outline: 2px solid red;
+       height:10vh;
+   }
 
-      var requestData = {
-          sourceTag: from,
-          destinationTag: to,
-          fileName: files
-      };
+   .active img {
+       height:10vh;
+   }
+</style>
 
-      $.ajax({
-          url: "/moveFile",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(requestData),
-          accept: "application/json",
-          success: function(response) {
-            $('figure.selected').hide();
-            $('figure.selected').toggleClass('selected');
-          },
-          error: function(xhr, status, error) {
-              console.log("Error: " + status + " " + error);
-              console.log("Response Text: " + xhr.responseText);
-          }
-      });
-  }
-</script>
-
-<!-- Fragment definition -->
-<th:block th:if="${false}">
-  <th:block th:fragment="organiseContent(collection, album, other_album, select)">
-    <div class="techfont" id="div_centrestage" style="min-height:60px;">
-      <div class="container-fluid">
-        <div class="centerstage">
-          <div class="techfont" id="div_centrestage" style="min-height:60px;">
-            <div class="container-fluid"> <!-- Ensure proper container setup -->
-              <div class="row"> <!-- Row for the heading -->
-                <div class="col-md-12"> <!-- Full width column for the heading -->
-                  <form action="switch">
-                    <select name="folders" th:id="${select}" th:value="${album.name}" placeholder="Select..." style="font-size:16px;">
-                      <option th:each="folder : ${ folders }"
-                              th:value="${folder.name}"
-                              th:selected="${ folder.name ==  album?.name }"
-                              th:text="${folder.name}">
-                        Folder
-                      </option>
-                    </select>
-                  </form>
+  <th:block th:if="${false}">
+    <th:block th:fragment="organiseContent(collection, album, other_album, select)">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="container-fluid">
+          <div class="centerstage">
+            <div class="techfont" id="div_centrestage" style="min-height:60px;">
+              <div class="container-fluid"> <!-- Ensure proper container setup -->
+                <div class="row"> <!-- Row for the heading -->
+                  <div class="col-md-12"> <!-- Full width column for the heading -->
+                    <form action="switch">
+                      <select name="folders" th:id="${select}" th:value="${album.name}" placeholder="Select..." style="font-size:16px;">
+                        <option th:each="folder : ${ folders }"
+                                th:value="${folder.name}"
+                                th:selected="${ folder.name ==  album?.name }"
+                                th:text="${folder.name}">
+                          Folder
+                        </option>
+                      </select>
+                    </form>
+                  </div>
                 </div>
-              </div>
-              <div class="row"> <!-- New row for the content below "Castles" -->
-                <div class="col-md-12"> <!-- Full width column for the content -->
-                  <div style="overflow-y: auto; max-height: 75vh;">
-                    <c th:each="entry : ${collection}">
-                      <figure th:if="entry != null"
-                              th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
-                              th:id="@{figure-__${entry.id}__}">
-                        <a th:id="@{picture__${entry.id}__}"
+                <div class="row"> <!-- New row for the content below "Castles" -->
+                  <div class="col-md-12"> <!-- Full width column for the content -->
+                    <div style="overflow-y: auto; max-height: 75vh;">
+                      <c th:each="entry, iterStat : ${collection}">
+                        <figure th:if="${entry != null && !entry.getIsScary()}"
+                                class="tt_base droppable draggable"
+                                th:id="@{figure-__${entry.id}__}"
+                                style="width:15vw;"
                         >
-                          <section class="wrapper" th:id=" @{file-number_${entry.id}}">
-                            <span class="tt_subject">
-                              <img th:id="@{picture__${entry.id}__}"
-                                   class="lazyload imageinlist"
-                                   th:src="${entry.mediumFilename}"
-                                   th:data-src="${entry.mediumFilename}"
-                                   th:alt="${entry?.title}"
-                              >
-                            </span>
-                          </section>
-                        </a>
-                        <a th:id="@{btn__${entry.id}__}"
-                        <figcaption class="tt_subject">
-                          <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
-                        </figcaption>
-                        </a>
-                      </figure>
-                    </c>
+                          <a th:id="@{picture__${entry.id}__}"
+                          >
+                            <section class="wrapper" th:id=" @{file-number_${entry.id}}">
+                              <span class="tt_subject">
+                                <img th:id="@{picture__${entry.id}__}"
+                                     class="lazyload imageinlist"
+                                     th:src="${entry.mediumFilename}"
+                                     th:data-src="${entry.mediumFilename}"
+                                     th:alt="${entry?.title}"
+                                     th:tabindex="${iterStat.index}"
+                                     style="width:15vw;"
+                                >
+                              </span>
+                            </section>
+                          </a>
+                          <a th:id="@{btn__${entry.id}__}"
+                          <figcaption class="tt_subject">
+                            <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
+                          </figcaption>
+                          </a>
+                        </figure>
+                      </c>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -89,42 +77,134 @@
           </div>
         </div>
       </div>
-    </div>
+    </th:block>
   </th:block>
-</th:block>
 
-<div class="organise-left">
-  <div th:replace="this::organiseContent(${collection}, ${folder}, ${folder}, 'leftSelect')"></div>
-</div>
-<div class="organise-mid">
-  <button id="moveBtn">Move Selected</button>
-</div>
-<div class="organise-right">
-  <figure th:if="entry != null"
-          th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
-          th:id="@{figure-__${entry.id}__}">
-    <a th:id="@{picture__${entry.id}__}"
+  <div class="organise-left">
+    <div th:replace="this::organiseContent(${collection}, ${folder}, ${folder}, 'leftSelect')"></div>
+  </div>
+
+  <div class="organise-mid">
+  </div>
+
+  <div class="organise-right">
+    <figure class="tt_base droppable draggable"
+            th:id="@{figure-__${current_picture.id}__}"
+            style="height:75vh;width:65vw;"
     >
-      <section class="wrapper" th:id=" @{file-number_${entry.id}}">
-                            <span class="tt_subject">
-                              <img th:id="@{picture__${entry.id}__}"
-                                   class="lazyload imageinlist"
-                                   th:src="${entry.mediumFilename}"
-                                   th:data-src="${entry.mediumFilename}"
-                                   th:alt="${entry?.title}"
-                              >
-                            </span>
-      </section>
-    </a>
-    <a th:id="@{btn__${entry.id}__}"
-    <figcaption class="tt_subject">
-      <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
-    </figcaption>
-    </a>
-  </figure>
-</div>
+      <a th:id="@{picture__${current_picture.id}__}"
+      >
+        <section class="wrapper" th:id=" @{file-number-__${current_picture.id}__}">
+          <span id="main-picture" class="tt_subject">
+            <img th:id="@{picture__${current_picture.id}__}"
+                 class="lazyload imageinlist"
+                 style="position:relative;top:0;left:0;width:75vw;height:75vh;object-fit:contain;object-position:left center;"
+                 th:src="${current_picture.mediumFilename}"
+                 th:data-src="${current_picture.mediumFilename}"
+                 th:alt="${current_picture?.title}"
+            >
+          </span>
+        </section>
+      </a>
+      <a th:id="@{btn__${current_picture.id}__}">
+        <figcaption class="tt_subject">
+          <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${current_picture.title}"></div>
+        </figcaption>
+      </a>
+    </figure>
+  </div>
 
-<script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
 
-</body>
-</html>
+      // Get all figure elements
+      var figures = document.querySelectorAll("figure img");
+
+      // Iterate over each figure
+      figures.forEach(function(figure) {
+
+        // Add keydown event listener
+        figure.addEventListener("keydown", function(event) {
+
+          // Check if the key pressed is the "Delete" key
+          if (event.key === "Delete") {
+
+            // Trigger your delete event or function here
+            // For example, you can call a function to delete the figure
+            deleteFigure(figure);
+          }
+        });
+      });
+
+      // Function to delete the figure
+      function deleteFigure(figure) {
+
+        var id = figure.id.replace("picture", "");
+
+        $.ajax({
+
+          url: '/image/delete/' + id,
+          method: 'POST',
+          dataType: 'text',
+          success: function(response) {
+
+            if (response === 'Deleted successfully') {
+
+              var id = figure.id.replace("picture", "figure-");
+              var element = document.getElementById(id);
+
+              console.log(figure.id);
+              console.log(id);
+              console.log(element);
+
+              // Remove the figure from the DOM
+              element.remove();
+            } else {
+              // Handle other success cases if needed
+            }
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
+      }
+
+      // Iterate over each figure
+      figures.forEach(function(figure) {
+
+        // Add click event listener
+        figure.addEventListener("click", function(event) {
+
+          // Get the ID of the clicked figure
+          var figureId = figure.id;
+
+          // Get the src and data-src properties of the clicked img
+          var src = figure.getAttribute("src");
+          var dataSrc = figure.getAttribute("data-src");
+
+          // Remove "/200px" from dataSrc
+          dataSrc = dataSrc.replace("/200px", "");
+
+          // Remove "_200px" from dataSrc
+          dataSrc = dataSrc.replace("_200px", "");
+
+          // Create a new img element
+          var newImg = document.createElement("img");
+          newImg.setAttribute("src", src);
+          newImg.setAttribute("data-src", dataSrc);
+          newImg.classList.add("lazyload", "imageinlist");
+          newImg.setAttribute("style", "position:relative;top:0;left:0;width:75vw;height:75vh;object-fit:contain;object-position:left center;");
+
+          // Replace the existing img with the new img
+          var mainPicture = document.querySelector("#main-picture");
+          mainPicture.innerHTML = ""; // Clear existing content
+          mainPicture.appendChild(newImg);
+        });
+      });
+    });
+  </script>
+
+  <script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>
+
+  </body>
+  </html>

@@ -9029,19 +9029,19 @@ div.desc {
 .organise-left {
     position:absolute;
     top:1em;
-    width:45vw;
+    width:20vw;
 }
 .organise-mid {
     position:absolute;
     top:10em;
-    left:45vw;
+    left:20vw;
     width:10vw;
 }
 .organise-right {
     position:absolute;
     top:1em;
-    left: 50vw;
-    width:45vw;
+    left: 30vw;
+    width:70vw;
 }
 
 @media (max-width: 768px) and (orientation: portrait) {

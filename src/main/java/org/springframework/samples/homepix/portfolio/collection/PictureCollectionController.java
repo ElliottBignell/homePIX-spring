@@ -17,6 +17,7 @@ package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
@@ -24,6 +25,7 @@ import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -181,8 +183,25 @@ class PictureCollectionController extends PaginationController {
 
 	@GetMapping("/collections/{dummyId}/item/{id}/")
 	public String showCollectionSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
+									  @PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
+	}
+
+	@Secured("ROLE_ADMIN")
+	@PostMapping("/image/delete/{id}")
+	public ResponseEntity<String>  deleteImage(@PathVariable("id") int id, Map<String, Object> model) {
+
+		Optional<PictureFile> file = this.pictureFiles.findById(Integer.valueOf(id));
+
+		if (file.isPresent()) {
+
+			file.get().setIsScary(true);
+			this.pictureFiles.save(file.get());
+
+			return ResponseEntity.ok("Deleted successfully");
+		}
+
+		return ResponseEntity.ok("Delete failed");
 	}
 
 	@Override
