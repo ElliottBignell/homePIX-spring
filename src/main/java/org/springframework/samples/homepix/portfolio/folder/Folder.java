@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -137,9 +138,8 @@ public class Folder extends BaseEntity {
 				try {
 					item.setTitle(getExifTitle(dir + "/" + name));
 				}
-				catch (Exception ex) {
-					System.out.println(ex);
-					ex.printStackTrace();
+				catch (Exception e) {
+					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 				}
 
 				// TODO: Add folder name to keywords in the controller
@@ -185,11 +185,10 @@ public class Folder extends BaseEntity {
 				}
 			}
 		}
-		catch (Exception ex) {
+		catch (Exception e) {
 
 			title = "Error getting EXIF data";
-			System.out.println(ex);
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return title;

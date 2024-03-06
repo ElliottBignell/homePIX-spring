@@ -58,6 +58,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -72,8 +73,6 @@ import java.util.stream.StreamSupport;
  */
 @Controller
 class BucketController extends PaginationController {
-
-	private static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
@@ -363,6 +362,16 @@ class BucketController extends PaginationController {
 		model.put("lastIndex", lastIndex);
 		model.put("count", results.getTotalElements());
 
+		setStructuredDataForModel(
+			requestDTO,
+			model,
+			"homePIX Photo-sharing Site",
+			"ImageGallery",
+			"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+			results.getContent(),
+			"photo, sharing, portfolio, elliott, bignell"
+		);
+
 		return setModel(requestDTO, model, this.folders.findByName(name), results.getContent(), "folders/folderDetails");
 	}
 
@@ -389,6 +398,16 @@ class BucketController extends PaginationController {
 		);
 
 		Collection<Folder> buckets = this.folders.findByName(name);
+
+		setStructuredDataForModel(
+			requestDTO,
+			model,
+			"homePIX Photo-sharing Site",
+			"ImageGallery",
+			"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+			results,
+			"photo, sharing, portfolio, elliott, bignell"
+		);
 
 		return setModel(requestDTO, model, this.folders.findByName(name), results, "welcome");
 	}
@@ -483,9 +502,8 @@ class BucketController extends PaginationController {
 					pictureFiles.save(file);
 				}
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
 		}
 
@@ -532,7 +550,7 @@ class BucketController extends PaginationController {
 								  HttpServletRequest request
 	) {
 		String userAgent = request.getHeader("User-Agent");
-		logger.info("Request from User-Agent to showPictureFile: " + userAgent);
+		logger.info("Request from User-Agent to showPictureFile(/buckets/" + name + "/item/"+ id + "): " + userAgent);
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -606,6 +624,18 @@ class BucketController extends PaginationController {
 				.collect(Collectors.joining(", "))
 			);
 			Iterable<Album> albums = this.albums.findAll();
+
+			setStructuredDataForModel(
+				requestDTO,
+				model,
+				"ImageObject",
+				file,
+				this.keywordRelationships.findByPictureId(pictureID)
+					.stream()
+					.map(kr -> '\"' + kr.getKeyword().getWord() + '\"') // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
+					.collect(Collectors.joining(", ")) +
+					",\"photo\", \"sharing\", \"portfolio\", \"elliott\", \"bignell\""
+			);
 
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
@@ -715,8 +745,8 @@ class BucketController extends PaginationController {
 		catch (IOException ex) {
 			logger.info("Error accessing watermarked file \" + directory + '/' + file");
 		}
-		catch (Exception ex) {
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		if (null == watermarkedImage) {
@@ -771,8 +801,7 @@ class BucketController extends PaginationController {
 				return downloadFile("jpegs/" + arg1 + "/200px/" + arg2);
 			}
 			catch (IOException e) {
-				System.err.println("Error downloading file: " + e.getMessage());
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "Error downloading file: " + e.getMessage(), e);
 				return null;
 			}
 		}, directory, file);
@@ -851,12 +880,12 @@ class BucketController extends PaginationController {
 		}
 		catch (OutOfMemoryError oome) {
 
-			oome.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + oome.getMessage(), oome);
 			logger.severe("Clearing image chaches");
 			image200pxCacheMap.clear();
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return null;
@@ -884,9 +913,8 @@ class BucketController extends PaginationController {
 				String filename = "jpegs/" + jpeg.substring(12, jpeg.length());
 				item.setTitle(getExifEntries(filename).get("title"));
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
 
 			this.addKeywordAndRelationship(item, name);
@@ -917,9 +945,8 @@ class BucketController extends PaginationController {
 			String filename = "jpegs/" + name + "/" + jpeg.substring(12);
 			item.setTitle(getExifEntries(filename).get("title"));
 		}
-		catch (Exception ex) {
-			System.out.println(ex);
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		this.addKeywordAndRelationship(item, name);
@@ -1000,7 +1027,7 @@ class BucketController extends PaginationController {
 				}
 				catch (Exception e) {
 
-					e.printStackTrace();
+					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 
 					// Log the exception
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error moving file and thumbnail: " + e.getMessage());

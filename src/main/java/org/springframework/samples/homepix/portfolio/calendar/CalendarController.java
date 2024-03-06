@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -134,9 +135,8 @@ class CalendarController extends PaginationController {
 					years.add(new CalendarYear(Integer.parseInt(year)));
 				}
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
 		}
 

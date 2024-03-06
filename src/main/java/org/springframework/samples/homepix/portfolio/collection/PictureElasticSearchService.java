@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import lombok.Getter;
+import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.SSLContext;
@@ -9,10 +10,14 @@ import java.io.FileInputStream;
 import java.net.http.HttpClient;
 import java.security.KeyStore;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 @Getter
 public class PictureElasticSearchService {
+
+	protected static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	private final HttpClient httpClient;
 
@@ -45,7 +50,7 @@ public class PictureElasticSearchService {
 			return HttpClient.newBuilder().sslContext(sslContext).build();
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return null;

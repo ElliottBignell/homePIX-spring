@@ -47,6 +47,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
 @Controller
 public abstract class PaginationController implements AutoCloseable {
 
-	private static final Logger logger = Logger.getLogger(PaginationController.class.getName());
+	protected static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	protected Pagination pagination;
 
@@ -254,9 +255,8 @@ public abstract class PaginationController implements AutoCloseable {
 				folders.save(item);
 			}
 		}
-		catch (Exception ex) {
-			System.out.println(ex);
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 	}
 
@@ -293,9 +293,8 @@ public abstract class PaginationController implements AutoCloseable {
 				return "folders/folderList";
 			}
 		}
-		catch (Exception ex) {
-			System.out.println(ex);
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 		return "folders/folderList";
 	}
@@ -477,9 +476,8 @@ public abstract class PaginationController implements AutoCloseable {
 
 					// Process metadata and create/update PictureFile objects
 					processMetadata(properties, name, subFolder, results);
-				} catch (Exception ex) {
-					System.out.println(ex);
-					ex.printStackTrace();
+				} catch (Exception e) {
+					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 				}
 			}
 
@@ -631,9 +629,8 @@ public abstract class PaginationController implements AutoCloseable {
 					}
 				}
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
 		}
 
@@ -652,8 +649,8 @@ public abstract class PaginationController implements AutoCloseable {
 				folderCache = null;
 			}
 		}
-		catch (Exception ex) {
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return results;
@@ -940,11 +937,10 @@ public abstract class PaginationController implements AutoCloseable {
 				}
 			}
 		}
-		catch (Exception ex) {
+		catch (Exception e) {
 
 			results.put("title", "Error getting EXIF data");
-			System.out.println(ex);
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return results;
@@ -1076,16 +1072,6 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		else {
 
-			setStructuredDataForModel(
-				requestDTO,
-				model,
-				"homePIX Photo-sharing Site",
-				"ImageGallery",
-				"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
-				results,
-				"photo, sharing, portfolio, elliott, bignell"
-			);
-
 			model.put("startDate", requestDTO.getFromDate());
 			model.put("endDate", requestDTO.getToDate());
 			model.put("sort", requestDTO.getSort());
@@ -1137,7 +1123,7 @@ public abstract class PaginationController implements AutoCloseable {
 			+ "    \"name\": \"" + title + "\",\n"
 			+ "    \"description\": \"" + description + "\",\n"
 			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
-			+ "    \"datePublished\": \"2024-01-01\",\n"
+			+ "    \"datePublished\": \"2024-03-06\",\n"
 			+ "    \"thumbnailUrl\": \"" + filepath + "\",\n"
 			+ "    \"image\": [\n"
 			+ pictures.stream().map( item -> {
@@ -1147,6 +1133,7 @@ public abstract class PaginationController implements AutoCloseable {
 					+ "            \"contentUrl\": \"" + baseURL + item.getLargeFilename() + "\",\n"
 					+ "            \"thumbnail\": \"" + baseURL + item.getMediumFilename() + "\",\n"
 					+ "            \"description\": \"" + item.getTitle() + "\",\n"
+					+ "            \"license\": \"https://www.homepix.ch/licence.html\",\n"
 					+ "            \"datePublished\": \"" + item.getTaken_on() + "\",\n"
 					+ "            \"name\": \"" + item.getTitle() + "\",\n"
 					+ "            \"creditText\": \"Photography by Elliott Bignell\",\n"
@@ -1164,6 +1151,44 @@ public abstract class PaginationController implements AutoCloseable {
 
 		model.put("pageTitle", "homePIX Photo Server");
 		model.put("pageDescription", description);
+		model.put("pageKeywords", keywords);
+		model.put("startDate", requestDTO.getFromDate());
+		model.put("endDate", requestDTO.getToDate());
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
+	}
+
+	protected void setStructuredDataForModel(@ModelAttribute CollectionRequestDTO requestDTO,
+											 Map<String, Object> model,
+											 String type,
+											 PictureFile picture,
+											 String keywords
+	) {
+		String baseURL = "https://www.homepix.ch";
+
+		String structuredData = "{\n"
+			+ "    \"@context\": \"http://schema.org\",\n"
+			+ "    \"@type\": \"" + type + "\",\n"
+			+ "    \"name\": \"" + picture.getTitle() + "\",\n"
+			+ "    \"description\": \"" + picture.getTitle() + "\",\n"
+			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
+			+ "    \"datePublished\": \"" + picture.getTaken_on() + "\",\n"
+			+ "    \"contentUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
+			+ "    \"thumbnailUrl\": \"" + baseURL + picture.getMediumFilename() + "\",\n"
+			+ "    \"license\": \"https://www.homepix.ch/licence.html\",\n"
+			+ "    \"creditText\": \"Photography by Elliott Bignell\",\n"
+			+ "    \"keywords\": ["
+			+ keywords
+			+ "]"
+			+ "\n}\n";
+
+		//"license": "https://example.com/license",
+		//"acquireLicensePage": "https://example.com/how-to-use-my-images",
+
+		model.put("structuredData", structuredData);
+
+		model.put("pageTitle", "homePIX Photo Server");
+		model.put("pageDescription", picture.getTitle());
 		model.put("pageKeywords", keywords);
 		model.put("startDate", requestDTO.getFromDate());
 		model.put("endDate", requestDTO.getToDate());

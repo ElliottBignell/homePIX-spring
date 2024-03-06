@@ -24,6 +24,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -217,10 +218,8 @@ public class Calendar extends BaseEntity {
 
 			calendarYear.setQuarters(quarters);
 		}
-		catch (Exception ex) {
-
-			System.out.println(ex);
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 	}
 

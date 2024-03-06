@@ -16,9 +16,11 @@
 package org.springframework.samples.homepix.model;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.samples.homepix.portfolio.PaginationController;
 
 /**
  * Simple JavaBean domain object with an id property. Used as a base class for objects
@@ -29,6 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @MappedSuperclass
 public class BaseEntity implements Serializable {
+
+	protected static final Logger logger = Logger.getLogger(PaginationController.class.getName());
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

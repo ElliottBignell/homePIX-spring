@@ -19,6 +19,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.logging.Level;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -162,10 +163,8 @@ public class PictureFile extends BaseEntity {
 				}
 			}
 		}
-		catch (Exception ex) {
-
-			System.out.println(ex);
-			ex.printStackTrace();
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
 		return this.filename;
@@ -184,11 +183,8 @@ public class PictureFile extends BaseEntity {
 			String result = "/web-images/" + this.folder.getName() + "/" + filename;
 			return result;
 		}
-		catch (Exception ex) {
-
-			System.out.println(ex);
-			ex.printStackTrace();
-
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			return this.filename;
 		}
 	}

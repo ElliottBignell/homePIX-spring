@@ -37,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -182,19 +183,16 @@ class FolderController extends PaginationController {
 			try {
 				item.setTitle(Folder.getExifTitle(filename + "/" + name));
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
 
 			try {
 				pictureFiles.save(item);
 			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
+			catch (Exception e) {
+				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			}
-
 
 			pictures.add(item);
 		}
@@ -323,10 +321,9 @@ class FolderController extends PaginationController {
 
 			return targetStream.readAllBytes();
 		}
-		catch (IOException ex) {
+		catch (IOException e) {
 
-			System.out.println(ex);
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 			return null;
 		}
 	}

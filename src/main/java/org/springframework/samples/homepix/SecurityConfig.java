@@ -69,25 +69,27 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 							return request.getRequestURI().endsWith(".xml");
 						}
 					}).permitAll()
-					.requestMatchers("/login").permitAll()
-					.requestMatchers(
-						"/",
-						"/buckets/**",
-						"/albums/**",
-						"/album/**",
-						"/collection/**",
-						"/calendar/**",
-						"/web-images/**",
-						"/resources/**",
-						"/css/**",
-						"/js/**",
-						"/static/**",
-						"/register",
-						"/sitemap.xml",
-						"/album*.xml",
-						"/folder*.xml",
-						"/index.xml"
-					)
+			.requestMatchers(
+				"/login",
+					"/",
+					"/index.xml",
+					"/licence.html",
+					"/about/",
+					"/buckets/**",
+					"/albums/**",
+					"/album/**",
+					"/collection/**",
+					"/calendar/**",
+					"/web-images/**",
+					"/resources/**",
+					"/css/**",
+					"/js/**",
+					"/static/**",
+					"/register",
+					"/sitemap.xml",
+					"/album*.xml",
+					"/folder*.xml"
+				)
 				.permitAll()
 				.anyRequest().authenticated()
 			.and()
