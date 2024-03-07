@@ -625,16 +625,23 @@ class BucketController extends PaginationController {
 			);
 			Iterable<Album> albums = this.albums.findAll();
 
+			String keywords = this.keywordRelationships.findByPictureId(pictureID)
+					.stream()
+					.map(kr -> '\"' + kr.getKeyword().getWord() + '\"') // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
+					.collect(Collectors.joining(", "));
+
+			if (keywords.length() > 0) {
+				keywords += ',';
+			}
+
+			keywords += "\"photo\", \"sharing\", \"portfolio\", \"elliott\", \"bignell\"";
+
 			setStructuredDataForModel(
 				requestDTO,
 				model,
 				"ImageObject",
 				file,
-				this.keywordRelationships.findByPictureId(pictureID)
-					.stream()
-					.map(kr -> '\"' + kr.getKeyword().getWord() + '\"') // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
-					.collect(Collectors.joining(", ")) +
-					",\"photo\", \"sharing\", \"portfolio\", \"elliott\", \"bignell\""
+				keywords
 			);
 
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
