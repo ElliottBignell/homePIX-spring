@@ -385,13 +385,13 @@
 
             <div id="picture_share"  style="position:absolute;top:0.5em;height:1.5em;width:5em;">
               <span>
-                <a href="https://twitter.com/intent/tweet?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on twitter">
+                <a th:href="@{https://twitter.com/intent/tweet?text=__${ picture.title }__&url=__${ picture.largeFilename}__}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on twitter">
                   <svg width="48" height="48" fill="none" class="bo">
                       <path d="M22.05 7.54a4.47 4.47 0 0 0-3.3-1.46 4.53 4.53 0 0 0-4.53 4.53c0 .35.04.7.08 1.05A12.9 12.9 0 0 1 5 6.89a5.1 5.1 0 0 0-.65 2.26c.03 1.6.83 2.99 2.02 3.79a4.3 4.3 0 0 1-2.02-.57v.08a4.55 4.55 0 0 0 3.63 4.44c-.4.08-.8.13-1.21.16l-.81-.08a4.54 4.54 0 0 0 4.2 3.15 9.56 9.56 0 0 1-5.66 1.94l-1.05-.08c2 1.27 4.38 2.02 6.94 2.02 8.3 0 12.86-6.9 12.84-12.85.02-.24 0-.43 0-.65a8.68 8.68 0 0 0 2.26-2.34c-.82.38-1.7.62-2.6.72a4.37 4.37 0 0 0 1.95-2.51c-.84.53-1.81.9-2.83 1.13z" fill="#0af">
                       </path>
                   </svg>
                 </a>
-                <a href="https://www.facebook.com/v5.0/dialog/share/?text={{ picture.title }}&url=https://elliottcb.pythonanywhere.com''" target="_blank" rel="noreferrer noopener" aria-label="Share this image on facebook">
+                <a th:href="@{https://www.facebook.com/v5.0/dialog/share/?text=__${ picture.title }__&url=__${ picture.largeFilename}__}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on facebook">
                     <svg width="48" height="48" fill="none" class="bo">
                         <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#fff">
                         </path>
@@ -399,7 +399,7 @@
                         </path>
                     </svg>
                 </a>
-                <a th:href="@{https://www.linkedin.com/sharing/share-offsite/?url=${ picture.largeFilename}}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
+                <a th:href="@{'https://www.linkedin.com/sharing/share-offsite/?url=https://www.homepix.ch/buckets/' + __${picture.folderName}__ + '/item/__${current}__?search=&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#'}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
                     <svg width="48" height="48" fill="none" class="bo">
                         <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#07c">
                         </path>
@@ -416,7 +416,7 @@
               <span class="titletext propertyfont">
                      ID:
               </span>
-              <span id="filename" class="titlecontent" th:text="${ picture.id }">
+              <span id="id" class="titlecontent" th:text="${ picture.id }">
               </span>
               <br>
               <span th:if="${picture.title}">
@@ -431,21 +431,32 @@
                 <span class="titletext propertyfont">
                   Location:
                 </span>
-                <span id="description" class="titlecontent" th:text="${picture.location}">
+                <span id="location" class="titlecontent" th:text="${picture.location.location}">
                 </span>
+                <br>
+              </span>
+              <span th:if="${picture.gps}">
+                <span class="titletext propertyfont">
+                  Coordinates:
+                </span>
+                <a th:href="@{/maps/__${picture?.id}__}">
+                  <img th:src="${mapUrl}" alt="Map showing nearby pictures" />
+                  <span id="gps" class="titlecontent" th:text="${picture.gps}">
+                  </span>
+                </a>
                 <br>
               </span>
               <span class="titletext propertyfont">
                 Hits:
               </span>
-              <span id="description" class="titlecontent" th:text="${picture.hits}">
+              <span id="hits" class="titlecontent" th:text="${picture.hits}">
               </span>
               <br>
               <span th:if="${picture.primaryCategory}">
                 <span class="titletext propertyfont">
                   Category 1:
                 </span>
-                <span id="description" class="titlecontent" th:text="${ picture.primaryCategory }">
+                <span id="category1" class="titlecontent" th:text="${ picture.primaryCategory }">
                 </span>
                 <br>
               </span>
@@ -453,7 +464,7 @@
                 <span class="titletext propertyfont">
                   Category 2:
                 </span>
-                <span id="description" class="titlecontent" th:text="${ picture.secondaryCategory }">
+                <span id="category2" class="titlecontent" th:text="${ picture.secondaryCategory }">
                 </span>
                 <br>
               </span>
@@ -474,6 +485,7 @@
                 </span>
               </span>
               <br>
+
               <span class="titletext propertyfont">
                   Dimensions:
               </span>
@@ -483,43 +495,43 @@
               <span class="titletext propertyfont">
                   Camera Model:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.cameraModel}"> x <br> </span>
+              <span id="camera-model" class="titlecontent" th:text="${picture.cameraModel}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
                   Exposure Time:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.exposureTime}"> x <br> </span>
+              <span id="exposuretime" class="titlecontent" th:text="${picture.exposureTime}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
                   F-Number:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.fNumber}"> x <br> </span>
+              <span id="f-number" class="titlecontent" th:text="${picture.fNumber}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
                   Exposure Program:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.exposureProgram}"> x <br> </span>
+              <span id="exposure-program" class="titlecontent" th:text="${picture.exposureProgram}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
                   Metering Mode:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.meteringMode}"> x <br> </span>
+              <span id="metering-mode" class="titlecontent" th:text="${picture.meteringMode}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
                   Light-Source:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.lightSource}"> x <br> </span>
+              <span id="light-source" class="titlecontent" th:text="${picture.lightSource}"> x <br> </span>
               <br>
 
               <span class="titletext propertyfont">
-                  FocalLength:
+                  Focal-Length:
               </span>
-              <span id="dimensions" class="titlecontent" th:text="${picture.focalLength}"> x <br> </span>
+              <span id="focal-length" class="titlecontent" th:text="${picture.focalLength}"> x <br> </span>
               <br>
 
               <span th:if="false">

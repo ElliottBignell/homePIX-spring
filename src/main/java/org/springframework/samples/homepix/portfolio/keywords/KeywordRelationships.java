@@ -13,11 +13,11 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 @Table(name = "keyword_relationships_new")
 public class KeywordRelationships extends BaseEntity {
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "keyword_id")
 	private Keyword keyword;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "entry_id")
 	private PictureFile pictureFile;
 
@@ -29,4 +29,6 @@ public class KeywordRelationships extends BaseEntity {
 	public Integer getPictureId() {
 		return (pictureFile != null) ? pictureFile.getId() : null;
 	}
+	public Keyword getKeyword() { return keyword; }
 }
+

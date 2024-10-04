@@ -27,7 +27,9 @@ public class PictureElasticSearchService {
 
 	private HttpClient createHttpClientWithCustomTrustStore() {
 
-		try {
+		return null;
+
+		/*try {
 
 			String trustStorePath = "/usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts";
 			String trustStorePassword = "changeit";
@@ -53,7 +55,7 @@ public class PictureElasticSearchService {
 			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 
-		return null;
+		return null;*/
 	}
 
 	String getEncodedCredentials() {

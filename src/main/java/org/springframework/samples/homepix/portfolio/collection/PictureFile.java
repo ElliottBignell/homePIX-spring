@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Level;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -28,7 +29,11 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.album.AlbumContent;
+import org.springframework.samples.homepix.portfolio.categories.Category;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 
 /**
  * Simple business object representing a pet.
@@ -81,16 +86,16 @@ public class PictureFile extends BaseEntity {
 	private LocalDateTime taken_on;
 
 	@ManyToOne
-	@JoinColumn(name = "location")
-	private PictureFileType location;
+	@JoinColumn(name = "location_id")
+	private Location location;
 
 	@ManyToOne
 	@JoinColumn(name = "primary_category")
-	private PictureFileType primaryCategory;
+	private Category primaryCategory;
 
 	@ManyToOne
 	@JoinColumn(name = "secondary_category")
-	private PictureFileType secondaryCategory;
+	private Category secondaryCategory;
 
 	@Column(name = "hits")
 	private int hits;
@@ -119,11 +124,33 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "Roles")
 	private String roles;
 
+	@Column(name = "gps")
+	private String gps;
+
+	@Column(name = "latitude")
+	private Float latitude;
+
+	@Column(name = "longitude")
+	private Float longitude;
+
+	@JsonIgnore // This will exclude the field from JSON serialization
 	@OneToMany(mappedBy = "pictureFile")
 	private List<AlbumContent> albumContent;
 
 	@Column(name = "aspect_ratio")
 	private Float aspect_ratio;
+
+	public String getGpslink() {
+		return String.format("https://maps.google.com/?q=%f,%f", latitude, longitude);
+	}
+
+	public String getGPSThumbnail() {
+
+		String key = System.getenv("GOOGLE_MAPS_KEY"); // Accessing environment variable
+
+		return String.format("https://maps.googleapis.com/maps/api/staticmap?center=%f,%f&zoom=14&size=300x300&markers=color:red|%f,%f&key=%s",
+			latitude, longitude, latitude, longitude, key);
+	}
 
 	public String fileNameOnly() {
 
@@ -191,6 +218,10 @@ public class PictureFile extends BaseEntity {
 
 	public String getDisplayFilename() {
 		return this.folder.getName() + "/" + filename;
+	}
+
+	public String getFolderName() {
+		return this.folder.getName();
 	}
 
 	public Integer getDisplayWidth() {

@@ -17,7 +17,6 @@ package org.springframework.samples.homepix.portfolio.collection;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
@@ -25,7 +24,6 @@ import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -41,10 +39,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -58,7 +53,7 @@ class PictureCollectionController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "collection/createOrUpdateOwnerForm";
 
 	private final PictureCollectionRepository pictures;
-
+	private final PictureFileService pictureFileService;
 	private final PictureElasticSearchService pictureElasticSearchService;
 
 	public PictureCollectionController(PictureFileRepository pictureFiles,
@@ -68,11 +63,13 @@ class PictureCollectionController extends PaginationController {
 									   KeywordRepository keyword,
 									   KeywordRelationshipsRepository keywordsRelationships,
 									   FolderService folderService,
+									   PictureFileService pictureFileService,
 									   PictureElasticSearchService pictureElasticSearchService
 	) {
 
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.pictures = pictures;
+		this.pictureFileService = pictureFileService;
 		this.pictureElasticSearchService = pictureElasticSearchService;
 	}
 
@@ -89,7 +86,7 @@ class PictureCollectionController extends PaginationController {
 
 	@GetMapping("/collections")
 	public String processFindForm(PictureCollection pictureCollection, BindingResult result,
-			Map<String, Object> model) {
+								  Map<String, Object> model) {
 
 		// allow parameterless GET request for /collections to return all records
 		if (pictureCollection.getName() == null) {
@@ -122,22 +119,23 @@ class PictureCollectionController extends PaginationController {
 	public String processFindCollectionsSlashNoSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 													 @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
 													 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-													  PictureCollection pictureCollection,
-													  BindingResult result,
-													  Map<String, Object> model,
-													  Authentication authentication) {
+													 PictureCollection pictureCollection,
+													 BindingResult result,
+													 Map<String, Object> model,
+													 Authentication authentication) {
 
 		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
 	/**
 	 * Custom handler for displaying an collection.
+	 *
 	 * @param id the ID of the collection to display
 	 * @return a ModelMap with the model attributes for the view
 	 */
 	@GetMapping("/collection/{id}")
 	public String showCollection(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("id") int pictureId, Map<String, Object> model) {
+								 @PathVariable("id") int pictureId, Map<String, Object> model) {
 
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
 		mav.addObject(this.pictures.findAll());
@@ -152,32 +150,32 @@ class PictureCollectionController extends PaginationController {
 			.stream()
 			.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
 			.collect(Collectors.joining(", "))
-			);
+		);
 
 		return "picture/pictureFile.html";
 	}
 
 	@GetMapping("/collections/{id}")
 	public String showCollections(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("id") int id, Map<String, Object> model) {
+								  @PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
 	}
 
 	@GetMapping("/collection/{id}/")
 	public String showCollectionsSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("id") int id, Map<String, Object> model) {
+									   @PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
 	}
 
 	@GetMapping("/collections/{id}/")
 	public String showCollectionssSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("id") int id, Map<String, Object> model) {
+										@PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
 	}
 
 	@GetMapping("/collection/{dummyId}/item/{id}")
 	public String showCollection(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-			@PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
+								 @PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
 	}
 
@@ -185,23 +183,6 @@ class PictureCollectionController extends PaginationController {
 	public String showCollectionSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
 									  @PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
 		return showCollection(fromDate, toDate, id, model);
-	}
-
-	@Secured("ROLE_ADMIN")
-	@PostMapping("/image/delete/{id}")
-	public ResponseEntity<String>  deleteImage(@PathVariable("id") int id, Map<String, Object> model) {
-
-		Optional<PictureFile> file = this.pictureFiles.findById(Integer.valueOf(id));
-
-		if (file.isPresent()) {
-
-			file.get().setIsScary(true);
-			this.pictureFiles.save(file.get());
-
-			return ResponseEntity.ok("Deleted successfully");
-		}
-
-		return ResponseEntity.ok("Delete failed");
 	}
 
 	@Override
@@ -244,19 +225,17 @@ class PictureCollectionController extends PaginationController {
 			.POST(BodyPublishers.ofString(jsonPayload))
 			.build();
 
-        HttpResponse<String> response = null;
+		HttpResponse<String> response = null;
 
-        try {
-            response = client.send(request, BodyHandlers.ofString());
-        }
-		catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-		catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+		try {
+			response = client.send(request, BodyHandlers.ofString());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 
-        System.out.println("Response status code: " + response.statusCode());
+		System.out.println("Response status code: " + response.statusCode());
 		System.out.println("Response body: " + response.body());
 
 		return "redirect:/buckets";
@@ -287,20 +266,54 @@ class PictureCollectionController extends PaginationController {
 			.POST(BodyPublishers.ofString(jsonQuery))
 			.build();
 
-        HttpResponse<String> response = null;
+		HttpResponse<String> response = null;
 
-        try {
-            response = client.send(request, BodyHandlers.ofString());
-        }
-		catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-		catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+		try {
+			response = client.send(request, BodyHandlers.ofString());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 
-        System.out.println("Response status code: " + response.statusCode());
+		System.out.println("Response status code: " + response.statusCode());
 		System.out.println("Response body: " + response.body());
+
+		return "redirect:/buckets";
+	}
+
+	@GetMapping("/maps/{id}")
+	public String retrieveMap(Map<String, Object> model, @PathVariable("id") int id) throws Exception {
+
+		Optional<PictureFile> picture = pictureFiles.findById(id);
+
+		if (picture.isPresent()) {
+
+			PictureFile pictureFile = picture.get();
+
+			model.put("picture", pictureFile);
+
+			double refLatitude = pictureFile.getLatitude();
+			double refLongitude = pictureFile.getLongitude();
+
+			// Convert double[] to List<Double> for Thymeleaf compatibility
+			List<List<Double>> nearbyCoordinates = pictureFileService.getNearbyPositions(refLatitude, refLongitude, 5000)
+				.stream()
+				.map(coord -> Arrays.asList(coord[0], coord[1]))
+				.collect(Collectors.toList());
+
+			model.put("refLatitude", refLatitude);
+			model.put("refLongitude", refLongitude);
+			model.put("nearbyCoordinates", nearbyCoordinates);
+
+			// Convert double[] to List<Double> for Thymeleaf compatibility
+			List<PictureFile> nearbyPictures = pictureFileService.getNearbyPictures(refLatitude, refLongitude, 5000);
+			model.put("nearbyPictures", nearbyPictures);
+
+			System.out.println(nearbyCoordinates);
+
+			return "picture/pictureMap.html";
+		}
 
 		return "redirect:/buckets";
 	}

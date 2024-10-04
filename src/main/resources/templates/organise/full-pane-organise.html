@@ -62,10 +62,11 @@
                               </span>
                             </section>
                           </a>
-                          <a th:id="@{btn__${entry.id}__}"
-                          <figcaption class="tt_subject">
-                            <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${entry.title}"></div>
-                          </figcaption>
+                          <a th:id="@{btn__${entry.id}__}">
+                            <figcaption class="tt_subject">
+                              <div th:id="@{div-title-__${entry.id}__}" style="text-color:black;font-size:2vh;text-align:right;vertical-aign:middle;top:0;left:0;height:3vh;width:30vw;" th:text="${entry.title}"></div>
+                              <div th:id="@{div-id-__${entry.id}__}" style="text-color:black;font-size:2vh;text-align:right;vertical-aign:middle;top:2vh;left:0;height:10vh;width:30vw;" th:text="${entry.id}"></div>
+                            </figcaption>
                           </a>
                         </figure>
                       </c>
@@ -90,7 +91,7 @@
   <div class="organise-right">
     <figure class="tt_base droppable draggable"
             th:id="@{figure-__${current_picture.id}__}"
-            style="height:75vh;width:65vw;"
+            style="height:85vh;width:65vw;"
     >
       <a th:id="@{picture__${current_picture.id}__}"
       >
@@ -98,9 +99,9 @@
           <span id="main-picture" class="tt_subject">
             <img th:id="@{picture__${current_picture.id}__}"
                  class="lazyload imageinlist"
-                 style="position:relative;top:0;left:0;width:75vw;height:75vh;object-fit:contain;object-position:left center;"
+                 style="position:relative;top:0;left:0;width:85vw;height:75vh;object-fit:contain;object-position:left center;"
                  th:src="${current_picture.mediumFilename}"
-                 th:data-src="${current_picture.mediumFilename}"
+                 th:data-src="${current_picture.largeFilename}"
                  th:alt="${current_picture?.title}"
             >
           </span>
@@ -108,7 +109,8 @@
       </a>
       <a th:id="@{btn__${current_picture.id}__}">
         <figcaption class="tt_subject">
-          <div style="text-align:right;vertical-aign:middle;right;top:0;left:0;height:10vh;width:30vw;" th:text="${current_picture.title}"></div>
+          <div id="div-title" style="text-color:black;font-size:2vh;text-align:right;vertical-aign:middle;top:0;left:0;height:3vh;width:30vw;" th:text="${current_picture.title}"></div>
+          <div id="div-id" style="text-color:black;font-size:2vh;text-align:right;vertical-aign:middle;top:2vh;left:0;height:10vh;width:30vw;" th:text="${current_picture.id}"></div>
         </figcaption>
       </a>
     </figure>
@@ -131,34 +133,46 @@
 
             // Trigger your delete event or function here
             // For example, you can call a function to delete the figure
-            deleteFigure(figure);
+            deleteFigure( getSelectedFigureIDs() );
           }
         });
       });
 
       // Function to delete the figure
-      function deleteFigure(figure) {
+      function deleteFigure(figures) {
 
-        var id = figure.id.replace("picture", "");
+        console.log(figures);
 
         $.ajax({
 
-          url: '/image/delete/' + id,
-          method: 'POST',
+          url: '/organise/delete/' + figures,
+          method: 'GET',
           dataType: 'text',
           success: function(response) {
 
             if (response === 'Deleted successfully') {
 
-              var id = figure.id.replace("picture", "figure-");
-              var element = document.getElementById(id);
+              console.log(response);
 
-              console.log(figure.id);
-              console.log(id);
-              console.log(element);
+              // Split the comma-separated list of IDs
+              var idArray = figures.split(',');
 
-              // Remove the figure from the DOM
-              element.remove();
+              // Iterate over each ID
+              idArray.forEach(function(id) {
+
+                // Construct the figure ID
+                var figureId = 'figure-' + id.trim();
+
+                console.log(figureId);
+
+                // Get the element by ID
+                var element = document.getElementById(figureId);
+
+                // If element exists, remove it from the DOM
+                if (element) {
+                  element.remove();
+                }
+              });
             } else {
               // Handle other success cases if needed
             }
@@ -167,7 +181,7 @@
             console.error('Error:', error);
           }
         });
-      }
+       }
 
       // Iterate over each figure
       figures.forEach(function(figure) {
@@ -176,7 +190,7 @@
         figure.addEventListener("click", function(event) {
 
           // Get the ID of the clicked figure
-          var figureId = figure.id;
+          var figureId = figure.id.replace("picture", "");
 
           // Get the src and data-src properties of the clicked img
           var src = figure.getAttribute("src");
@@ -199,9 +213,37 @@
           var mainPicture = document.querySelector("#main-picture");
           mainPicture.innerHTML = ""; // Clear existing content
           mainPicture.appendChild(newImg);
+
+          console.log("div-title-" + figureId);
+          console.log(figure.title);
+          document.getElementById("div-title").textContent = document.getElementById("div-title-" + figureId).textContent;
+          console.log(figure.id);
+          document.getElementById("div-id").textContent = document.getElementById("div-id-" + figureId).textContent;
         });
       });
     });
+
+    function getSelectedFigureIDs() {
+
+        // Select all elements with the class "selected"
+        var selectedFigures = document.querySelectorAll('.selected');
+
+        // Array to store IDs
+        var idList = [];
+
+        // Iterate over selected elements
+        selectedFigures.forEach(function(figure) {
+            // Extract numeric part from ID
+            var id = figure.id.split('-')[1];
+            // Add ID to list
+            idList.push(id);
+        });
+
+        // Convert array to comma-delimited string
+        var idString = idList.join(',');
+
+        return idString;
+    }
   </script>
 
   <script th:src="@{/resources/js/organise.js}" type="text/javascript" async=""></script>

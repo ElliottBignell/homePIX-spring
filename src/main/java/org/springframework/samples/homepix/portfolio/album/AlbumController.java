@@ -97,6 +97,7 @@ class AlbumController extends PaginationController {
 			catch (Exception ex) {
 
 				System.out.println(ex);
+				ex.printStackTrace();
 				System.out.println(album);
 				return "redirect:/album/";
 			}

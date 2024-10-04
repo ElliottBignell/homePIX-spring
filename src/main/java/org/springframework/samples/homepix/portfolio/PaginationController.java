@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix.portfolio;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
@@ -84,6 +85,8 @@ public abstract class PaginationController implements AutoCloseable {
 	protected static S3Client s3Client = null;
 
 	private AwsCredentials awsCredentials;
+
+	protected String filepath;
 
 	// @Value("${homepix.images.path}")
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
@@ -576,6 +579,7 @@ public abstract class PaginationController implements AutoCloseable {
 						}
 						catch (Exception ex) {
 							System.out.println(ex);
+							ex.printStackTrace();
 						}
 
 						// TODO: Split keywords and add singly!!!
@@ -617,6 +621,7 @@ public abstract class PaginationController implements AutoCloseable {
 						}
 						catch (Exception ex) {
 							System.out.println(ex);
+							ex.printStackTrace();
 						}
 
 						if (picture.getRoles() == null || picture.getRoles().equals("")) {
@@ -754,20 +759,28 @@ public abstract class PaginationController implements AutoCloseable {
 	}
 
 	private boolean matchesTitleOrKeyword(PictureFile item, Pattern pattern, Map<Integer, Set<String>> keywordMap) {
-		// Check if title matches
-		Matcher titleMatcher = pattern.matcher(item.getTitle());
-		if (titleMatcher.find()) {
-			return true;
-		}
 
-		titleMatcher = pattern.matcher(item.getFolder().getDisplayName());
-		if (titleMatcher.find()) {
-			return true;
-		}
+		try {
 
-		// Check if any associated keyword matches
-		Set<String> keywords = keywordMap.getOrDefault(item.getId(), Collections.emptySet());
-		return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
+			// Check if title matches$
+			Matcher titleMatcher = pattern.matcher(item.getTitle());
+			if (titleMatcher.find()) {
+				return true;
+			}
+
+			titleMatcher = pattern.matcher(item.getFolder().getDisplayName());
+			if (titleMatcher.find()) {
+				return true;
+			}
+
+			// Check if any associated keyword matches
+			Set<String> keywords = keywordMap.getOrDefault(item.getId(), Collections.emptySet());
+			return keywords.stream().anyMatch(word -> pattern.matcher(word).find());
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
 	}
 
 	protected boolean isAuthorised(PictureFile pictureFile, Authentication authentication) {
@@ -794,12 +807,12 @@ public abstract class PaginationController implements AutoCloseable {
 
 	private void setDate(PictureFile picture, Map<String, String> properties) {
 
-		try {
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+			"yyyy:MM:dd HH:mm:ss",
+			Locale.ENGLISH
+		);
 
-			final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-				"yyyy:MM:dd HH:mm:ss",
-				Locale.ENGLISH
-			);
+		try {
 
 			String dateTimeString = properties.get("ProfileDateTime");
 
@@ -829,7 +842,21 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 		}
 		catch (Exception ex) {
+
+			// TODO: Duplicate date code
 			System.out.println(ex);
+			ex.printStackTrace();
+
+			final String format = "yyyy-MM-dd";
+
+			Supplier<String> today = () -> {
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+				LocalDateTime now = LocalDateTime.now();
+				return dtf.format(now);
+			};
+			LocalDateTime dateTime = LocalDateTime.parse(today.get(), formatter);
+
+			picture.setTaken_on(dateTime);
 		}
 	}
 
@@ -1113,7 +1140,7 @@ public abstract class PaginationController implements AutoCloseable {
 											 String keywords
 	) {
 		String baseURL = "https://www.homepix.ch";
-		String filepath = pictures.isEmpty()
+		filepath = pictures.isEmpty()
 			? baseURL + "/web-images/Stuff/200px/dsc_185760_200px.jpg"
 			: pictures.iterator().next().getFilename();
 
@@ -1127,7 +1154,8 @@ public abstract class PaginationController implements AutoCloseable {
 			+ "    \"thumbnailUrl\": \"" + filepath + "\",\n"
 			+ "    \"image\": [\n"
 			+ pictures.stream().map( item -> {
-				return "        {\n"
+				return item == null ? "" :
+					"        {\n"
 					+ "            \"@context\": \"http://schema.org\",\n"
 					+ "            \"@type\": \"ImageObject\",\n"
 					+ "            \"contentUrl\": \"" + baseURL + item.getLargeFilename() + "\",\n"

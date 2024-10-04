@@ -9,12 +9,14 @@
       <env name="ELASTICSEARCH_PASSWORD" value="tVOzP=PY11n=fgkVeAM9" />
       <env name="INSTANCE_PASSWORD" value="jU2pcbuxtrbkjpg" />
       <env name="KEYSTORE_PASSWORD" value="Bobby the cat" />
+      <env name="NEW_PASSWORD" value="nS9ibciwrwhpurd" />
       <env name="server.ssl.key-store" value="file:/media/elliott/Archive3/certificate.p12" />
       <env name="spring.datasource.password" value="AVNS_WbKfVj1HNhgrMLgBba2" />
       <env name="spring.datasource.url" value="jdbc:mysql://homepix-db-exoscale-2da4e244-e568-49ca-82e2-2987cf441726.a.aivencloud.com:21699/defaultdb?useSSL=true&amp;requireSSL=true" />
       <env name="spring.datasource.username" value="avnadmin" />
       <env name="spring.profiles.active" value="mysql" />
       <env name="SSL_KEYSTORE" value="file:/media/elliott/Archive3/certificate.p12" />
+      <env name="GOOGLE_MAPS_KEY" value="AIzaSyCMTn_xDVuQaTSTSqCbp01M0yH7eKqzP3c" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homepix" />

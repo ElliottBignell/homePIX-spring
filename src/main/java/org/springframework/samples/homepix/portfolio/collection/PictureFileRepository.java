@@ -182,6 +182,23 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		Pageable pageable
 	);
 
+	@Query(value = "SELECT id, latitude, longitude, " +
+		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
+		"FROM picture_file " +
+		"HAVING distance <= ?3 AND distance > 100", nativeQuery = true)
+	List<Object[]> findPositionsWithinRadiusWithoutCrowding(double latitude, double longitude, int radius);
+
+	@Query(value = "SELECT pf.*, " +
+		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
+		"FROM picture_file AS pf " +
+		"HAVING distance <= ?3 AND distance > 100", nativeQuery = true)
+	List<PictureFile> findPicturesWithinRadiusWithoutCrowding(double latitude, double longitude, int radius);
+
+	@Query(value = "SELECT id, latitude, longitude, " +
+		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
+		"FROM picture_file " +
+		"HAVING distance <= 1000", nativeQuery = true)
+	List<Object[]> findPicturesWithinRadius(double latitude, double longitude, int radius);
 
 	default Map<LocalDate, Long> getCountByTakenOn() {
 
@@ -193,6 +210,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 				entry -> (Long) entry[1]
 			));
 	}
+
 
 	List<PictureFile> findAll(Specification<PictureFile> spec, Sort sort);
 }

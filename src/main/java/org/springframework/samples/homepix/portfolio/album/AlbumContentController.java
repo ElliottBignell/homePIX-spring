@@ -98,6 +98,7 @@ public class AlbumContentController extends AlbumContentBaseController {
 				catch (Exception ex) {
 
 					System.out.println(ex);
+					ex.printStackTrace();
 					System.out.println(albumContent);
 					return "redirect:/albums/" + Long.toString(albumId);
 				}

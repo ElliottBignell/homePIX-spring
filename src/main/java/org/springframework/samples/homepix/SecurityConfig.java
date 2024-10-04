@@ -88,7 +88,12 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/register",
 					"/sitemap.xml",
 					"/album*.xml",
-					"/folder*.xml"
+					"/folder*.xml",
+					"/api/pictures",
+					"/api/pictures/**",
+					"/api/keywords",
+					"/api/keywords/**",
+					"/maps/**"
 				)
 				.permitAll()
 				.anyRequest().authenticated()

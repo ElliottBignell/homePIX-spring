@@ -1,28 +1,31 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.samples.homepix.portfolio.filtering.DateRangeSpecification;
-import org.springframework.samples.homepix.portfolio.filtering.DateSortStrategy;
-import org.springframework.samples.homepix.portfolio.filtering.NameSortStrategy;
 import org.springframework.samples.homepix.portfolio.filtering.PictureFileSpecification;
-import org.springframework.samples.homepix.portfolio.filtering.PictureFileSortStrategy;
 import org.springframework.samples.homepix.portfolio.filtering.SearchTextSpecification;
 import org.springframework.samples.homepix.portfolio.filtering.SortDirection;
 import org.springframework.data.domain.Sort;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.stereotype.Service;
 
 // Service Layer
+@Service
 public class PictureFileService {
 
-	protected final PictureFileRepository pictureFiles;
+	protected final PictureFileRepository pictureFileRepository;
+
+	@Autowired
+	private KeywordRelationshipsRepository keywordRelationshipRepository;
 
 	@Autowired
     public PictureFileService(PictureFileRepository pictureFiles) {
-        this.pictureFiles = pictureFiles;
+        this.pictureFileRepository = pictureFiles;
     }
 
     public List<PictureFile> getPhotos(Date startDate, Date endDate, String searchText, SortDirection sortDirection) {
@@ -38,8 +41,32 @@ public class PictureFileService {
 		Sort sort = Sort.by(sortDirection == SortDirection.ASC ? Sort.Order.asc("fieldName") : Sort.Order.desc("fieldName"));
 
 		// Apply specifications and sorting strategy to retrieve data
-		List<PictureFile> result = pictureFiles.findAll(compositeSpec, sort);
+		List<PictureFile> result = pictureFileRepository.findAll(compositeSpec, sort);
 
 		return result;
+	}
+
+	public List<double[]> getNearbyPositions(double refLatitude, double refLongitude, int radius) {
+
+		// Call the repository to find nearby pictures
+		List<Object[]> results = pictureFileRepository.findPositionsWithinRadiusWithoutCrowding(refLatitude, refLongitude, radius);
+
+		// Transform the result into a list of coordinates (latitude, longitude)
+		List<double[]> nearbyCoordinates = new ArrayList<>();
+		for (Object[] result : results) {
+			double latitude = ((Number) result[1]).doubleValue();
+			double longitude = ((Number) result[2]).doubleValue();
+			nearbyCoordinates.add(new double[]{latitude, longitude});
+		}
+
+		return nearbyCoordinates;
+	}
+
+	public List<PictureFile> getNearbyPictures(double refLatitude, double refLongitude, int radius) {
+
+		// Call the repository to find nearby pictures
+		List<PictureFile> results = pictureFileRepository.findPicturesWithinRadiusWithoutCrowding(refLatitude, refLongitude, radius);
+
+		return results;
 	}
 }

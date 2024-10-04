@@ -31,6 +31,7 @@ import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumService;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -59,7 +60,6 @@ import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 // Define a class-level logger
@@ -80,6 +80,8 @@ class BucketController extends PaginationController {
 
 	private AlbumService albumService;
 
+	private final PictureFileService pictureFileService;
+
 	@FunctionalInterface
 	interface BucketOp<One, Two, Three, Four> {
 
@@ -93,10 +95,12 @@ class BucketController extends PaginationController {
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
 							FolderService folderService,
-							AlbumService albumService
+							AlbumService albumService,
+							PictureFileService pictureFileService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumService = albumService;
+		this.pictureFileService = pictureFileService;
 	}
 
 	@InitBinder
@@ -608,6 +612,10 @@ class BucketController extends PaginationController {
 			int pictureID = file.getId();
 
 			model.put("picture", file);
+			model.put("current", id);
+			model.put("title", "This title");
+			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
+			model.put("description", "This description");
 			model.put("baseLink", "/buckets/" + name);
 			model.put("albums", this.albums.findAll());
 			model.put("folders", this.folders.findAll().stream()
@@ -644,8 +652,82 @@ class BucketController extends PaginationController {
 				keywords
 			);
 
+			int radius = 1000;
+
+			if (null != file.getLatitude() && null != file.getLongitude()) {
+
+				// Get the reference image's latitude and longitude
+				double refLatitude = file.getLatitude();
+				double refLongitude = file.getLongitude();
+
+				List<double[]> nearbyCoordinates = pictureFileService.getNearbyPositions(refLatitude, refLongitude, radius);
+				String key = System.getenv("GOOGLE_MAPS_KEY");
+				String staticMapUrl = generateGoogleStaticMapWithMarkers(refLatitude, refLongitude, nearbyCoordinates, key);
+				String liveMapUrl = generateGoogleMapsUrlWithMarkers(nearbyCoordinates, refLatitude, refLongitude);
+
+				model.put("mapUrl", staticMapUrl);
+				model.put("gpslink", liveMapUrl);
+			}
+
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
+	}
+
+	public String generateGoogleStaticMapWithMarkers(double refLatitude, double refLongitude, List<double[]> coordinates, String key) {
+
+		// Base URL for the Static Map
+		StringBuilder urlBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/staticmap?");
+
+		// Default parameters like zoom, size, etc.
+		urlBuilder.append("zoom=14&size=300x300");
+
+		// Add markers for each set of coordinates
+		for (double[] coord : coordinates) {
+			double latitude = coord[0];
+			double longitude = coord[1];
+			if (latitude != refLatitude && longitude != refLongitude) {
+				urlBuilder.append("&markers=color:yellow|").append(latitude).append(",").append(longitude);
+			}
+		}
+
+		urlBuilder.append("&markers=scale:5|color:red|label:R|").append(refLatitude).append(",").append(refLongitude);
+
+		// Append API key
+		urlBuilder.append("&key=").append(key);
+
+		return urlBuilder.toString();
+	}
+
+	public String generateGoogleStaticMapWithMarkers2(List<double[]> coordinates, String key) {
+		StringBuilder urlBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/staticmap?");
+		urlBuilder.append("zoom=14&size=300x300");
+
+		for (double[] coord : coordinates) {
+			double latitude = coord[0];
+			double longitude = coord[1];
+			urlBuilder.append("&markers=color:red|").append(latitude).append(",").append(longitude);
+		}
+
+		urlBuilder.append("&key=").append(key);
+		return urlBuilder.toString();
+	}
+
+	public String generateGoogleMapsUrlWithMarkers(List<double[]> coordinates, double refLatitude, double refLongitude) {
+		StringBuilder urlBuilder = new StringBuilder("https://www.google.com/maps/dir/");
+
+		// Add the reference marker first with default text
+		urlBuilder.append(refLatitude).append(",").append(refLongitude).append("/");
+
+		// Add the rest of the nearby markers
+		for (double[] coord : coordinates) {
+			urlBuilder.append(coord[0]).append(",").append(coord[1]).append("/");
+		}
+
+		// Optionally add a default text for the reference marker (e.g., Picture by E.C. Bignell)
+		urlBuilder.append("@").append(refLatitude).append(",").append(refLongitude)
+			.append(",14z?hl=en");
+
+		return urlBuilder.toString();
 	}
 
 	private List<String> listFileNames(S3Client s3Client, String subFolder) {
@@ -678,6 +760,7 @@ class BucketController extends PaginationController {
 			}
 			catch (Exception ex) {
 				System.out.println(ex);
+				ex.printStackTrace();
 			}
 		}
 
@@ -712,6 +795,7 @@ class BucketController extends PaginationController {
 		}
 		catch (Exception ex) {
 			System.out.println(ex);
+			ex.printStackTrace();
 		}
 
 		return "Failed to get name";

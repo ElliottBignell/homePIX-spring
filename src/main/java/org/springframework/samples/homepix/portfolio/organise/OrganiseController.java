@@ -180,6 +180,27 @@ class OrganiseController extends AlbumContentBaseController {
 
 	}
 
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/organise/delete/{ids}")
+	public ResponseEntity<String> deleteImages(@PathVariable("ids") int[] ids, Map<String, Object> model) {
+
+		List<PictureFile> deletedFiles = new ArrayList<>();
+		for (int id : ids) {
+			Optional<PictureFile> file = pictureFiles.findById(id);
+			file.ifPresent(picFile -> {
+				picFile.setIsScary(true);
+				pictureFiles.save(picFile);
+				deletedFiles.add(picFile);
+			});
+		}
+
+		if (!deletedFiles.isEmpty()) {
+			return ResponseEntity.ok("Deleted successfully");
+		}
+
+		return ResponseEntity.ok("Delete failed");
+	}
+
 
 	/**
 	 * Custom handler for displaying an album.
