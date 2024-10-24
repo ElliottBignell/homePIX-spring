@@ -21,6 +21,7 @@
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homepix" />
     <option name="PROGRAM_PARAMETERS" value="--aws.accessKeyId=EXO7fcb325260e0ca21fbabab95 --aws.secretKey=x3R7Je97rOn40Zpjj41UD0QmrdBZB_VUIS8bhM8hjOM" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=mysql-debug " />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.springframework.samples.homepix.*" />

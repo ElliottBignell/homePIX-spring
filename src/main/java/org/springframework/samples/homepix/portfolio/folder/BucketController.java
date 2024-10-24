@@ -366,6 +366,8 @@ class BucketController extends PaginationController {
 		model.put("lastIndex", lastIndex);
 		model.put("count", results.getTotalElements());
 
+		pictureFileService.addMapDetails(pictureFiles.findByFolderName(name), model);
+
 		setStructuredDataForModel(
 			requestDTO,
 			model,
@@ -652,82 +654,10 @@ class BucketController extends PaginationController {
 				keywords
 			);
 
-			int radius = 1000;
-
-			if (null != file.getLatitude() && null != file.getLongitude()) {
-
-				// Get the reference image's latitude and longitude
-				double refLatitude = file.getLatitude();
-				double refLongitude = file.getLongitude();
-
-				List<double[]> nearbyCoordinates = pictureFileService.getNearbyPositions(refLatitude, refLongitude, radius);
-				String key = System.getenv("GOOGLE_MAPS_KEY");
-				String staticMapUrl = generateGoogleStaticMapWithMarkers(refLatitude, refLongitude, nearbyCoordinates, key);
-				String liveMapUrl = generateGoogleMapsUrlWithMarkers(nearbyCoordinates, refLatitude, refLongitude);
-
-				model.put("mapUrl", staticMapUrl);
-				model.put("gpslink", liveMapUrl);
-			}
+			pictureFileService.addMapDetails(file, model);
 
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
-	}
-
-	public String generateGoogleStaticMapWithMarkers(double refLatitude, double refLongitude, List<double[]> coordinates, String key) {
-
-		// Base URL for the Static Map
-		StringBuilder urlBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/staticmap?");
-
-		// Default parameters like zoom, size, etc.
-		urlBuilder.append("zoom=14&size=300x300");
-
-		// Add markers for each set of coordinates
-		for (double[] coord : coordinates) {
-			double latitude = coord[0];
-			double longitude = coord[1];
-			if (latitude != refLatitude && longitude != refLongitude) {
-				urlBuilder.append("&markers=color:yellow|").append(latitude).append(",").append(longitude);
-			}
-		}
-
-		urlBuilder.append("&markers=scale:5|color:red|label:R|").append(refLatitude).append(",").append(refLongitude);
-
-		// Append API key
-		urlBuilder.append("&key=").append(key);
-
-		return urlBuilder.toString();
-	}
-
-	public String generateGoogleStaticMapWithMarkers2(List<double[]> coordinates, String key) {
-		StringBuilder urlBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/staticmap?");
-		urlBuilder.append("zoom=14&size=300x300");
-
-		for (double[] coord : coordinates) {
-			double latitude = coord[0];
-			double longitude = coord[1];
-			urlBuilder.append("&markers=color:red|").append(latitude).append(",").append(longitude);
-		}
-
-		urlBuilder.append("&key=").append(key);
-		return urlBuilder.toString();
-	}
-
-	public String generateGoogleMapsUrlWithMarkers(List<double[]> coordinates, double refLatitude, double refLongitude) {
-		StringBuilder urlBuilder = new StringBuilder("https://www.google.com/maps/dir/");
-
-		// Add the reference marker first with default text
-		urlBuilder.append(refLatitude).append(",").append(refLongitude).append("/");
-
-		// Add the rest of the nearby markers
-		for (double[] coord : coordinates) {
-			urlBuilder.append(coord[0]).append(",").append(coord[1]).append("/");
-		}
-
-		// Optionally add a default text for the reference marker (e.g., Picture by E.C. Bignell)
-		urlBuilder.append("@").append(refLatitude).append(",").append(refLongitude)
-			.append(",14z?hl=en");
-
-		return urlBuilder.toString();
 	}
 
 	private List<String> listFileNames(S3Client s3Client, String subFolder) {

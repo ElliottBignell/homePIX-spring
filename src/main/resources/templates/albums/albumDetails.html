@@ -83,6 +83,19 @@
 
             <div style="overflow-y: auto; max-height: 75vh;">
 
+              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2242083496336489"
+                      crossorigin="anonymous"></script>
+              <!-- Album -->
+              <ins class="adsbygoogle"
+                   style="display:block"
+                   data-ad-client="ca-pub-2242083496336489"
+                   data-ad-slot="7770717456"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+              <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+              </script>
+
               <figure th:each="entry : ${collection}"
                       th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
                       th:id="@{figure-__${entry.id}__}">
@@ -193,6 +206,21 @@
                     </div>
                   </figcaption>
                 </div>
+              </figure>
+              <figure class="tt_base droppable draggable" id="map_preview" th:if="${mapUrl != null && !#strings.isEmpty(mapUrl)}">
+                <a th:href="@{/maps/album/__${album?.name}__}">
+                  <section class="wrapper" th:id="map_wrapper">
+                  <span class="tt_subject">
+                    <img id="map_img"
+                         class="lazyload imageinlist imageresponsive"
+                         width="300"
+                         height="200"
+                         th:src="${mapUrl}"
+                         alt="Map showing pictures in album"
+                    >
+                  </span>
+                  </section>
+                </a>
               </figure>
             </div>
           </div>

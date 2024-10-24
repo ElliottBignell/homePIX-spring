@@ -24,6 +24,7 @@
             <h3 th:if="${#lists.isEmpty(collection)}">
               No pictures from this date range
             </h3>
+
             <c th:each="pictureFile : ${collection}">
               <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
                 <a th:id="@{picture__${pictureFile.id}__}"

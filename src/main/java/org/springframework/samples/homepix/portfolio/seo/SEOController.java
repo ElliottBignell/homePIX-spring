@@ -56,6 +56,15 @@ public class SEOController extends PaginationController {
 		this.albumContent = albumContent;
 	}
 
+	@GetMapping(value = "/ads.txt", produces = MediaType.TEXT_PLAIN_VALUE)
+	public ResponseEntity<String> adstext() {
+
+		// Example sitemap content. In a real application, generate this dynamically
+		String adsTxtContent = "google.com, pub-2242083496336489, DIRECT, f08c47fec0942fa0";
+
+		return ResponseEntity.ok(adsTxtContent);
+	}
+
 	@GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<String> sitemap() {
 

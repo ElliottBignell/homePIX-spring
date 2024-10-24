@@ -19,11 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
-import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.maps.MapUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -53,8 +54,11 @@ class PictureCollectionController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "collection/createOrUpdateOwnerForm";
 
 	private final PictureCollectionRepository pictures;
+	private final PictureFileRepository pictureFiles;
 	private final PictureFileService pictureFileService;
 	private final PictureElasticSearchService pictureElasticSearchService;
+	protected final AlbumContentRepository albumContent;
+	private final AlbumService albumService;
 
 	public PictureCollectionController(PictureFileRepository pictureFiles,
 									   PictureCollectionRepository pictures,
@@ -62,15 +66,18 @@ class PictureCollectionController extends PaginationController {
 									   FolderRepository folders,
 									   KeywordRepository keyword,
 									   KeywordRelationshipsRepository keywordsRelationships,
-									   FolderService folderService,
+									   FolderService folderService, PictureFileRepository pictureFiles1,
 									   PictureFileService pictureFileService,
-									   PictureElasticSearchService pictureElasticSearchService
+									   PictureElasticSearchService pictureElasticSearchService, AlbumContentRepository albumContent, AlbumService albumService
 	) {
 
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.pictures = pictures;
+		this.pictureFiles = pictureFiles1;
 		this.pictureFileService = pictureFileService;
 		this.pictureElasticSearchService = pictureElasticSearchService;
+		this.albumContent = albumContent;
+		this.albumService = albumService;
 	}
 
 	@InitBinder
@@ -151,6 +158,12 @@ class PictureCollectionController extends PaginationController {
 			.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
 			.collect(Collectors.joining(", "))
 		);
+
+		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
+
+		if (picture.isPresent()) {
+			pictureFileService.addMapDetails(picture.get(), model);
+		}
 
 		return "picture/pictureFile.html";
 	}
@@ -282,6 +295,16 @@ class PictureCollectionController extends PaginationController {
 		return "redirect:/buckets";
 	}
 
+	@GetMapping("/maps/album/{name}")
+	public String retrieveAlbumMap(Map<String, Object> model, @PathVariable("name") String name) throws Exception {
+		return albumService.loadMapPreview(model, name);
+	}
+
+	@GetMapping("/maps/bucket/{name}")
+	public String retrieveBucketMap(Map<String, Object> model, @PathVariable("name") String name) throws Exception {
+		return pictureFileService.loadMapPreview(model, name);
+	}
+
 	@GetMapping("/maps/{id}")
 	public String retrieveMap(Map<String, Object> model, @PathVariable("id") int id) throws Exception {
 
@@ -297,17 +320,24 @@ class PictureCollectionController extends PaginationController {
 			double refLongitude = pictureFile.getLongitude();
 
 			// Convert double[] to List<Double> for Thymeleaf compatibility
-			List<List<Double>> nearbyCoordinates = pictureFileService.getNearbyPositions(refLatitude, refLongitude, 5000)
+			List<PictureFile> nearbyPictures = pictureFileService.getNearbyPictures(refLatitude, refLongitude, 10000)
 				.stream()
-				.map(coord -> Arrays.asList(coord[0], coord[1]))
+				.filter(element -> element.getLatitude() != null && element.getLongitude() != null)
+				.collect(Collectors.toList());
+			List<List<Float>> nearbyCoordinates = nearbyPictures
+				.stream()
+				.map(element -> Arrays.asList(element.getLatitude(), element.getLongitude()))
 				.collect(Collectors.toList());
 
-			model.put("refLatitude", refLatitude);
-			model.put("refLongitude", refLongitude);
-			model.put("nearbyCoordinates", nearbyCoordinates);
+			Map.Entry<MapUtils.LatLng, Integer> result = MapUtils.calculateCenterAndZoom(nearbyPictures);
 
-			// Convert double[] to List<Double> for Thymeleaf compatibility
-			List<PictureFile> nearbyPictures = pictureFileService.getNearbyPictures(refLatitude, refLongitude, 5000);
+			MapUtils.LatLng center = result.getKey();
+			int zoom = result.getValue();
+
+			model.put("zoom", zoom);
+			model.put("refLatitude", center.getLatitude());
+			model.put("refLongitude", center.getLongitude());
+			model.put("nearbyCoordinates", nearbyCoordinates);
 			model.put("nearbyPictures", nearbyPictures);
 
 			System.out.println(nearbyCoordinates);

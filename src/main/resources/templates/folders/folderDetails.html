@@ -168,6 +168,21 @@
                 </figcaption>
               </div>
             </figure>
+            <figure class="tt_base droppable draggable" id="map_preview" th:if="${mapUrl != null && !#strings.isEmpty(mapUrl)}">
+              <a th:href="@{/maps/bucket/__${folder.name}__}">
+                <section class="wrapper" th:id="map_wrapper">
+                  <span class="tt_subject">
+                    <img id="map_img"
+                         class="lazyload imageinlist imageresponsive"
+                         width="300"
+                         height="200"
+                         th:src="${mapUrl}"
+                         alt="Map showing pictures in folder"
+                    >
+                  </span>
+                </section>
+              </a>
+            </figure>
           </div>
         </div>
       </div>

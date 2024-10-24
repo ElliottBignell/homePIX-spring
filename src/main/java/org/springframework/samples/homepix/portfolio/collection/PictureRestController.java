@@ -14,6 +14,16 @@ public class PictureRestController {
 	@Autowired
 	private PictureService pictureService;
 
+	@PostMapping("/locations")
+	public ResponseEntity<String> patchGPSData(@RequestBody List<Map<String, Object>> locations) throws Exception {
+		try {
+			pictureService.patchLocationsAsBatch(locations);
+			return ResponseEntity.ok("Records updated successfully");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body("Error updating records: " + e.getMessage());
+		}
+	}
+
 	// Get all pictures and return as JSON
 	@GetMapping("/buckets/{bucket}")
 	public List<PictureFile> getAllPictures(@PathVariable("bucket") String bucket) {

@@ -20,6 +20,7 @@ import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -48,7 +49,12 @@ public class AlbumContentBaseController extends PaginationController {
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "albums/createOrUpdateOwnerForm";
 
 	protected final AlbumContentRepository albumContent;
+
+	@Autowired
 	private AlbumService albumService;
+
+	@Autowired
+	private PictureFileService pictureFileService;
 
 	@Autowired
 	public AlbumContentBaseController(AlbumContentRepository albumContent,
@@ -160,6 +166,8 @@ public class AlbumContentBaseController extends PaginationController {
 		model.put("keyword_map", pictureKeywordsMap);
 		model.put("keyword_lists", pictureKeywordsStringMap);
 		model.put("link_params", "");
+
+		pictureFileService.addMapDetails(content, model);
 
 		return mav;
 	}

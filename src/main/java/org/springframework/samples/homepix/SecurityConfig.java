@@ -86,6 +86,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/js/**",
 					"/static/**",
 					"/register",
+					"/ads.txt",
 					"/sitemap.xml",
 					"/album*.xml",
 					"/folder*.xml",

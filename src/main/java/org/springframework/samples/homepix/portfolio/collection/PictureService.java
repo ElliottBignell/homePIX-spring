@@ -3,10 +3,7 @@ package org.springframework.samples.homepix.portfolio.collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.categories.Category;
 import org.springframework.samples.homepix.portfolio.categories.CategoryRepository;
-import org.springframework.samples.homepix.portfolio.keywords.Keyword;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.keywords.*;
 import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRepository;
 import org.springframework.stereotype.Service;
@@ -16,6 +13,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.transaction.Transactional;
+import java.util.List;
+import java.util.Map;
+import java.util.Collection;
 
 @Service
 public class PictureService {
@@ -34,6 +34,9 @@ public class PictureService {
 
 	@Autowired
 	private KeywordRepository keywordRepository;
+
+	@Autowired
+	private KeywordService keywordService;
 
 	public List<PictureFile> findAll() {
 		// CrudRepository's findAll() returns an Iterable, convert to List
@@ -129,27 +132,7 @@ public class PictureService {
 							System.out.println(keywords);
 
 							for (String word : keywords) {
-
-								Collection<Keyword> existing = keywordRepository.findByContent(word.toLowerCase());
-								Keyword newKeyword;
-
-								if (existing.isEmpty()) {
-
-									newKeyword = new Keyword();
-									newKeyword.setWord(word);
-									this.keywordRepository.save(newKeyword);
-								} else
-									newKeyword = existing.iterator().next();
-
-								Collection<KeywordRelationships> relations = this.keywordRelationshipRepository.findByBothIds(picture.getId(), newKeyword.getId());
-
-								if (relations.isEmpty()) {
-
-									KeywordRelationships relation = new KeywordRelationships();
-									relation.setPictureFile(picture);
-									relation.setKeyword(newKeyword);
-									this.keywordRelationshipRepository.save(relation);
-								}
+								keywordService.addKeywordToPicture(picture, word);
 							}
 						} else {
 							updateField(picture, fieldName, fieldValue);
@@ -187,6 +170,84 @@ public class PictureService {
 				}
 			}
 		}
+	}
+
+	@Transactional
+	public void patchLocations(List<Map<String, Object>> locations) throws Exception {
+
+		int count = 0;
+
+		for (Map<String, Object> location : locations) {
+
+			// Fetch the "filename" field as the key to identify the record
+			String filename = (String) location.get("filename");
+
+			if (filename != null) {
+
+				Collection<PictureFile> pictures = pictureFileRepository.findByFilename(filename);
+
+				if (pictures != null) {
+
+					for (PictureFile picture : pictures) {
+
+						try {
+
+							double latitude = (double) location.get("latitude");
+							double longitude = (double) location.get("longitude");
+							picture.setLatitude((float) latitude);
+							picture.setLongitude((float) longitude);
+							count++;
+							pictureFileRepository.save(picture);
+						}
+						catch (Exception e) {
+							System.out.println(e.getStackTrace());
+						}
+					}
+				}
+			}
+		}
+		System.out.println(count);
+	}
+
+	@Transactional
+	public void patchLocationsAsBatch(List<Map<String, Object>> locations) {
+
+		// Extract all filenames in the list for a single fetch query
+		List<String> filenames = locations.stream()
+			.map(loc -> (String) loc.get("filename"))
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+
+		// Fetch all relevant PictureFiles in a single query
+		List<PictureFile> pictures = pictureFileRepository.findByFilenames(filenames);
+
+		// Create a map for fast lookup by filename
+		Map<String, List<PictureFile>> pictureMap = pictures.stream()
+			.collect(Collectors.groupingBy(PictureFile::getFilename));
+
+		int count = 0;
+
+		// Loop over the locations and update the corresponding PictureFile entries
+		for (Map<String, Object> location : locations) {
+			String filename = (String) location.get("filename");
+
+			if (filename != null && pictureMap.containsKey(filename)) {
+				Collection<PictureFile> pictureFiles = pictureMap.get(filename);
+
+				double latitude = (double) location.get("latitude");
+				double longitude = (double) location.get("longitude");
+
+				for (PictureFile picture : pictureFiles) {
+					picture.setLatitude((float) latitude);
+					picture.setLongitude((float) longitude);
+					count++;
+				}
+			}
+		}
+
+		// Save all updated PictureFiles in batch
+		pictureFileRepository.saveAll(pictures);
+		System.out.println("Total updated records: " + count);
 	}
 
 	private void updateField(PictureFile picture, String fieldName, Object fieldValue) throws Exception {

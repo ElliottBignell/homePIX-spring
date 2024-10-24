@@ -4,84 +4,131 @@
 
 <body onload="initMap()">
 
-<script th:src="@{resources/js/navigation.js}" type="text/javascript" async=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/7.11.0/polyfill.min.js"></script>
+<div id="map" style="left:0vh; height: 100vh; width: 100vw;"></div>
+<script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCMTn_xDVuQaTSTSqCbp01M0yH7eKqzP3c"></script>
-<script th:inline="javascript">
+  // Function to load scripts dynamically
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = function () {
+        reject(new Error('Failed to load script ' + src));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  // Function to load Google Maps API and MarkerClusterer
+  async function loadGoogleMapsAndClusterer() {
+    try {
+      await loadScript(
+        'https://maps.googleapis.com/maps/api/js?key=AIzaSyCMTn_xDVuQaTSTSqCbp01M0yH7eKqzP3c'
+      );
+      await loadScript(
+        'https://cdn.jsdelivr.net/npm/@google/markerclustererplus@5.1.0/dist/markerclustererplus.min.js'
+      );
+      initMap();
+    } catch (error) {
+      console.error('Error loading scripts:', error);
+    }
+  }
+
   function initMap() {
 
-      var mapOptions = {
-          zoom: 14,
-          center: {lat: [[${refLatitude}]], lng: [[${refLongitude}]]}
-      };
+    var mapOptions = {
+        zoom: [[${zoom}]],
+        center: {lat: [[${refLatitude}]], lng: [[${refLongitude}]]}
+    };
 
-      var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    var map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-      // Reference marker
-      var referenceMarker = new google.maps.Marker({
-          position: {lat: [[${refLatitude}]], lng: [[${refLongitude}]]},
-          map: map,
-          title: 'Reference picture'
+    // Reference marker
+    //var referenceMarker = new google.maps.Marker({
+    //    position: {lat: [[${refLatitude}]], lng: [[${refLongitude}]]},
+    //    map: map,
+    //    title: 'Reference picture'
+    //});
+
+    var infoWindow = new google.maps.InfoWindow({
+        content: '<h3>[[${picture.title}]]</h3><img src="[[${picture.getMediumFilename()}]]"/>'
+    });
+
+    //referenceMarker.addListener('click', function() {
+    //    infoWindow.open(map, referenceMarker);
+    //});
+
+    // Get the nearby coordinates from the div and parse them
+    var nearbyCoordinatesDivs = document.querySelectorAll('#nearby-coordinates div');
+    var nearbyCoordinates = [];
+
+    nearbyCoordinatesDivs.forEach(function(div) {
+
+        // Get the text, remove brackets, split by comma, and convert to floats
+        var text = div.textContent.replace(/[\[\]]/g, ''); // Removes brackets
+        var coordParts = text.split('@'); // Split by comma
+        var lat = parseFloat(coordParts[0]);
+        var lng = parseFloat(coordParts[1]);
+        var id = coordParts[2];
+        var caption = coordParts[3];
+        var filename = coordParts[4];
+
+        // Push the parsed coordinates into the array
+        nearbyCoordinates.push({lat: lat, lng: lng, caption: caption, id: id, url: filename });
+    });
+
+    const markers = nearbyCoordinates.map(
+      (position) => {
+
+        var marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: position.caption,
+            id: position.id,
+            icon: `http://maps.google.com/mapfiles/ms/icons/yellow-dot.png`
+        });
+
+        console.log("Marker");
+
+        var infoWindow = new google.maps.InfoWindow({
+            content: '<h3>' + position.caption + '</h3><a href="/collection/' + position.id + '"><img src="' + position.url + '"><br>' + position.caption + '</a>'
+        });
+        console.log("Info Window");
+
+        // Show info window when the marker is clicked
+        marker.addListener('click', function() {
+            infoWindow.open(map, marker);
+        });
+        console.log("Event handler");
+
+        return marker;
+      }
+    );
+
+    // Check if MarkerClusterer is defined
+    if (typeof MarkerClusterer !== 'undefined') {
+      // Initialize MarkerClusterer with the markers
+      new MarkerClusterer(map, markers, {
+        imagePath:
+          'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
       });
-
-      var infoWindow = new google.maps.InfoWindow({
-          content: '<h3>Picture by E.C. Bignell</h3>'
-      });
-
-      referenceMarker.addListener('click', function() {
-          infoWindow.open(map, referenceMarker);
-      });
-
-      // Get the nearby coordinates from the div and parse them
-      var nearbyCoordinatesDivs = document.querySelectorAll('#nearby-coordinates div');
-      var nearbyCoordinates = [];
-
-      nearbyCoordinatesDivs.forEach(function(div) {
-
-          // Get the text, remove brackets, split by comma, and convert to floats
-          var text = div.textContent.replace(/[\[\]]/g, ''); // Removes brackets
-          var coordParts = text.split(','); // Split by comma
-          var lat = parseFloat(coordParts[0]);
-          var lng = parseFloat(coordParts[1]);
-          var id = coordParts[2];
-          var caption = coordParts[3];
-          var filename = coordParts[4];
-
-          // Push the parsed coordinates into the array
-          nearbyCoordinates.push({lat: lat, lng: lng, caption: caption, id: id });
-      });
-
-      // Add markers for each nearby coordinate
-      nearbyCoordinates.forEach(function(coord) {
-
-          var marker = new google.maps.Marker({
-              position: coord,
-              map: map,
-              title: coord.caption,
-              id: coord.id
-          });
-
-          console.log("Marker");
-
-          var infoWindow = new google.maps.InfoWindow({
-              content: '<h3>' + coord.caption + '</h3><a href="https://www.homepix.ch/collection/' + coord.id + '">' + coord.caption + '</a>'
-          });
-          console.log("Infor Window");
-
-          // Show info window when the marker is clicked
-          marker.addListener('click', function() {
-              infoWindow.open(map, marker);
-          });
-          console.log("Event handler");
-      });
+    } else {
+      console.error('MarkerClusterer is not defined');
     }
-</script>
+  }
+
+  // Start loading scripts and initializing the map
+  loadGoogleMapsAndClusterer();</script>
 
 <link rel="stylesheet" th:href="@{/resources/css/clearall.css}" />
 <link rel="stylesheet" th:href="@{/resources/css/dropdown.css}" />
 
-<div class="techfont" style="position:absolute;left:0px;width:100vw;height:100vh;">
-  <div id="details" style="position:absolute;left:0px;width:100vw;height:100vh;">
+<div class="techfont" style="position:absolute;left:0px;width:100vw;height:85vh;">
+  <div id="details" style="position:absolute;left:0px;width:100vw;height:85vh;">
     <c th:if="${errorMessage != null}">
       <div style="position:absolute;top:10em;left:10em;">
         <h1>Picture File</h1>
@@ -91,11 +138,11 @@
       </div>
     </c>
     <div id="frame" class="homepix-picture-standalone" style="display:block;">
-      <div id="map"  style="display:block;height: 100vh; width: 100vw;"></div>
+      <div id="map"  style="display: block; left:-1vw; top: 1vh; height: 91vh; width: 100vw; position: relative; overflow: hidden;"></div>
     </div>
 
     <div id="nearby-coordinates" style="display: none;">
-      <div th:each="pic : ${nearbyPictures}" th:text="@{[__${pic.latitude}__,__${pic.longitude}__,__${pic.id}__,'__${pic.title}__',__${pic.filename}__]}">
+      <div th:each="pic : ${nearbyPictures}" th:text="@{[__${pic.latitude}__@__${pic.longitude}__@__${pic.id}__@__${pic.title}__@__${pic.mediumFilename}__]}">
       </div>
     </div>
   </div>

@@ -22,6 +22,7 @@ import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -52,6 +53,9 @@ class OrganiseController extends AlbumContentBaseController {
 	private static final String VIEWS_WHOLE_PANE_ORGANISATION_FORM = "organise/full-pane-organise.html";
 
 	private final OrganiseRepository organiseRepository;
+
+	@Autowired
+	PictureFileService pictureFileService;
 
 	@Autowired
 	public OrganiseController(AlbumContentRepository albumContent,
@@ -266,10 +270,10 @@ class OrganiseController extends AlbumContentBaseController {
 	) {
 
 		Optional<Album> album = this.albums.findById(id);
-		Collection<PictureFile> pictureFiles = albumContent.findByAlbumId(id).stream()
+		Collection<PictureFile> pictureCollection = albumContent.findByAlbumId(id).stream()
 			.map(item -> item.getPictureFile()).collect(Collectors.toList());
 
-		addParams(pictureId, "", pictureFiles, model, true);
+		addParams(pictureId, "", pictureCollection, model, true);
 
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album);
@@ -278,6 +282,13 @@ class OrganiseController extends AlbumContentBaseController {
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);
+		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
+
+		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
+
+		if (picture.isPresent()) {
+			pictureFileService.addMapDetails(picture.get(), model);
+		}
 
 		return "picture/pictureFile.html";
 	}
