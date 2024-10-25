@@ -284,6 +284,14 @@ class OrganiseController extends AlbumContentBaseController {
 		);
 		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
 
+		List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+			.collect(Collectors.toList());
+		model.put("tags", tags.stream()
+			.map(Keyword::getWord)
+			.sorted()
+			.collect(Collectors.toList())
+		);
+
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 
 		if (picture.isPresent()) {

@@ -6,6 +6,12 @@
 
 <script th:src="@{resources/js/navigation.js}" type="text/javascript" async=""></script>
 
+<!-- Pass the tags to JavaScript -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  var existingTags = /*[[${tags}]]*/ [];
+  /*]]>*/
+</script>
 <script>
 
     var dirty = false;
@@ -253,7 +259,98 @@
             direc = "";
             swipe_det.sX = 0; swipe_det.sY = 0; swipe_det.eX = 0; swipe_det.eY = 0;
        });
-    } );
+
+        var tagInput = document.getElementById("vocabulary");
+        var dropdown = document.getElementById("tag-dropdown");
+        var selectedIndex = -1; // Index of the currently highlighted item
+        var filteredTags = [];
+
+        tagInput.addEventListener("input", function() {
+            var inputValue = tagInput.value;
+            var inputValueLower = inputValue.toLowerCase();
+            var inputValueLength = inputValue.length;
+            var cursorPosition = tagInput.selectionStart;
+
+            dropdown.innerHTML = '';
+            selectedIndex = -1; // Reset the selected index
+
+            if (inputValue.length > 0) {
+                filteredTags = existingTags.filter(function(tag) {
+                    return tag.toLowerCase().startsWith(inputValueLower);
+                });
+                filteredTags.forEach(function(tag, index) {
+                    var tagDiv = document.createElement('div');
+                    tagDiv.textContent = tag;
+                    tagDiv.addEventListener('click', function() {
+                        tagInput.value = tag;
+                        dropdown.innerHTML = '';
+                        dropdown.style.display = 'none';
+                        tagInput.focus(); // Refocus the input field
+                    });
+                    dropdown.appendChild(tagDiv);
+                });
+                if (filteredTags.length > 0) {
+                    // Auto-complete only if cursor is at the end
+                    if (cursorPosition === inputValueLength) {
+                        tagInput.value = filteredTags[0];
+                        tagInput.setSelectionRange(inputValueLength, filteredTags[0].length);
+                    }
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            } else {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        tagInput.addEventListener("keydown", function(e) {
+            if (dropdown.style.display === 'block') {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % filteredTags.length;
+                    updateDropdownHighlight();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex - 1 + filteredTags.length) % filteredTags.length;
+                    updateDropdownHighlight();
+                } else if (e.key === 'Enter') {
+                    if (selectedIndex >= 0 && selectedIndex < filteredTags.length) {
+                        e.preventDefault();
+                        tagInput.value = filteredTags[selectedIndex];
+                        dropdown.innerHTML = '';
+                        dropdown.style.display = 'none';
+                        tagInput.focus();
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.innerHTML = '';
+                    dropdown.style.display = 'none';
+                }
+            }
+        });
+
+        function updateDropdownHighlight() {
+            var items = dropdown.getElementsByTagName('div');
+            for (var i = 0; i < items.length; i++) {
+                if (i === selectedIndex) {
+                    items[i].classList.add('highlighted');
+                } else {
+                    items[i].classList.remove('highlighted');
+                }
+            }
+            // Update the input value to match the highlighted item
+            if (selectedIndex >= 0 && selectedIndex < filteredTags.length) {
+                tagInput.value = filteredTags[selectedIndex];
+                tagInput.setSelectionRange(filteredTags[selectedIndex].length, filteredTags[selectedIndex].length);
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target != tagInput) {
+                dropdown.style.display = 'none';
+            }
+        });
+    });
 
     function remove_keyword( keyword, pic_id ) {
 
@@ -596,6 +693,7 @@
                 <form id="submit_keywords" action="" method="get" style="font-size:0.3em;padding-top:10px;">
                   <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
                   <input name="vocabulary"  type="text"   id="vocabulary" placeholder="Add keywords...">
+                  <div id="tag-dropdown" class="dropdown-content"></div>
                   <input name="pic_id"      type="hidden" id="pic_id"     th:value="${picture.id}">
                 </form>
               </div>
