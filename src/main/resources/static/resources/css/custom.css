@@ -8966,8 +8966,9 @@ table {
     left:0em;
     vertical-align:top;
     width:5em;
-    line-height:0.2em;
-    padding:0px;"
+    line-height:0.13em;
+    padding:2px;
+    margin:0px;
 }
 
 @media only screen and (max-width: 992px) { /* Adjust based on your navbar's breakpoint */

@@ -32,6 +32,14 @@
   margin-bottom: 0.5em;
 }
 
+.keywordfont{
+  font-family: 'Russo One', sans-serif;
+  font-size:0.8em;
+  margin-bottom: 0.5em;
+  padding:3px;
+  margin:-2px;
+}
+
 .large-buttonfont{
   font-family: 'Russo One', sans-serif;
   font-size:1.2em;

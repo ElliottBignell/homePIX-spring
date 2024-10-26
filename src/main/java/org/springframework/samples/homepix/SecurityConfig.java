@@ -21,12 +21,15 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
 	UserRepository userRepository;
+	private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
 	@Autowired
 	SecurityConfig(UserRepository userRepository) {
@@ -119,6 +122,21 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.and()
 			.csrf()
 				.disable(); // For simplicity; handle CSRF properly in a production environment
+
+
+		logger.info("Form login configured with custom login page at /login");
+		logger.info("Default success URL after login is set to /api/keywords");
+		logger.info("Logout URL configured at /logout");
+
+		// Adding handlers to capture the request processing and debug further if necessary
+		http.formLogin().successHandler((request, response, authentication) -> {
+			logger.info("User {} successfully authenticated", authentication.getName());
+			response.sendRedirect("/");  // Redirect after successful login
+		});
+
+		http.formLogin().failureHandler((request, response, exception) -> {
+			logger.warn("Authentication failed: {}", exception.getMessage());
+		});
 
 		http.headers().frameOptions().sameOrigin();
 

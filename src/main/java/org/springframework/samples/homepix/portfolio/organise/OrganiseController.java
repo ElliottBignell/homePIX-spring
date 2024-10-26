@@ -27,9 +27,13 @@ import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.Keyword;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -282,15 +286,23 @@ class OrganiseController extends AlbumContentBaseController {
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);
-		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
 
-		List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
-			.collect(Collectors.toList());
-		model.put("tags", tags.stream()
-			.map(Keyword::getWord)
-			.sorted()
-			.collect(Collectors.toList())
-		);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+
+			model.put("keywords", this.keywordRelationships.findByPictureId(pictureId).stream()
+				.map(KeywordRelationships::getKeyword)
+				.sorted(Comparator.comparing(Keyword::getWord))
+				.collect(Collectors.toList()));
+
+			List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+				.collect(Collectors.toList());
+			model.put("tags", tags.stream()
+				.map(Keyword::getWord)
+				.sorted()
+				.collect(Collectors.toList())
+			);
+		}
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 

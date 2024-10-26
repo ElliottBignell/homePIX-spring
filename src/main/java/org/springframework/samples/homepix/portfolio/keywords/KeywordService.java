@@ -53,7 +53,8 @@ public class KeywordService {
 			newKeyword = new Keyword();
 			newKeyword.setWord(word);
 			this.keywordRepository.save(newKeyword);
-		} else
+		}
+		else
 			newKeyword = existing.iterator().next();
 
 		Collection<KeywordRelationships> relations = this.keywordRelationshipsRepository.findByBothIds(picture.getId(), newKeyword.getId());
@@ -64,6 +65,25 @@ public class KeywordService {
 			relation.setPictureFile(picture);
 			relation.setKeyword(newKeyword);
 			this.keywordRelationshipsRepository.save(relation);
+		}
+	}
+
+	public void removeKeywordFromPicture(PictureFile picture, String word) {
+
+		Collection<Keyword> existing = keywordRepository.findByContent(word.toLowerCase());
+
+		if (!existing.isEmpty()) {
+
+			Keyword keyword = existing.iterator().next();
+
+			Collection<KeywordRelationships> relations = this.keywordRelationshipsRepository.findByBothIds(picture.getId(), keyword.getId());
+
+			if (!relations.isEmpty()) {
+
+				for (KeywordRelationships relationship : relations) {
+					keywordRelationshipsRepository.delete(relationship);
+				}
+			}
 		}
 	}
 }

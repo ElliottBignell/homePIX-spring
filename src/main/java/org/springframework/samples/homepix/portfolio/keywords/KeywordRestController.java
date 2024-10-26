@@ -4,14 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.keywords.Keyword;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordService;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/api/keywords")
+@Secured("ROLE_ADMIN")
 public class KeywordRestController {
 
 	@Autowired
@@ -19,6 +21,12 @@ public class KeywordRestController {
 
 	@Autowired
 	private PictureFileRepository pictureFileRepository;
+
+	@Autowired
+	private KeywordRepository keywordRepository;
+
+	@Autowired
+	private KeywordRelationshipsRepository keywordRelationshipsRepository;
 
 	// Get all pictures and return as JSON
 	@GetMapping("/")
@@ -39,7 +47,7 @@ public class KeywordRestController {
 
 	@PostMapping("/add/{id}")
 	@ResponseBody
-	public ResponseEntity<String> addKeywords(@RequestBody Map<String, Object> updates, @PathVariable("id") Integer id) {
+	public ResponseEntity<List<String>> addKeywords(@RequestBody Map<String, Object> updates, @PathVariable("id") Integer id) {
 
 		String vocabulary = (String) updates.get("vocabulary");
 		String[] words = vocabulary.split(",");
@@ -51,11 +59,43 @@ public class KeywordRestController {
 
 		for (PictureFile pictureFile : files) {
 			for (String word : words) {
-				keywordService.addKeywordToPicture(pictureFile, word);
+				keywordService.addKeywordToPicture(pictureFile, word.strip().toLowerCase());
 			}
 		}
 
-		return ResponseEntity.ok("Keyword added successfully");
+		List<String> list = keywordRelationshipsRepository.findByPictureId(ids.iterator().next()).stream()
+			.map(KeywordRelationships::getKeyword)
+			.map(Keyword::getWord)
+			.sorted()
+			.collect(Collectors.toList());
+
+		return ResponseEntity.ok(list);
 	}
 
+	@PostMapping("/remove/{id}")
+	@ResponseBody
+	public ResponseEntity<List<String>> removeKeywords(@RequestBody Map<String, Object> updates, @PathVariable("id") Integer id) {
+
+		String vocabulary = (String) updates.get("vocabulary");
+		String[] words = vocabulary.split(",");
+
+		List<Integer> ids = new ArrayList<>();
+		ids.add(id);
+
+		List<PictureFile> files = pictureFileRepository.findAllById(ids);
+
+		for (PictureFile pictureFile : files) {
+			for (String word : words) {
+				keywordService.removeKeywordFromPicture(pictureFile, word);
+			}
+		}
+
+		List<String> list = keywordRelationshipsRepository.findByPictureId(ids.iterator().next()).stream()
+			.map(KeywordRelationships::getKeyword)
+			.map(Keyword::getWord)
+			.sorted()
+			.collect(Collectors.toList());
+
+		return ResponseEntity.ok(list);
+	}
 }
