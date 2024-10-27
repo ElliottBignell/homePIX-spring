@@ -531,23 +531,22 @@ function reload_keyword_buttons( results, pic_id ) {
   if (results) {
 
     var str = '';
-    console.log(results);
 
     $.each(results, function(index, keyword) {
 
-        console.log(keyword);
-
+        str += '<span id="keywords" class="titlecontent">';
         str += '<button onClick="remove_keyword(\''
             + keyword + '\','
             + pic_id
-            + ')" type="button" data-react-toolbox="button">\n';
+            + ')" type="button" class="keywordfont" data-react-toolbox="button">\n';
         str += keyword + ' ';
         str += '<i class="glyphicon glyphicon-remove"></i>\n';
         str += '</button>\n';
+        str += '</span>\n';
     });
 
-    console.log( str );
-    jQuery('#keywords').html(str);
+    jQuery('.dynamic_keywords').html('');
+    jQuery('.dynamic_keywords').html(str);
   }
 }
 

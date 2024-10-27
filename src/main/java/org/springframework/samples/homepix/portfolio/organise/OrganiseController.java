@@ -279,9 +279,12 @@ class OrganiseController extends AlbumContentBaseController {
 
 		addParams(pictureId, "", pictureCollection, model, true);
 
+		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false) // Convert Iterable to Stream
+			.collect(Collectors.toList()); // Collect the results into a List
+
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album);
-		model.put("albums", this.albums.findAll());
+		model.put("albums", albums);
 		model.put("folders", this.folders.findAll().stream()
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
@@ -302,13 +305,16 @@ class OrganiseController extends AlbumContentBaseController {
 				.sorted()
 				.collect(Collectors.toList())
 			);
+			model.put("album_names", albums.stream()
+				.map(Album::getName)
+				.sorted()
+				.collect(Collectors.toList())
+			);
 		}
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 
-		if (picture.isPresent()) {
-			pictureFileService.addMapDetails(picture.get(), model);
-		}
+		picture.ifPresent(pictureFile -> pictureFileService.addMapDetails(pictureFile, model));
 
 		return "picture/pictureFile.html";
 	}

@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix.portfolio.album;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -25,6 +26,10 @@ import java.util.Optional;
  */
 @Controller
 public class AlbumContentController extends AlbumContentBaseController {
+
+	@Autowired
+	AlbumContentService albumContentService;
+
 	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService, AlbumService albumService) {
 		super(albumContent, albums, folders, pictureFiles, keyword, keywordsRelationships, folderService, albumService);
 	}
@@ -74,40 +79,7 @@ public class AlbumContentController extends AlbumContentBaseController {
 	@GetMapping("/albums/{albumId}/add/{pictureId}")
 	public String addPictureToAlbum(@PathVariable("albumId") long albumId, @PathVariable("pictureId") int pictureId,
 									Map<String, Object> model) {
-
-		Collection<AlbumContent> entry = this.albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
-
-		if (entry.isEmpty()) {
-
-			AlbumContent content = new AlbumContent();
-
-			Optional<PictureFile> picture = this.pictureFiles.findById(pictureId);
-			Optional<Album> album = this.albums.findById(albumId);
-
-			if (picture.isPresent() && album.isPresent()) {
-
-				Collection<AlbumContent> allContent = this.albumContent.findByAlbumId(albumId);
-
-				content.setSort_order(allContent.size() + 1);
-				content.setPictureFile(picture.get());
-				content.setAlbum(album.get());
-
-				try {
-					this.albumContent.save(content);
-				}
-				catch (Exception ex) {
-
-					System.out.println(ex);
-					ex.printStackTrace();
-					System.out.println(albumContent);
-					return "redirect:/albums/" + Long.toString(albumId);
-				}
-
-				return "redirect:/albums/" + Long.toString(albumId);
-			}
-		}
-
-		return "redirect:/albums/" + Long.toString(albumId);
+		return albumContentService.addPictureToAlbum(albumContent, pictureFiles, albums, albumId, pictureId);
 	}
 
 	@Secured("ROLE_ADMIN")
