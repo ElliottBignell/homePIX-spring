@@ -34,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -44,6 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Elliott Bignell
@@ -346,5 +348,71 @@ class PictureCollectionController extends PaginationController {
 		}
 
 		return "redirect:/buckets";
+	}
+
+	@Transactional
+	@GetMapping("/maps/clusters")
+	public String retrieveClusters(Map<String, Object> model) throws Exception {
+
+		try {
+
+			List<Object[]> results = pictureFiles.findAllWithRoundedCoordinates();
+
+			// Map to hold clusters, keyed by the rounded coordinates
+			Map<String, List<PictureFile>> clusters = new HashMap<>();
+
+			for (Object[] row : results) {
+
+				int id = ((Number)row[0]).intValue();
+				Optional<PictureFile> picture = pictureFiles.findById(id);
+
+				if (picture.isPresent()) {
+
+					// Get the grouping key
+					double roundedLatitude = ((Number) row[row.length - 2]).doubleValue();
+					double roundedLongitude = ((Number) row[row.length - 1]).doubleValue();
+
+					String key = roundedLatitude + "," + roundedLongitude;
+
+					// Group pictures by the key
+					clusters.computeIfAbsent(key, k -> new ArrayList<>()).add(picture.get());
+				}
+			}
+
+			// Process each cluster
+			for (List<PictureFile> cluster : clusters.values()) {
+				adjustClusterPositions(cluster); // Adjust positions for markers in this cluster
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+
+		return "redirect:/";
+	}
+
+	private void adjustClusterPositions(List<PictureFile> cluster) {
+
+		double baseLat = cluster.get(0).getLatitude();
+		double baseLng = cluster.get(0).getLongitude();
+		int clusterSize = cluster.size();
+		double angleIncrement = (2.0 * Math.PI) / clusterSize;
+		double radius = 0.0001; // Adjust as needed (approximately 10 meters)
+
+		for (int i = 1; i < clusterSize; i++) {
+
+			double angle = angleIncrement * i;
+			double offsetLat = radius * Math.cos(angle);
+			double offsetLng = radius * Math.sin(angle);
+
+			double adjustedLat = baseLat + offsetLat;
+			double adjustedLng = baseLng + offsetLng;
+
+			PictureFile picture = cluster.get(i);
+			picture.setLatitude((float)adjustedLat);
+			picture.setLongitude((float)adjustedLng);
+		}
+
+		pictureFiles.saveAll(cluster);
 	}
 }

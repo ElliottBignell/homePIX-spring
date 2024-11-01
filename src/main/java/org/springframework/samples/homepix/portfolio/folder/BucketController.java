@@ -627,7 +627,9 @@ class BucketController extends PaginationController {
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
-			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID));
+			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
+				.map(relationship -> relationship.getKeyword())
+				.collect(Collectors.toList()));
 			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID)
 				.stream()
 				.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
@@ -695,6 +697,66 @@ class BucketController extends PaginationController {
 		}
 
 		return results;
+	}
+
+	public String movePictureToFolder(String sourceFolder, String targetFolder, PictureFile file) {
+
+		initialiseS3Client();
+
+		String sourcePrefix = "jpegs/" + (sourceFolder.endsWith("/") ? sourceFolder : sourceFolder + "/");
+		String targetPrefix = "jpegs/" + (targetFolder.endsWith("/") ? targetFolder : targetFolder + "/");
+		String filename = file.getFilename();
+
+		// Define the specific files to move based on the filename
+		List<String> fileKeysToMove = List.of(
+			sourcePrefix + filename,                      // Main file: dsc_012345.jpg
+			sourcePrefix + filename + ".exif",            // EXIF file: dsc_012345.jpg.exif
+			sourcePrefix + "200px/" + filename.replace(".jpg", "_200px.jpg"), // Thumbnail: 200px/dsc_012345_200px.jpg
+			sourcePrefix + "watermark/" + filename        // Watermarked file: watermark/dsc_012345.jpg
+		);
+
+		for (String sourceKey : fileKeysToMove) {
+			try {
+				// Generate the target key by replacing the source prefix with the target prefix
+				String targetKey = sourceKey.replaceFirst(sourcePrefix, targetPrefix);
+
+				// Copy the object to the target location
+				CopyObjectRequest copyReq = CopyObjectRequest.builder()
+					.copySource(bucketName + "/" + sourceKey)
+					.destinationBucket(bucketName)
+					.destinationKey(targetKey)
+					.build();
+
+				s3Client.copyObject(copyReq);
+
+				// Delete the original object from the source folder
+				DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
+					.bucket(bucketName)
+					.key(sourceKey)
+					.build();
+
+				s3Client.deleteObject(deleteReq);
+
+				System.out.println("Moved file: " + sourceKey + " to " + targetKey);
+			} catch (Exception e) {
+				System.err.println("Error moving file: " + sourceKey + " - " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		Folder tgtfolder = folders.findByName(targetFolder).iterator().next();
+		file.setFolder(tgtfolder);
+		tgtfolder.setPicture_count(tgtfolder.getPicture_count() + 1);
+		Folder srcfolder = folders.findByName(sourceFolder).iterator().next();
+		srcfolder.setPicture_count(srcfolder.getPicture_count() - 1);
+
+		folders.save(tgtfolder);
+		folders.save(srcfolder);
+		pictureFiles.save(file);
+
+		System.out.println("Files successfully moved from " + sourceFolder + " to " + targetFolder);
+
+		return "Moved picture successfully";
 	}
 
 	private String getFileName(S3Client s3Client, String subFolder, int id) {

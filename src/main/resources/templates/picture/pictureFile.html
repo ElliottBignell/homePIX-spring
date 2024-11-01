@@ -11,6 +11,7 @@
   /*<![CDATA[*/
   var existingTags = /*[[${tags}]]*/ [];
   var existingAlbums = /*[[${album_names}]]*/ [];
+  var existingFolders = /*[[${folder_names}]]*/ [];
   /*]]>*/
 </script>
 <script>
@@ -189,8 +190,6 @@
           var pic_id     = $("input#pic_id").val();
           var vocabulary = $("input#vocabulary").val();
 
-          console.log(pic_id);
-
           $.ajax({
             method: 'POST',
             url: '/api/keywords/add/' + pic_id,
@@ -213,8 +212,6 @@
           var pic_id     = $("input#pic_id").val();
           var album = $("input#add_picture_to_album").val();
 
-          console.log(album);
-
           $.ajax({
             method: 'POST',
             url: '/api/albums/add/' + pic_id,
@@ -223,9 +220,29 @@
             }),
             contentType: 'application/json',
             success: function (results) {
-
-              reload_keyword_buttons( results, pic_id )
               $("input#add_picture_to_album").val( "" );
+            }
+          });
+        } );
+
+        $('#move_to_folder').submit( function( e ) {
+
+          e.preventDefault();
+
+          var pic_id     = $("input#pic_id").val();
+          var folder = $("input#move_picture_to_folder").val();
+
+          console.log(folder);
+
+          $.ajax({
+            method: 'POST',
+            url: '/api/folders/move/' + pic_id,
+            data: JSON.stringify({
+              'folder': folder
+            }),
+            contentType: 'application/json',
+            success: function (results) {
+              $("input#move_picture_to_folder").val( "" );
             }
           });
         } );
@@ -411,6 +428,7 @@ $(document).ready( function() {
 
   add_event_listeners( "vocabulary", "tag-dropdownTags", existingTags );
   add_event_listeners( "add_picture_to_album", "album-dropdownAlbums", existingAlbums );
+  add_event_listeners( "move_picture_to_folder", "folder-dropdownFolders", existingFolders );
 });
 
 function remove_keyword( keyword, pic_id ) {
@@ -762,6 +780,13 @@ function remove_keyword( keyword, pic_id ) {
                       <input name="album_id"      type="hidden" id="album_id"     th:value="${picture.id}">
                     </form>
                   </div>
+                  <div id="move_to_folder" style="display:inline">
+                    <form id="move_item_to_folder" action="" method="get" style="font-size:0.3em;padding-top:10px;">
+                      <input name="move_picture_to_folder"  type="text"   id="move_picture_to_folder" placeholder="Move to folder...">
+                      <div id="folder-dropdownFolders" class="dropdown-content"></div>
+                    <input name="folder_id"      type="hidden" id="folder_id"     th:value="${picture.id}">
+                  </form>
+                </div>
                   <div id="panel2" style="display:none">
                     <a href=javascript:panel2() class="unembellish">
                       <span class="titletext propertyfont">

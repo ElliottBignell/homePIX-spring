@@ -1,34 +1,28 @@
+# Stage 1: Build and install dependencies
 FROM openjdk:17-jdk-slim as builder
-WORKDIR application
+WORKDIR /application
 ADD maven/spring-homepix-2.4.0.BUILD-SNAPSHOT.jar ./
-RUN java -Djarmode=layertools -jar spring-homepix-2.4.0.BUILD-SNAPSHOT.jar extract
-
-FROM openjdk:17-jdk-slim
-WORKDIR application
-
-# Start with the OpenJDK 17 slim image
-FROM openjdk:17-jdk-slim
-
-# Install necessary packages for AWT headless mode
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     fontconfig \
     libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
+RUN java -Djarmode=layertools -jar spring-homepix-2.4.0.BUILD-SNAPSHOT.jar extract
 
-# Set the JAVA_OPTS environment variable to enforce headless mode
-ENV JAVA_OPTS="-Djava.awt.headless=true"
+# Stage 2: Copy libraries and application into the distroless image
+FROM gcr.io/distroless/java17-debian11
+WORKDIR /application
 
-# Your application setup follows here...
+# Copy required system libraries from builder stage
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/
 
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/application/ ./
+# Copy Spring Boot application layers
+COPY --from=builder /application/dependencies/ ./
+COPY --from=builder /application/spring-boot-loader/ ./
+COPY --from=builder /application/snapshot-dependencies/ ./
+COPY --from=builder /application/application/ ./
 
-RUN mkdir -p /application/images
-
+# Expose the application port and set entrypoint
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "org.springframework.boot.loader.JarLauncher"]
-

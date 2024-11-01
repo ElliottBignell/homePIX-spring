@@ -2,12 +2,7 @@ package org.springframework.samples.homepix.portfolio.album;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.homepix.portfolio.album.Album;
-import org.springframework.samples.homepix.portfolio.album.AlbumService;
-import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.keywords.Keyword;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/albums")

@@ -281,6 +281,7 @@ class OrganiseController extends AlbumContentBaseController {
 
 		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false) // Convert Iterable to Stream
 			.collect(Collectors.toList()); // Collect the results into a List
+		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
 
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album);
@@ -307,6 +308,11 @@ class OrganiseController extends AlbumContentBaseController {
 			);
 			model.put("album_names", albums.stream()
 				.map(Album::getName)
+				.sorted()
+				.collect(Collectors.toList())
+			);
+			model.put("folder_names", folders.stream()
+				.map(Folder::getName)
 				.sorted()
 				.collect(Collectors.toList())
 			);

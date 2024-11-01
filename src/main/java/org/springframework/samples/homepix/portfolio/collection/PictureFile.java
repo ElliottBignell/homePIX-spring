@@ -127,10 +127,10 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "gps")
 	private String gps;
 
-	@Column(name = "latitude")
+	@Column(name = "latitude", nullable = true, updatable = true)
 	private Float latitude;
 
-	@Column(name = "longitude")
+	@Column(name = "longitude", nullable = true, updatable = true)
 	private Float longitude;
 
 	@JsonIgnore // This will exclude the field from JSON serialization

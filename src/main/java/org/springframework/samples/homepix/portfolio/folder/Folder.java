@@ -120,12 +120,6 @@ public class Folder extends BaseEntity {
 					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()
 					.collect(Collectors.toList());
 
-			// List<String> folderNames = Stream.of(new File(dir).listFiles()).filter(file
-			// -> !file.isDirectory())
-			// .filter(file ->
-			// file.getName().endsWith(".jpg")).map(File::getName).sorted()
-			// .collect(Collectors.toList());
-
 			int index = 0;
 
 			for (String name : jpegNames) {

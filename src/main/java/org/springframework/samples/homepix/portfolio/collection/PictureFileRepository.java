@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -194,11 +195,49 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		"HAVING distance <= ?3", nativeQuery = true)
 	List<PictureFile> findPicturesWithinRadiusWithoutCrowding(double latitude, double longitude, int radius);
 
-	@Query(value = "SELECT id, latitude, longitude, " +
-		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
+	@Query(value = "SELECT pf.* " +
+		"FROM picture_file AS pf " +
+		"WHERE ABS(pf.latitude - :latitude) < :tolerance AND ABS(pf.longitude - :longitude) < :tolerance", nativeQuery = true)
+	List<PictureFile> findPicturesByLocation(
+		@Param("latitude") BigDecimal latitude,
+		@Param("longitude") BigDecimal longitude,
+		@Param("tolerance") Float tolerance
+	);
+
+	@Query(value = "SELECT latitude, longitude, COUNT(*) as count " +
 		"FROM picture_file " +
-		"HAVING distance <= 1000", nativeQuery = true)
-	List<Object[]> findPicturesWithinRadius(double latitude, double longitude, int radius);
+		"WHERE latitude IS NOT NULL AND longitude IS NOT NULL " +
+		"GROUP BY latitude, longitude " +
+		"HAVING COUNT(*) > 1", nativeQuery = true)
+	List<Object[]> findClusters();
+
+	@Query(value = "SELECT p1.id AS id1, p2.id AS id2, p1.latitude, p1.longitude " +
+		"FROM picture_file p1 " +
+		"JOIN picture_file p2 ON p1.id < p2.id " +
+		"WHERE p1.latitude IS NOT NULL " +
+		"AND p1.longitude IS NOT NULL " +
+		"AND p2.latitude IS NOT NULL " +
+		"AND p2.longitude IS NOT NULL " +
+		"AND ABS(p1.latitude - p2.latitude) < 0.00001 " +
+		"AND ABS(p1.longitude - p2.longitude) < 0.00001;", nativeQuery = true)
+	List<Object[]> findNearClusters();
+
+	@Query(value = "SELECT pf.id, pf.latitude, pf.longitude,\n" +
+		"       ROUND(pf.latitude, 4) AS rounded_latitude,\n" +
+		"       ROUND(pf.longitude, 4) AS rounded_longitude\n" +
+		"FROM picture_file pf\n" +
+		"JOIN (\n" +
+		"    SELECT ROUND(latitude, 4) AS rounded_latitude,\n" +
+		"           ROUND(longitude, 4) AS rounded_longitude\n" +
+		"    FROM picture_file\n" +
+		"    WHERE latitude IS NOT NULL AND longitude IS NOT NULL\n" +
+		"    GROUP BY ROUND(latitude, 4), ROUND(longitude, 4) \n" +
+		"    HAVING COUNT(*) > 1\n" +
+		") clusters ON ROUND(pf.latitude, 4) = clusters.rounded_latitude\n" +
+		"          AND ROUND(pf.longitude, 4) = clusters.rounded_longitude\n" +
+		"WHERE pf.latitude IS NOT NULL AND pf.longitude IS NOT NULL;",
+		nativeQuery = true)
+	List<Object[]> findAllWithRoundedCoordinates();
 
 	default Map<LocalDate, Long> getCountByTakenOn() {
 

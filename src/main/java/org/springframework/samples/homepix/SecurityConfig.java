@@ -99,6 +99,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/keywords/**",
 					"/api/albums",
 					"/api/albums/**",
+					"/api/folders",
+					"/api/folders/**",
 					"/maps/**"
 				)
 				.permitAll()
