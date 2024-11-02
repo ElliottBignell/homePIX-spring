@@ -95,6 +95,7 @@ class CalendarController extends PaginationController {
 			return "redirect:/";
 		}
 
+		model.put("title", "Photo calendar view for " + year);
 		model.put("albums", this.albums.findAll());
 		model.put("calendar", this.calendar);
 		model.put("folders", this.folders.findAll().stream()
@@ -114,6 +115,7 @@ class CalendarController extends PaginationController {
 		Map<Integer, PictureFile> yearThumbnailMap = entries.stream()
 			.collect(Collectors.toMap(YearThumbnailMapEntry::getYear, YearThumbnailMapEntry::getThumbnail));
 
+		model.put("title", "Photo calendar view");
 		model.put("yearThumbnailMap", yearThumbnailMap);
 		model.put("years", this.calendar.getItems());
 		model.put("albums", this.albums.findAll());

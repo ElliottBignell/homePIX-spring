@@ -93,6 +93,7 @@ public class AlbumService {
 				MapUtils.LatLng center = result.getKey();
 				int zoom = result.getValue();
 
+				model.put("title", "Picture map");
 				model.put("zoom", zoom);
 				model.put("refLatitude", center.getLatitude());
 				model.put("refLongitude", center.getLongitude());

@@ -180,6 +180,7 @@ class BucketController extends PaginationController {
 		);
 		model.put("thumbnails", thumbnailsMap);
 		model.put("albums", this.albums.findAll());
+		model.put("title", "Gallery of picture folders");
 
 		// User is not authenticated or not an admin
 		return "folders/folderListPictorial";
@@ -365,6 +366,7 @@ class BucketController extends PaginationController {
 		model.put("firstIndex", firstIndex);
 		model.put("lastIndex", lastIndex);
 		model.put("count", results.getTotalElements());
+		model.put("title", name + " picture folder");
 
 		pictureFileService.addMapDetails(pictureFiles.findByFolderName(name), model);
 
@@ -615,7 +617,6 @@ class BucketController extends PaginationController {
 
 			model.put("picture", file);
 			model.put("current", id);
-			model.put("title", "This title");
 			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
 			model.put("description", "This description");
 			model.put("baseLink", "/buckets/" + name);

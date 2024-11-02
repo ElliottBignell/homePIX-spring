@@ -201,6 +201,7 @@ class AlbumController extends PaginationController {
 			}
 		}
 
+		model.put("title", "Gallery of photo albums");
 		model.put("selections", results);
 		model.put("albums", this.albums.findAll());
 		model.put("folders", this.folders.findAll().stream()

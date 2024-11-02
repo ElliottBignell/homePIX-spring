@@ -3,7 +3,24 @@
 
 <head>
 
-  <title>homePIX Photo Server</title>
+  <th:block th:with="
+      baseTitle = 'homePIX Photo Server by Elliott Bignell',
+      finalTitle = ${
+          (title != null) ? title :
+          (picture != null && picture.title != null) ? picture.title + (picture.location != null ? ' in ' + picture.location.location : ''):
+          (album != null && album.name != null) ? album.name :
+          (folder != null && folder.name != null) ? folder.name : baseTitle
+      },
+      subtitle = ${
+          (title == null && picture != null && picture.title != null) ?
+          ((album != null && album.name != null) ? ' in album ' + album.name : (folder != null && folder.name != null) ? ' in folder ' + folder.name  : '') : ''
+      },
+      aggregateTitle = ${
+          (finalTitle + subtitle) == baseTitle ? baseTitle : finalTitle + subtitle + ' | ' + baseTitle
+      }
+  ">
+    <title th:text="${aggregateTitle}"></title>
+  </th:block>
 
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta charset="utf-8">
@@ -12,8 +29,6 @@
   <meta name="google-site-verification" content="3ncBnlf-0Ox-QrjaV5dFGM2MOBWK_QDjPhSsc1hE5ik" />
 
   <link rel="shortcut icon" type="image/x-icon" th:href="@{/resources/images/favicon.png}">
-
-  <title>homePIX Photo Server</title>
 
   <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -77,7 +92,7 @@
   <link rel="stylesheet" th:href="@{/resources/css/tags.css}" />
 
 </head>
-dropdown
+
 <body>
 
 <div class="col-sm-12" id="panetop">

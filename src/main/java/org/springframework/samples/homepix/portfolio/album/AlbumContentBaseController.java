@@ -150,7 +150,7 @@ public class AlbumContentBaseController extends PaginationController {
 		// Now, ensure every picture ID has an entry in the map, even if it's an empty list
 		content.forEach(pf -> pictureKeywordsMap.putIfAbsent(pf.getId(), new ArrayList<>()));
 
-
+		model.put("title", album.getName()+ " picture album");
 		model.put("id", album.getId());
 		model.put("startDate", requestDTO.getFromDate());
 		model.put("endDate", requestDTO.getToDate());

@@ -284,7 +284,7 @@ class OrganiseController extends AlbumContentBaseController {
 		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
 
 		model.put("baseLink", "/album/" + id);
-		model.put("album", album);
+		model.put("album", album.orElse(null));
 		model.put("albums", albums);
 		model.put("folders", this.folders.findAll().stream()
 			.sorted(Comparator.comparing(Folder::getName))

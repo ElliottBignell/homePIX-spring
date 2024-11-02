@@ -1202,7 +1202,7 @@ public abstract class PaginationController implements AutoCloseable {
 			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
 			+ "    \"datePublished\": \"" + picture.getTaken_on() + "\",\n"
 			+ "    \"contentUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
-			+ "    \"thumbnailUrl\": \"" + baseURL + picture.getMediumFilename() + "\",\n"
+			+ "    \"thumbnailUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
 			+ "    \"license\": \"https://www.homepix.ch/licence.html\",\n"
 			+ "    \"creditText\": \"Photography by Elliott Bignell\",\n"
 			+ "    \"keywords\": ["
