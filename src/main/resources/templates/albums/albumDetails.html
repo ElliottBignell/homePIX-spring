@@ -110,7 +110,7 @@
                            th:height="${entry.displayHeight}"
                            th:src="${entry.mediumFilename}"
                            th:data-src="${entry.mediumFilename}"
-                           th:alt="${entry.title + (keywords[entry.id] != '' ? ', ' + keywords[entry.id] : '')}"
+                           th:alt="${entry.title + (keyword_lists[entry.id] != '' ? ', ' + keyword_lists[entry.id] : '')}"
                       >
 
                     </span>

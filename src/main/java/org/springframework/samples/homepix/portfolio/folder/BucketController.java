@@ -32,6 +32,7 @@ import org.springframework.samples.homepix.portfolio.album.AlbumService;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -174,14 +175,23 @@ class BucketController extends PaginationController {
 				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
 		);
 
-	    model.put("folders", folderCache.stream()
+		List<Integer> pictureIds = new ArrayList<>(thumbnailsMap.keySet());
+
+		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
+
+		model.put("folders", folderCache.stream()
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);
 		model.put("thumbnails", thumbnailsMap);
 		model.put("albums", this.albums.findAll());
 		model.put("title", "Gallery of picture folders");
-
+		model.put("description", pageDescription);
+		model.put("keywords", relations.stream()
+			.map(relationship -> relationship.getKeyword().getWord())
+			.distinct()
+			.sorted()
+			.collect(Collectors.joining(",")));
 		// User is not authenticated or not an admin
 		return "folders/folderListPictorial";
 	}
@@ -373,9 +383,9 @@ class BucketController extends PaginationController {
 		setStructuredDataForModel(
 			requestDTO,
 			model,
-			"homePIX Photo-sharing Site",
+			"homePIX Photo-sharing folder for " + name,
 			"ImageGallery",
-			"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+			"Photo folder containing shots taken in " + name,
 			results.getContent(),
 			"photo, sharing, portfolio, elliott, bignell"
 		);
@@ -631,23 +641,21 @@ class BucketController extends PaginationController {
 			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
 				.map(relationship -> relationship.getKeyword())
 				.collect(Collectors.toList()));
-			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID)
-				.stream()
-				.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
-				.collect(Collectors.joining(", "))
-			);
+			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
+				.map(relationship -> relationship.getKeyword())
+				.collect(Collectors.toList()));
 			Iterable<Album> albums = this.albums.findAll();
 
 			String keywords = this.keywordRelationships.findByPictureId(pictureID)
 					.stream()
-					.map(kr -> '\"' + kr.getKeyword().getWord() + '\"') // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
+					.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
 					.collect(Collectors.joining(", "));
 
 			if (keywords.length() > 0) {
 				keywords += ',';
 			}
 
-			keywords += "\"photo\", \"sharing\", \"portfolio\", \"elliott\", \"bignell\"";
+			keywords += "photo, sharing, portfolio, elliott, bignell";
 
 			setStructuredDataForModel(
 				requestDTO,

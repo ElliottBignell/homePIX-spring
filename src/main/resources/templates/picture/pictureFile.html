@@ -753,8 +753,8 @@ function remove_keyword( keyword, pic_id ) {
                     <span class="titletext propertyfont">
                         Keywords:
                     </span>
-                    <span th:if="${keywords != null}" class="dynamic_keywords">
-                      <span id="keywords" class="titlecontent" th:each="word : ${keywords}">
+                    <span th:if="${keyword_list != null}" class="dynamic_keywords">
+                      <span id="keywords" class="titlecontent" th:each="word : ${keyword_list}">
                         <button type="button" class="keywordfont" data-react-toolbox="button">
                           <span th:text="${word.word}"></span>
                           <span>

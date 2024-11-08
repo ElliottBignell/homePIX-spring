@@ -144,24 +144,26 @@ class PictureCollectionController extends PaginationController {
 	 */
 	@GetMapping("/collection/{id}")
 	public String showCollection(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-								 @PathVariable("id") int pictureId, Map<String, Object> model) {
+								 @PathVariable("id") int pictureID, Map<String, Object> model) {
 
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
 		mav.addObject(this.pictures.findAll());
 		model.put("link_params", "");
 
-		addParams(pictureId, "", pictureFiles.findAll(), model, true);
+		addParams(pictureID, "", pictureFiles.findAll(), model, true);
 
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);
-		model.put("keywords", this.keywordRelationships.findByPictureId(pictureId));
-		model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureId)
-			.stream()
-			.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
-			.collect(Collectors.joining(", "))
-		);
+		model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
+			.map(relationship -> relationship.getKeyword().getWord())
+			.distinct()
+			.sorted()
+			.collect(Collectors.joining(",")));
+		model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
+			.map(relationship -> relationship.getKeyword())
+			.collect(Collectors.toList()));
 
-		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
+		Optional<PictureFile> picture = pictureFiles.findById(pictureID);
 
 		if (picture.isPresent()) {
 			pictureFileService.addMapDetails(picture.get(), model);
@@ -341,8 +343,6 @@ class PictureCollectionController extends PaginationController {
 			model.put("refLongitude", center.getLongitude());
 			model.put("nearbyCoordinates", nearbyCoordinates);
 			model.put("nearbyPictures", nearbyPictures);
-
-			System.out.println(nearbyCoordinates);
 
 			return "picture/pictureMap.html";
 		}

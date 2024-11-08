@@ -5,7 +5,6 @@
 <body onload="initMap()">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/7.11.0/polyfill.min.js"></script>
-<div id="map" style="left:0vh; height: 100vh; width: 100vw;"></div>
 <script>
 
     let map;
@@ -162,7 +161,8 @@
     }
 
     // Start loading scripts and initializing the map
-    loadGoogleMapsAndClusterer();</script>
+    loadGoogleMapsAndClusterer();
+</script>
 
 <link rel="stylesheet" th:href="@{/resources/css/clearall.css}" />
 <link rel="stylesheet" th:href="@{/resources/css/dropdown.css}" />

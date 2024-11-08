@@ -73,7 +73,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/</loc>\n" +
-			"       <lastmod>2024-01-01</lastmod>\n" +
+			"       <lastmod>2024-11-04</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -108,7 +108,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/albums/1</loc>\n" +
-			"       <lastmod>2024-02-25</lastmod>\n" +
+			"       <lastmod>2024-11-04</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -141,7 +141,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/buckets/" + name + "</loc>\n" +
-			"       <lastmod>2024-02-25</lastmod>\n" +
+			"       <lastmod>2024-11-04</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -162,7 +162,7 @@ public class SEOController extends PaginationController {
 								"<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 								  "<sitemap>" +
 									"<loc>https://www.homepix.ch/sitemap.xml</loc>" +
-									"<lastmod>2024-02-25</lastmod>" +
+									"<lastmod>2024-11-04</lastmod>" +
 									"</sitemap>" +
 									this.getAlbumSiteTags().stream().collect(Collectors.joining("\n")) +
 									this.getFolderSiteTags().stream().collect(Collectors.joining("\n")) +
@@ -180,7 +180,7 @@ public class SEOController extends PaginationController {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
 			.map(album -> {
 
-				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-25";
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-11-04";
 
 				return "<url>\n" +
 					"<loc>https://www.homepix.ch/album/" + album.getId() + "</loc>\n" +
@@ -199,7 +199,7 @@ public class SEOController extends PaginationController {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(albums.findAll().iterator(), 0), false)
 			.map(album -> {
 
-				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-02-25";
+				String date = album.getLastModifiedDate() != null ? album.getLastModifiedDate().toString() : "2024-11-04";
 
 				return "<sitemap>\n" +
 					   "<loc>https://www.homepix.ch/album" + album.getId() + ".xml</loc>\n" +
@@ -237,7 +237,7 @@ public class SEOController extends PaginationController {
 				StreamSupport.stream(Spliterators.spliteratorUnknownSize(yearGroup.getYears().iterator(), 0), false)
 					.map(year -> "<url>" +
 						"<loc>https://www.homepix.ch/calendar/" + year.getYear() + "</loc>\n" +
-						"<lastmod>2024-02-25</lastmod>\n" +
+						"<lastmod>2024-11-04</lastmod>\n" +
 						"<changefreq>weekly</changefreq>\n" +
 						"<priority>0.8</priority>\n" +
 						"</url>")
@@ -266,7 +266,7 @@ public class SEOController extends PaginationController {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folders.findAll().iterator(), 0), false)
 			.map(folder -> {
 
-				String date = folder.getLastModifiedDate() != null ? folder.getLastModifiedDate().toString() : "2024-02-04";
+				String date = folder.getLastModifiedDate() != null ? folder.getLastModifiedDate().toString() : "2024-11-04";
 
 				return "<sitemap>\n" +
 					"<loc>https://www.homepix.ch/folder" + folder.getName() + ".xml</loc>\n" +

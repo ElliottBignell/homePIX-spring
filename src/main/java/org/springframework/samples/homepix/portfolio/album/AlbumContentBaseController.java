@@ -114,7 +114,7 @@ public class AlbumContentBaseController extends PaginationController {
 				model,
 				"homePIX photo album collection",
 				"ImageGallery",
-				"Collection of photo albums",
+				"Album of photos about the theme of " + album.getName(),
 				content,
 				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
 		);

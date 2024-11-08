@@ -294,10 +294,16 @@ class OrganiseController extends AlbumContentBaseController {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
 
-			model.put("keywords", this.keywordRelationships.findByPictureId(pictureId).stream()
+			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureId).stream()
 				.map(KeywordRelationships::getKeyword)
 				.sorted(Comparator.comparing(Keyword::getWord))
 				.collect(Collectors.toList()));
+
+			model.put("keywords", this.keywordRelationships.findByPictureId(pictureId).stream()
+				.map(KeywordRelationships::getKeyword)
+				.sorted(Comparator.comparing(Keyword::getWord))
+				.map(Keyword::getWord)
+				.collect(Collectors.joining(",")));
 
 			List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
 				.collect(Collectors.toList());
@@ -319,6 +325,20 @@ class OrganiseController extends AlbumContentBaseController {
 		}
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
+
+		Collection<PictureFile> content = new ArrayList<>();
+
+		picture.ifPresent(content::add);
+
+		setStructuredDataForModel(
+			requestDTO,
+			model,
+			"homePIX photo album collection",
+			"ImageGallery",
+			"Collection of photo albums",
+			content,
+			"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
+		);
 
 		picture.ifPresent(pictureFile -> pictureFileService.addMapDetails(pictureFile, model));
 

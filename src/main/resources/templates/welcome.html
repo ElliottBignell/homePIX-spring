@@ -93,7 +93,7 @@
                               class="lazyload imageinlist imageresponsive homepix-main-picture"
                               th:src="${picture.mediumFilename}"
                               th:data-src="${picture.largeFilename}"
-                              th:alt="${picture.title + (keywords[picture.id] != '' ? ', ' + keywords[picture.id] : '')}"
+                              th:alt="${picture.title + (keyword_list[picture.id] != '' ? ', ' + keyword_list[picture.id] : '')}"
                               style="object-fit:contain;object-position:center;"
                          >
 

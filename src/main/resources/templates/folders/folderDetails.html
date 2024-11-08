@@ -115,7 +115,7 @@
                          th:height="${pictureFile.displayHeight}"
                          th:src="${pictureFile.mediumFilename}"
                          th:data-src="${pictureFile.mediumFilename}"
-                         th:alt="${pictureFile.title + (keywords[pictureFile.id] != '' ? ', ' + keywords[pictureFile.id] : '')}"
+                         th:alt="${pictureFile.title + (keyword_lists[pictureFile.id] != '' ? ', ' + keyword_lists[pictureFile.id] : '')}"
                     >
                   </span>
                 </section>

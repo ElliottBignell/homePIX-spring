@@ -91,6 +91,16 @@ public abstract class PaginationController implements AutoCloseable {
 	// @Value("${homepix.images.path}")
 	protected static final String imagePath = System.getProperty("user.dir") + "/images/";
 
+	protected static final String pageDescription =
+		"homePIX is a photo-sharing site created by Elliott Bignell. " +
+		"If you want to licence a photo on this site please contact Elliott at elliott.bignell@gmail.com. " +
+		"Licensing direct from the site is coming soon. If you want to have your photos featured on this " +
+		"site also contact Elliott. The idea is for this site to be collaborative among photographers, " +
+		"so I will feature others' work and connect to your own sites if you want to use my code." +
+		" Together we are bigger than any agency, and I plan to let you keep most of your sales revenue. " +
+		"First I need some partners!";
+
+
 	@Autowired
 	protected FolderService folderService;
 
@@ -168,6 +178,7 @@ public abstract class PaginationController implements AutoCloseable {
 		model.put("previous", previous.getId());
 		model.put("nextFile", next.getFilename());
 		model.put("previousFile", previous.getFilename());
+		model.put("description", pageDescription);
 	}
 
 	@ModelAttribute(name = "pagination")
@@ -1126,8 +1137,14 @@ public abstract class PaginationController implements AutoCloseable {
 					Collectors.joining(", ") // Join keywords with a comma and space
 				)
 			));
+		model.put("keyword_lists", pictureIdToKeywords);
 
-		model.put("keywords", pictureIdToKeywords);
+		model.put("keywords", relations.stream()
+			.map(relationship -> relationship.getKeyword().getWord())
+			.distinct()
+			.sorted()
+			.collect(Collectors.joining(",")));
+		model.put("keyword_list", pictureIdToKeywords);
 		model.put("thumbnails", thumbnailsMap);
 	}
 
@@ -1150,7 +1167,7 @@ public abstract class PaginationController implements AutoCloseable {
 			+ "    \"name\": \"" + title + "\",\n"
 			+ "    \"description\": \"" + description + "\",\n"
 			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
-			+ "    \"datePublished\": \"2024-03-06\",\n"
+			+ "    \"datePublished\": \"2024-11-04\",\n"
 			+ "    \"thumbnailUrl\": \"" + filepath + "\",\n"
 			+ "    \"image\": [\n"
 			+ pictures.stream().map( item -> {
@@ -1165,8 +1182,10 @@ public abstract class PaginationController implements AutoCloseable {
 					+ "            \"datePublished\": \"" + item.getTaken_on() + "\",\n"
 					+ "            \"name\": \"" + item.getTitle() + "\",\n"
 					+ "            \"creditText\": \"Photography by Elliott Bignell\",\n"
-					+ "            \"creator\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
-					+ "            \"copyrightNotice\": \"Elliott Bignell\"\n"
+					+ "            \"creator\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\", \"url\": \"https://www.linkedin.com/in/elliottbignell/\" },\n"
+					+ "            \"copyrightNotice\": \"© 2024 Elliott Bignell\",\n"
+					+ "            \"acquireLicensePage\": \"https://www.homepix.ch/licence.html\""
+					+ "            \n"
 					+ "        }";
 			})
 			.collect(Collectors.joining(",\n"))
@@ -1177,13 +1196,12 @@ public abstract class PaginationController implements AutoCloseable {
 
 		model.put("structuredData", structuredData);
 
-		model.put("pageTitle", "homePIX Photo Server");
-		model.put("pageDescription", description);
 		model.put("pageKeywords", keywords);
 		model.put("startDate", requestDTO.getFromDate());
 		model.put("endDate", requestDTO.getToDate());
 		model.put("sort", requestDTO.getSort());
 		model.put("search", requestDTO.getSearch());
+		model.put("description", pageDescription);
 	}
 
 	protected void setStructuredDataForModel(@ModelAttribute CollectionRequestDTO requestDTO,
@@ -1200,24 +1218,38 @@ public abstract class PaginationController implements AutoCloseable {
 			+ "    \"name\": \"" + picture.getTitle() + "\",\n"
 			+ "    \"description\": \"" + picture.getTitle() + "\",\n"
 			+ "    \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
-			+ "    \"datePublished\": \"" + picture.getTaken_on() + "\",\n"
+			+ "    \"datePublished\": \"2024-11-04\",\n"
 			+ "    \"contentUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
-			+ "    \"thumbnailUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
+			+ "    \"thumbnailUrl\": \"" + filepath + "\",\n"
 			+ "    \"license\": \"https://www.homepix.ch/licence.html\",\n"
 			+ "    \"creditText\": \"Photography by Elliott Bignell\",\n"
-			+ "    \"keywords\": ["
-			+ keywords
-			+ "]"
-			+ "\n}\n";
-
-		//"license": "https://example.com/license",
-		//"acquireLicensePage": "https://example.com/how-to-use-my-images",
+			+ "    \"image\": [\n"
+			+ "    {\n"
+			+ "            \"@context\": \"http://schema.org\",\n"
+			+ "            \"@type\": \"ImageObject\",\n"
+			+ "            \"contentUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
+			+ "            \"thumbnailUrl\": \"" + baseURL + picture.getLargeFilename() + "\",\n"
+			+ "            \"description\": \"" + picture.getTitle() + "\",\n"
+			+ "            \"license\": \"https://www.homepix.ch/licence.html\",\n"
+			+ "            \"author\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\"},\n"
+			+ "            \"datePublished\": \"" + picture.getTaken_on() + "\",\n"
+			+ "            \"name\": \"" + picture.getTitle() + "\",\n"
+			+ "            \"creditText\": \"Photography by Elliott Bignell\",\n"
+			+ "            \"creator\": {\"@type\": \"Person\",\"name\": \"Elliott Bignell\", \"url\": \"https://www.linkedin.com/in/elliottbignell/\" },\n"
+			+ "            \"copyrightNotice\": \"© 2024 Elliott Bignell\",\n"
+			+ "            \"acquireLicensePage\": \"https://www.homepix.ch/licence.html\",\n"
+			+ "            \"keywords\": ["
+			+              keywords
+			+              "]"
+			+ "            \n"
+			+ "        }"
+			+ "\n]}\n";
 
 		model.put("structuredData", structuredData);
 
-		model.put("pageTitle", "homePIX Photo Server");
-		model.put("pageDescription", picture.getTitle());
-		model.put("pageKeywords", keywords);
+		model.put("description", picture.getTitle());
+		model.put("title", picture.getTitle());
+		model.put("keywords", keywords);
 		model.put("startDate", requestDTO.getFromDate());
 		model.put("endDate", requestDTO.getToDate());
 		model.put("sort", requestDTO.getSort());
