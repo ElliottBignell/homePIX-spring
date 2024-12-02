@@ -99,8 +99,12 @@
 
                          </img>
                          <div class="carousel-caption homepix-caption-2">
-                           <h3 th:text="${ picture.title }" style="width:100%;text-align:center;">Title</h3>
-                           <h3 th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}" style="width;bottom:100%;text-align:center;">Taken on</h3>
+                           <h3 th:text="${picture.title}" style="width:100%;text-align:center;font-size:4vh;">Title</h3>
+                           <h3 th:if="${picture.taken_on != T(java.time.LocalDateTime).of(1970, 1, 1, 0, 0, 0)}"
+                               th:text="${#temporals.format(picture.taken_on, 'dd MMMM yyyy')}"
+                               style="width;bottom:100%;text-align:center;font-size:2vh;">
+                             Taken on
+                           </h3>
                          </div>
                        </div>
                        <div class="carousel-caption homepix-caption-3">

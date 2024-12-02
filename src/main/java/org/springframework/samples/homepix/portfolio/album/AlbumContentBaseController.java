@@ -167,6 +167,15 @@ public class AlbumContentBaseController extends PaginationController {
 		model.put("keyword_lists", pictureKeywordsStringMap);
 		model.put("link_params", "");
 
+		if (album.getThumbnail() != null) {
+			model.put("fullUrl", "collection/" + album.getThumbnail_id());
+			model.put("picture", album.getThumbnail());
+		}
+		else if (!content.isEmpty()) {
+			model.put("fullUrl", "collection/" + content.iterator().next().getId());
+			model.put("picture", content.iterator().next());
+		}
+
 		pictureFileService.addMapDetails(content, model);
 
 		return mav;

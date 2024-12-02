@@ -134,6 +134,14 @@ class WelcomeController extends PaginationController {
 			);
 
 			model.put("collection", slides);
+
+			if (results.isEmpty()) {
+				model.put("fullUrl", "collection/58123");
+			}
+			else {
+				model.put("fullUrl", "collection/" + results.iterator().next().getThumbnail_id());
+			}
+			model.put("picture", pictureFiles.findById(58123).get());
 		}
 
 		redirectAttributes.addAttribute("search", requestDTO.getSearch());

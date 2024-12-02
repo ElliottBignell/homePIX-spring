@@ -15,7 +15,11 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
@@ -41,6 +45,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -143,14 +150,37 @@ class PictureCollectionController extends PaginationController {
 	 * @return a ModelMap with the model attributes for the view
 	 */
 	@GetMapping("/collection/{id}")
-	public String showCollection(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-								 @PathVariable("id") int pictureID, Map<String, Object> model) {
+	public String showFilteredCollection(CollectionRequestDTO requestDTO,
+										 @PathVariable("id") int pictureID,
+										 Map<String, Object> model,
+										 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+										 Authentication authentication
+	) {
+		PageRequest pageRequest = PageRequest.of(
+			pageable.getPageNumber(),
+			100, // pageable.getPageSize(),
+			Sort.by(getOrderColumn(requestDTO))
+		);
+
+		String userRoles = "ROLE_USER";
+
+		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+		LocalDate endDate = dates.getSecond();
+		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
 		ModelAndView mav = new ModelAndView("albums/albumDetails");
 		mav.addObject(this.pictures.findAll());
 		model.put("link_params", "");
 
-		addParams(pictureID, "", pictureFiles.findAll(), model, true);
+		Page<PictureFile> files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+			requestDTO.getSearch(),
+			dates.getFirst(),
+			endOfDay,
+			isAdmin(authentication),
+			userRoles,
+			pageRequest
+		);
+		addParams(pictureID, "", files, model, true);
 
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);
@@ -163,43 +193,71 @@ class PictureCollectionController extends PaginationController {
 			.map(relationship -> relationship.getKeyword())
 			.collect(Collectors.toList()));
 
+		// Construct the full URL
+		model.put("fullUrl", "collection/" + pictureID);
+		model.put("focusedField", "send_description");
+		model.put("search", requestDTO.getSearch());
+		model.put("pageNumber", files.getNumber());
+
 		Optional<PictureFile> picture = pictureFiles.findById(pictureID);
 
 		if (picture.isPresent()) {
+
 			pictureFileService.addMapDetails(picture.get(), model);
+			model.put("picture", picture.get());
 		}
 
 		return "picture/pictureFile.html";
 	}
 
 	@GetMapping("/collections/{id}")
-	public String showCollections(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-								  @PathVariable("id") int id, Map<String, Object> model) {
-		return showCollection(fromDate, toDate, id, model);
+	public String showCollections(CollectionRequestDTO requestDTO,
+								  @PathVariable("id") int pictureID,
+								  Map<String, Object> model,
+								  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+								  Authentication authentication
+	) {
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
 	}
 
 	@GetMapping("/collection/{id}/")
-	public String showCollectionsSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-									   @PathVariable("id") int id, Map<String, Object> model) {
-		return showCollection(fromDate, toDate, id, model);
+	public String showCollectionsSlash(CollectionRequestDTO requestDTO,
+									   @PathVariable("id") int pictureID,
+									   Map<String, Object> model,
+									   @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+									   Authentication authentication
+	) {
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
 	}
 
 	@GetMapping("/collections/{id}/")
-	public String showCollectionssSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-										@PathVariable("id") int id, Map<String, Object> model) {
-		return showCollection(fromDate, toDate, id, model);
+	public String showCollectionssSlash(CollectionRequestDTO requestDTO,
+										@PathVariable("id") int pictureID,
+										Map<String, Object> model,
+										@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+										Authentication authentication
+	) {
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
 	}
 
 	@GetMapping("/collection/{dummyId}/item/{id}")
-	public String showCollection(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-								 @PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
-		return showCollection(fromDate, toDate, id, model);
+	public String showCollection(CollectionRequestDTO requestDTO,
+								 @PathVariable("id") int pictureID,
+								 Map<String, Object> model,
+								 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+								 Authentication authentication
+	) {
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
 	}
 
 	@GetMapping("/collections/{dummyId}/item/{id}/")
-	public String showCollectionSlash(@RequestParam Optional<String> fromDate, @RequestParam Optional<String> toDate,
-									  @PathVariable("dummyId") int dummyId, @PathVariable("id") int id, Map<String, Object> model) {
-		return showCollection(fromDate, toDate, id, model);
+	public String showCollectionSlash(CollectionRequestDTO requestDTO,
+									  @PathVariable("id") int pictureID,
+									  Map<String, Object> model,
+									  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+									  Authentication authentication
+	) {
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
 	}
 
 	@Override

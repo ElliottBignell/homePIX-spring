@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -183,6 +184,36 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		Pageable pageable
 	);
 
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND (LOWER(pf.title) = LOWER(:searchText) " +
+		"OR f.name = :searchText) " +  // Fixed parentheses
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id " +
+		"ORDER BY pf.filename ASC", // Added ORDER BY
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND (LOWER(pf.title) = LOWER(:searchText) " +
+			"OR f.name = :searchText) " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByExactWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
 	@Query(value = "SELECT id, latitude, longitude, " +
 		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
 		"FROM picture_file " +
@@ -239,11 +270,82 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		nativeQuery = true)
 	List<Object[]> findAllWithRoundedCoordinates();
 
+	@Query(value = "WITH RECURSIVE word_splitter AS (\n" +
+		"	SELECT\n" +
+		"		id,\n" +
+		"	SUBSTRING_INDEX(title, ' ', 1) AS word,\n" +
+		"SUBSTRING(title, LOCATE(' ', title) + 1) AS remaining\n" +
+		"FROM picture_file\n" +
+		"WHERE title IS NOT NULL AND title != ''\n" +
+		"UNION ALL\n" +
+		"SELECT\n" +
+		"	id,\n" +
+		"SUBSTRING_INDEX(remaining, ' ', 1) AS word,\n" +
+		"SUBSTRING(remaining, LOCATE(' ', remaining) + 1) AS remaining\n" +
+		"FROM word_splitter\n" +
+		"WHERE LOCATE(' ', remaining) > 0\n" +
+		"UNION ALL\n" +
+		"SELECT\n" +
+		"	id,\n" +
+		"remaining AS word,\n" +
+		"	'' AS remaining\n" +
+		"FROM word_splitter\n" +
+		"WHERE LOCATE(' ', remaining) = 0 AND remaining != ''\n" +
+		"	)\n" +
+		"SELECT DISTINCT LOWER(TRIM(word)) AS unique_word\n" +
+		"FROM word_splitter\n" +
+		"WHERE word != ''\n" +
+		"ORDER BY unique_word;",
+		nativeQuery = true)
+	List<String> findAllWordsOld();
+
+	@Query(value = "WITH RECURSIVE word_splitter AS (\n" +
+		"    SELECT\n" +
+		"       id,\n" +
+		"       SUBSTRING_INDEX(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\r\n\f]', ''), ' ', 1) AS word,\n" +
+		"       SUBSTRING(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\n\f]', ''), LOCATE(' ', " +
+		"           REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\n\f]', '')) + 1) " +
+		"           AS remaining\n" +
+		"    FROM picture_file\n" +
+		"    WHERE title IS NOT NULL AND title != ''\n" +
+		"    UNION ALL\n" +
+		"    SELECT\n" +
+		"       id,\n" +
+		"       SUBSTRING_INDEX(remaining, ' ', 1) AS word,\n" +
+		"       SUBSTRING(remaining, LOCATE(' ', remaining) + 1) AS remaining\n" +
+		"    FROM word_splitter\n" +
+		"    WHERE LOCATE(' ', remaining) > 0\n" +
+		"    UNION ALL\n" +
+		"    SELECT\n" +
+		"       id,\n" +
+		"       remaining AS word,\n" +
+		"       '' AS remaining\n" +
+		"    FROM word_splitter\n" +
+		"    WHERE LOCATE(' ', remaining) = 0 AND remaining != ''\n" +
+		")\n" +
+		"SELECT DISTINCT LOWER(TRIM(word)) AS unique_word\n" +
+		"FROM word_splitter\n" +
+		"WHERE word != ''\n" +
+		"ORDER BY unique_word;\n",
+		nativeQuery = true)
+	List<String> findAllWords();
+
+	@Modifying
+	@Query(value = "UPDATE picture_file " +
+		"SET title = REPLACE(title, :oldWord, :newWord) " +
+		"WHERE title LIKE CONCAT('%', :oldWord, '%')",
+		nativeQuery = true)
+	void replaceWords(
+		@Param("oldWord") String oldWord,
+		@Param("newWord") String newWord
+	);
+
 	default Map<LocalDate, Long> getCountByTakenOn() {
 
 		List<Object[]> result = countByTakenOn();
 
 		return result.stream()
+			.filter(entry -> entry[0] != null && entry[1] != null)
 			.collect(Collectors.toMap(
 				entry -> ((Date) entry[0]).toLocalDate(),
 				entry -> (Long) entry[1]

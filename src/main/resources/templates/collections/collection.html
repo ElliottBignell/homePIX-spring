@@ -19,7 +19,7 @@
             </c>
           </div>
 
-          <div style="overflow-y: auto; max-height: 75vh;">
+          <div style="overflow-y: auto; max-height: 75vh; max-width: 88vw;">
 
             <h3 th:if="${#lists.isEmpty(collection)}">
               No pictures from this date range
@@ -28,7 +28,7 @@
             <c th:each="pictureFile : ${collection}">
               <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=__${search}__&sort=__${sort}__/}"
                 >
                   <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
                     <span class="tt_subject">
@@ -44,13 +44,14 @@
                   </section>
                 </a>
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}"
+                   th:href="@{/collection/__${pictureFile.id}__?page=__${pageNumber}__&fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=__${search}__&sort=__${sort}__/}"
                 >
                   <figcaption class="tt_edit">
                     <form id="editprops">
                       <fieldset>
                         <button type="button" class="tt_title imageresponsive_">
-                          <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+                          <span style="text-align:left;" th:text="@{__${pictureFile.title}__, __${pictureFile.id}__}" th:if="${#authorization.expression('isAuthenticated')}"></span>
+                          <span style="text-align:left;" th:text="${pictureFile.title}" th:if="${!#authorization.expression('isAuthenticated')}"></span>
                         </button>
                       </fieldset>
                     </form>

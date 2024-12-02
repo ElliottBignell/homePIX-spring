@@ -192,6 +192,10 @@ class BucketController extends PaginationController {
 			.distinct()
 			.sorted()
 			.collect(Collectors.joining(",")));
+
+		model.put("fullUrl", "collection/" + pictureIds.iterator().next());
+		model.put("picture", files.iterator().next());
+
 		// User is not authenticated or not an admin
 		return "folders/folderListPictorial";
 	}
@@ -377,6 +381,16 @@ class BucketController extends PaginationController {
 		model.put("lastIndex", lastIndex);
 		model.put("count", results.getTotalElements());
 		model.put("title", name + " picture folder");
+
+		if (results != null) {
+			PictureFile picture = results.iterator().next();
+			model.put("fullUrl", "collection/" + picture.getId());
+			model.put("picture", picture);
+		}
+		else  {
+			model.put("fullUrl", "collection/58123");
+			model.put("picture", pictureFiles.findById(58123).get());
+		}
 
 		pictureFileService.addMapDetails(pictureFiles.findByFolderName(name), model);
 
@@ -607,7 +621,7 @@ class BucketController extends PaginationController {
 				if (count > 0) {
 
 					try {
-						// Attempt to access the element at index 'id'
+						// Attempt to access the element at index 'id' modulus 'size'
 						file = pictureFiles.get(id % pictureFiles.size());
 					}
 					catch (IndexOutOfBoundsException e2) {
@@ -644,6 +658,9 @@ class BucketController extends PaginationController {
 			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
 				.map(relationship -> relationship.getKeyword())
 				.collect(Collectors.toList()));
+
+			model.put("fullUrl", "collection/" + pictureID);
+
 			Iterable<Album> albums = this.albums.findAll();
 
 			String keywords = this.keywordRelationships.findByPictureId(pictureID)

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<head>
+</head>
+<body>
+
+  <style>
+    a {
+      color: blue;
+    }
+    a:hover {
+        color: red;
+    }
+  </style>
+  <div class="album-main">
+
+    <div class="centerstage">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="row">
+          <div class="col-md-6">
+            <h1 text="Words"></h1>
+          </div>
+
+          <div style="overflow-y: auto; max-height: 75vh;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(8em, 1fr)); gap: 1rem;">
+              <div th:each="word : ${words}" style="text-align: left;">
+                <a th:href="@{/?search=__${word}__&fromDate=&toDate=&ID=&Key=&sort=}" style="display: block; width: 100%;">
+                  <span th:text="${word}"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </body>
+
+  </html>

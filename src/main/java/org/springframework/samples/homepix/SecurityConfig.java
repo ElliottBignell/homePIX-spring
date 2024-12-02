@@ -101,7 +101,10 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/albums/**",
 					"/api/folders",
 					"/api/folders/**",
-					"/maps/**"
+					"/logs/docker/homepix",
+					"/containers/**",
+					"/maps/**",
+					"/words"
 				)
 				.permitAll()
 				.anyRequest().authenticated()

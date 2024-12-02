@@ -134,8 +134,16 @@ public abstract class PaginationController implements AutoCloseable {
 	protected void addParams(int pictureId, String filename, Iterable<PictureFile> pictureFiles,
 			Map<String, Object> model, boolean byID) {
 
-		PictureFile picture = pictureFiles.iterator().next();
-		PictureFile first = picture;
+		PictureFile picture;
+
+		if (0 == pictureId) {
+			picture = pictureFiles.iterator().next();
+		}
+		else {
+			picture = this.pictureFiles.findById(pictureId).get();
+		}
+
+		PictureFile first = pictureFiles.iterator().next();
 		PictureFile next = picture;
 		PictureFile last = next;
 		PictureFile previous = last;
@@ -391,14 +399,32 @@ public abstract class PaginationController implements AutoCloseable {
 		LocalDate endDate = dates.getSecond();
 		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
-		Page<PictureFile> files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-			requestDTO.getSearch(),
-			dates.getFirst(),
-			endOfDay,
-			isAdmin(authentication),
-			userRoles,
-			pageRequest
-		);
+		String searchText = requestDTO.getSearch();
+
+		Page<PictureFile> files;
+
+		if (searchText.equals("\"Flower\"")) {
+
+			files = this.pictureFiles.findByExactWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+				"Flower",
+				dates.getFirst(),
+				endOfDay,
+				isAdmin(authentication),
+				userRoles,
+				pageRequest
+			);
+		}
+		else {
+
+			files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+				requestDTO.getSearch(),
+				dates.getFirst(),
+				endOfDay,
+				isAdmin(authentication),
+				userRoles,
+				pageRequest
+			);
+		}
 
 		model.put("collection", files);
 		model.put("sort", requestDTO.getSort());
@@ -410,7 +436,7 @@ public abstract class PaginationController implements AutoCloseable {
 		return "collections/collection";
 	}
 
-	Pair<LocalDate, LocalDate> getDateRange(
+	protected Pair<LocalDate, LocalDate> getDateRange(
 		CollectionRequestDTO requestDTO,
 		Map<String, Object> model
 	) {
@@ -428,11 +454,11 @@ public abstract class PaginationController implements AutoCloseable {
 		String fromDate = requestDTO.getFromDate();
 		String toDate = requestDTO.getToDate();
 
-		if (fromDate.equals("")) {
+		if (fromDate.equals("null") || fromDate.equals("")) {
 			fromDate = "1970-01-01";
 		}
 
-		if (toDate.equals("")) {
+		if (toDate.equals("null") || toDate.equals("")) {
 
 			Supplier<String> supplier = () -> {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
@@ -709,7 +735,7 @@ public abstract class PaginationController implements AutoCloseable {
 		// Fetch all keyword relationships for the given picture files
 		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
 
-		return files.parallelStream()
+		return files.stream()
 			.filter(item -> isAuthorised(item, authentication))
 			.filter(PictureFile::isValid)
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
@@ -729,7 +755,7 @@ public abstract class PaginationController implements AutoCloseable {
 		// Fetch all keyword relationships for the given picture files
 		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
 
-		List<PictureFile> filteredFiles = files.parallelStream()
+		List<PictureFile> filteredFiles = files.stream()
 			.filter(item -> isAuthorised(item, authentication))
 			.filter(PictureFile::isValid)
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))

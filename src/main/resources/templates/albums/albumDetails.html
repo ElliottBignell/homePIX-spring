@@ -83,19 +83,6 @@
 
             <div style="overflow-y: auto; max-height: 75vh;">
 
-              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2242083496336489"
-                      crossorigin="anonymous"></script>
-              <!-- Album -->
-              <ins class="adsbygoogle"
-                   style="display:block"
-                   data-ad-client="ca-pub-2242083496336489"
-                   data-ad-slot="7770717456"
-                   data-ad-format="auto"
-                   data-full-width-responsive="true"></ins>
-              <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-              </script>
-
               <figure th:each="entry : ${collection}"
                       th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
                       th:id="@{figure-__${entry.id}__}">
