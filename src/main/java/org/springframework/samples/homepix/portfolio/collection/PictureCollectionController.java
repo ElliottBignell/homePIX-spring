@@ -49,6 +49,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -172,15 +174,39 @@ class PictureCollectionController extends PaginationController {
 		mav.addObject(this.pictures.findAll());
 		model.put("link_params", "");
 
-		Page<PictureFile> files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-			requestDTO.getSearch(),
-			dates.getFirst(),
-			endOfDay,
-			isAdmin(authentication),
-			userRoles,
-			pageRequest
-		);
-		addParams(pictureID, "", files, model, true);
+		String searchText = requestDTO.getSearch();
+
+		Page<PictureFile> files;
+
+		Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
+		Matcher matcher = pattern.matcher(searchText);
+
+		if (matcher.find()) {
+
+			String word = matcher.group(1);
+
+			files = this.pictureFiles.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+				matcher.group(1),
+				dates.getFirst(),
+				endOfDay,
+				isAdmin(authentication),
+				userRoles,
+				pageRequest
+			);
+		}
+		else {
+
+			files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+				requestDTO.getSearch(),
+				dates.getFirst(),
+				endOfDay,
+				isAdmin(authentication),
+				userRoles,
+				pageRequest
+			);
+		}
+
+		addParams(pictureID, "", files.toList(), model, true);
 
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);

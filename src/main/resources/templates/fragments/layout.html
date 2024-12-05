@@ -19,9 +19,30 @@
           (finalTitle + subtitle) == baseTitle ? baseTitle : finalTitle + subtitle + ' | ' + baseTitle
       }
   ">
+
+  <th:block th:with="
+      baseDescription = 'Stock photo server written by Elliott Bignell.',
+      firstDescription = ${
+          (picture != null && picture.title != null) ? 'Photo of ' + picture.title : baseDescription
+      },
+      descriptionTakenOn = ${
+          (picture != null && picture.taken_on != null) ? ' taken on ' + #temporals.format(picture.taken_on, 'dd MMMM yyyy') : ''
+      },
+      descriptionWhere = ${
+          (picture != null && picture.location != null) ? ' at ' + picture.location.location : ''
+      },
+      descriptionCamera = ${
+          (picture != null && picture.cameraModel != null) ? ' using a ' + picture.cameraModel : ''
+      },
+      descriptionExposure = ${
+          (picture != null && picture.exposureTime != null && picture.fNumber != null) ? ' at ' + picture.exposureTime + 'sec and f/' + picture.fNumber : ''
+      },
+      aggregateDescription = ${
+          firstDescription + descriptionTakenOn + descriptionWhere + descriptionCamera + descriptionExposure
+      }
+  ">
     <title th:text="${aggregateTitle}"></title>
 
-    <meta name="description" th:content="${description}">
     <meta name="keywords" th:content="${keywords}">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -40,7 +61,8 @@
     <link rel="stylesheet" th:href="@{/resources/css/custom.css}" />
     <link rel="stylesheet" th:href="@{/resources/css/blog.css}" />
 
-    <meta name="description" content="Stock photo server written by Elliott Bignell.">
+    <meta name="description" th:content="${aggregateDescription}">
+    <meta name="description" th:content="${description}">
 
     <!-- Medium-Style Editor -->
     <script src="//cdn.jsdelivr.net/npm/medium-editor@latest/dist/js/medium-editor.min.js"></script>

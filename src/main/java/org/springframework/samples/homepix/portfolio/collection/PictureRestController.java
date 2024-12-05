@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/pictures")
-@Secured("ROLE_ADMIN")
+//@Secured("ROLE_ADMIN")
 public class PictureRestController {
 
 	@Autowired

@@ -143,49 +143,52 @@ public abstract class PaginationController implements AutoCloseable {
 			picture = this.pictureFiles.findById(pictureId).get();
 		}
 
-		PictureFile first = pictureFiles.iterator().next();
-		PictureFile next = picture;
-		PictureFile last = next;
-		PictureFile previous = last;
+		if (pictureFiles.iterator().hasNext()) {
 
-		for (Iterator<PictureFile> it = pictureFiles.iterator(); it.hasNext();) {
-			last = it.next();
-		}
+			PictureFile first = pictureFiles.iterator().next();
+			PictureFile next = picture;
+			PictureFile last = next;
+			PictureFile previous = last;
 
-		previous = last;
-
-		Iterator<PictureFile> it = pictureFiles.iterator();
-
-		while (it.hasNext()) {
-
-			PictureFile f = it.next();
-
-			if (byID && f.getId() == pictureId) {
-
-				picture = f;
-				break;
-			}
-			else if (!byID && f.getFilename().equals(filename)) {
-
-				picture = f;
-				break;
+			for (Iterator<PictureFile> it = pictureFiles.iterator(); it.hasNext();) {
+				last = it.next();
 			}
 
-			previous = f;
-		}
+			previous = last;
 
-		if (it.hasNext()) {
-			next = it.next();
-		}
-		else {
-			next = first;
-		}
+			Iterator<PictureFile> it = pictureFiles.iterator();
 
-		model.put("picture", picture);
-		model.put("next", next.getId());
-		model.put("previous", previous.getId());
-		model.put("nextFile", next.getFilename());
-		model.put("previousFile", previous.getFilename());
+			while (it.hasNext()) {
+
+				PictureFile f = it.next();
+
+				if (byID && f.getId() == pictureId) {
+
+					picture = f;
+					break;
+				}
+				else if (!byID && f.getFilename().equals(filename)) {
+
+					picture = f;
+					break;
+				}
+
+				previous = f;
+			}
+
+			if (it.hasNext()) {
+				next = it.next();
+			}
+			else {
+				next = first;
+			}
+
+			model.put("picture", picture);
+			model.put("next", next.getId());
+			model.put("previous", previous.getId());
+			model.put("nextFile", next.getFilename());
+			model.put("previousFile", previous.getFilename());
+		}
 		model.put("description", pageDescription);
 	}
 
@@ -403,10 +406,15 @@ public abstract class PaginationController implements AutoCloseable {
 
 		Page<PictureFile> files;
 
-		if (searchText.equals("\"Flower\"")) {
+		Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
+		Matcher matcher = pattern.matcher(searchText);
 
-			files = this.pictureFiles.findByExactWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-				"Flower",
+		if (matcher.find()) {
+
+			String word = matcher.group(1);
+
+			files = this.pictureFiles.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+				matcher.group(1),
 				dates.getFirst(),
 				endOfDay,
 				isAdmin(authentication),

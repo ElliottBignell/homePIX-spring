@@ -27,7 +27,7 @@
           <div style="overflow-y: auto; max-height: 75vh;">
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(8em, 1fr)); gap: 1rem;">
               <div th:each="word : ${words}" style="text-align: left;">
-                <a th:href="@{/?search=__${word}__&fromDate=&toDate=&ID=&Key=&sort=}" style="display: block; width: 100%;">
+                <a th:href="@{/?search='__${word}__'&fromDate=&toDate=&ID=&Key=&sort=}" style="display: block; width: 100%;">
                   <span th:text="${word}"></span>
                 </a>
               </div>

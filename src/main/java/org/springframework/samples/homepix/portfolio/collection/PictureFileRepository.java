@@ -214,6 +214,36 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		Pageable pageable
 	);
 
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND (LOWER(pf.title) REGEXP CONCAT('(^|[[:space:]])', LOWER(:searchText), '([[:space:]]|$)') " +
+		"OR f.name = :searchText) " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id " +
+		"ORDER BY pf.filename ASC",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND (LOWER(pf.title) REGEXP CONCAT('(^|[[:space:]])', LOWER(:searchText), '([[:space:]]|$)') " +
+			"OR f.name = :searchText) " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
 	@Query(value = "SELECT id, latitude, longitude, " +
 		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
 		"FROM picture_file " +
