@@ -14,6 +14,7 @@ import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -69,6 +70,9 @@ public abstract class PaginationController implements AutoCloseable {
 	protected final FolderRepository folders;
 
 	protected final PictureFileRepository pictureFiles;
+
+	@Autowired
+	private PictureFileService pictureFileService;
 
 	protected final KeywordRepository keyword;
 
@@ -404,35 +408,14 @@ public abstract class PaginationController implements AutoCloseable {
 
 		String searchText = requestDTO.getSearch();
 
-		Page<PictureFile> files;
-
-		Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
-		Matcher matcher = pattern.matcher(searchText);
-
-		if (matcher.find()) {
-
-			String word = matcher.group(1);
-
-			files = this.pictureFiles.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-				matcher.group(1),
-				dates.getFirst(),
-				endOfDay,
-				isAdmin(authentication),
-				userRoles,
-				pageRequest
-			);
-		}
-		else {
-
-			files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-				requestDTO.getSearch(),
-				dates.getFirst(),
-				endOfDay,
-				isAdmin(authentication),
-				userRoles,
-				pageRequest
-			);
-		}
+		Page<PictureFile> files = this.pictureFileService.getComplexSearchPage(
+			searchText,
+			dates.getFirst(),
+			endOfDay,
+			isAdmin(authentication),
+			userRoles,
+			pageRequest
+		);
 
 		model.put("collection", files);
 		model.put("sort", requestDTO.getSort());
@@ -749,6 +732,43 @@ public abstract class PaginationController implements AutoCloseable {
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
 			.sorted(orderBy)
 			.collect(Collectors.toList());
+	}
+
+	protected List<PictureFile> listFiles(List<PictureFile> files,
+												  CollectionRequestDTO requestDTO,
+												  Authentication authentication) {
+
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		// Fetch all keyword relationships for the given picture files
+		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+
+		return files.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+	}
+
+	protected Page<PictureFile> listFilesPaged(List<PictureFile> files,
+											   CollectionRequestDTO requestDTO,
+											   Authentication authentication,
+											   Pageable pageable
+	) {
+		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
+
+		// Fetch all keyword relationships for the given picture files
+		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+
+		List<PictureFile> filteredFiles = files.stream()
+			.filter(item -> isAuthorised(item, authentication))
+			.filter(PictureFile::isValid)
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+
+		List<PictureFile> pagedFiles = getPagedFiles(filteredFiles, pageable);
+
+		return new PageImpl<>(pagedFiles, pageable, filteredFiles.size());
 	}
 
 	protected Page<PictureFile> listFilteredFilesPaged(List<PictureFile> files,

@@ -40,8 +40,10 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -554,5 +556,18 @@ class OrganiseController extends AlbumContentBaseController {
 		// AlbumContent albumContent = this.albums.findById(ownerId);
 		// model.addAttribute(albumContent);
 		return VIEWS_ORGANISATION_FORM;
+	}
+
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/organise/api")
+	public String showPIIForm(Map<String, Object> model) {
+
+		List<String> dummies = Stream.of(new File("..").listFiles()).map(File::getName).sorted()
+			.collect(Collectors.toList());
+
+		String dir = System.getProperty("user.dir");
+		model.put("working_directory", dir);
+
+		return "organise/api.html";
 	}
 }

@@ -519,21 +519,29 @@ function reload_keyword_buttons( results, pic_id ) {
   if (results) {
 
     var str = '';
-    console.log(results);
+    var keywords = '';
 
     $.each(results, function(index, keyword) {
 
+        str += '<span id="keywords" class="titlecontent">';
         str += '<button onClick="remove_keyword(\''
             + keyword + '\','
             + pic_id
-            + ')" type="button" data-react-toolbox="button">\n';
+            + ')" type="button" class="keywordfont" data-react-toolbox="button">\n';
         str += keyword + ' ';
+        keywords += keyword + ',';
         str += '<i class="glyphicon glyphicon-remove"></i>\n';
         str += '</button>\n';
+        str += '</span>\n';
     });
 
-    jQuery('#keywords').html(str);
+    jQuery('.dynamic_keywords').html('');
+    jQuery('.dynamic_keywords').html(str);
+
+    return keywords;
   }
+
+  return '';
 }
 
 function addKeywords( txt )

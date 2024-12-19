@@ -3,10 +3,11 @@
     <option name="ALTERNATIVE_JRE_PATH" value="corretto-17" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <envs>
-      <env name="AWS_ACCESS_KEY_ID" value="EXO7fcb325260e0ca21fbabab95" />
-      <env name="AWS_SECRET_ACCESS_KEY" value="x3R7Je97rOn40Zpjj41UD0QmrdBZB_VUIS8bhM8hjOM" />
+      <env name="AWS_ACCESS_KEY_ID" value="EXO29ee4de79a688ad20b1ac4b2" />
+      <env name="AWS_SECRET_ACCESS_KEY" value="X12MwKq1Ylo1lktS4uetRwrzie4WsjlSUFpihzwRamA" />
       <env name="DBCONFIG" value="Debug" />
       <env name="ELASTICSEARCH_PASSWORD" value="tVOzP=PY11n=fgkVeAM9" />
+      <env name="GOOGLE_MAPS_KEY" value="AIzaSyCMTn_xDVuQaTSTSqCbp01M0yH7eKqzP3c" />
       <env name="INSTANCE_PASSWORD" value="jU2pcbuxtrbkjpg" />
       <env name="KEYSTORE_PASSWORD" value="Bobby the cat" />
       <env name="NEW_PASSWORD" value="nS9ibciwrwhpurd" />
@@ -16,7 +17,6 @@
       <env name="spring.datasource.username" value="avnadmin" />
       <env name="spring.profiles.active" value="mysql" />
       <env name="SSL_KEYSTORE" value="file:/media/elliott/Archive3/certificate.p12" />
-      <env name="GOOGLE_MAPS_KEY" value="AIzaSyCMTn_xDVuQaTSTSqCbp01M0yH7eKqzP3c" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homepix" />

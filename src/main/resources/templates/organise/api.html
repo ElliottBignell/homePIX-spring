@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<head>
+  <style>
+    a {
+      color: blue;
+    }
+    a:hover {
+      color: red;
+    }
+    .result {
+      margin-top: 20px;
+      white-space: pre-wrap; /* helpful for formatting JSON output */
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="album-main">
+  <div class="centerstage">
+    <div class="techfont" id="div_centrestage" style="min-height:60px;">
+      <div class="row">
+        <div class="col-md-6">
+          <h1 text="API (advanced)">API (advanced)</h1>
+          <form id="apiForm">
+            <label for="url">URL:</label>
+            <select id="url" name="url">
+              <option value="api_pictures_replace_in_description">Replace word in description</option>
+              <option value="api_pictures_get_description">Get pictures</option>
+              <option value="api_keywords_add">Add keyword</option>
+              <option value="api_keywords_batch_add">Add keywords</option>
+              <option value="api_keywords_remove">Remove keyword</option>
+              <option value="api_keywords_batch_remove">Remove keywords</option>
+            </select>
+
+            <input id="ids" type="text" value="ids">
+            <input id="text_find" type="text" value="text_find" placeholder="Find word...">
+            <input id="text_replace" type="text" value="text_replace" placeholder="Replace with word...">
+
+            <br><br>
+
+            <label for="payload">JSON Payload:</label><br>
+            <textarea id="payload" name="payload" rows="5" cols="50" style="width:75vw;height:30vh;" placeholder='{"key":"value"}'></textarea>
+
+            <br><br>
+            <input type="submit" value="Launch job...">
+          </form>
+
+          <textarea id="result" name="result" rows="5" cols="50" style="width:75vw;height:45vh;" placeholder='result'></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('apiForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const selectedOption = document.getElementById('url').value;
+    const idsText        = document.getElementById('ids').value;
+    const findText       = document.getElementById('text_find').value;
+    const replaceText    = document.getElementById('text_replace').value;
+    const resultDiv      = document.getElementById('result');
+
+    let endpoint = '';
+    let method = 'GET';
+
+    // Map the dropdown values to your actual API endpoints
+    switch (selectedOption) {
+      case 'api_pictures_get_description':
+        endpoint = '/api/pictures/buckets/Venice/deep';
+        method = 'GET';
+        break;
+      case 'api_pictures_replace_in_description':
+        endpoint = '/api/pictures/titles/replace';
+        var payload =
+          "{\n" +
+          "  \"criteria\": {\n" +
+          "    \"titles\": [\"*\"],\n" +
+          "    \"specificWord\": \"" + findText + "\"\n" +
+          "  },\n" +
+          "  \"replacement\": {\n" +
+          "    \"newWord\": \"" + replaceText + "\"\n" +
+          "  }\n" +
+          "}";
+        document.getElementById('payload').value = payload;
+        method = 'POST';
+        break;
+      case 'api_keywords_add':
+        endpoint = '/api/keywords/add';
+        method = 'POST';
+        break;
+      case 'api_keywords_batch_add':
+        endpoint = '/api/keywords/batch/add/ + idsText';
+        method = 'POST';
+        break;
+      case 'api_keywords_remove':
+        endpoint = '/api/keywords/remove';
+        method = 'POST';
+        break;
+      case 'api_keywords_batch_remove':
+        endpoint = '/api/keywords/batch/remove/' + idsText;
+        method = 'POST';
+        break;
+      default:
+        endpoint = '/';
+        break;
+    }
+
+    let fetchOptions = {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    if (method === 'POST') {
+
+      // Only include a body if we're doing a POST
+      const payloadText    = document.getElementById('payload').value;
+      fetchOptions.body = payloadText;
+    }
+
+    resultDiv.textContent = 'Loading...';
+
+    fetch(endpoint, fetchOptions)
+      .then(response => {
+        // Check if response is not OK (e.g. status 4xx or 5xx)
+        if (!response.ok) {
+          return response.text().then(text => {
+            throw new Error(`HTTP ${response.status} - ${text}`);
+          });
+        }
+        // Read response as text first
+        return response.text();
+      })
+      .then(text => {
+        // Try to parse as JSON
+        try {
+          const data = JSON.parse(text);
+          resultDiv.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          // If not JSON, just display text
+          resultDiv.textContent = text;
+        }
+      })
+      .catch(err => {
+        resultDiv.textContent = `Error: ${err.message}`;
+      });
+  });
+</script>
+</body>
+</html>

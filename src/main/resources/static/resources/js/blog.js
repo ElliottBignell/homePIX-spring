@@ -896,6 +896,7 @@ function reload_keyword_buttons( results, pic_id ) {
   if (results) {
 
     var str = '';
+    var keywords = '';
 
     $.each(results, function(index, keyword) {
 
@@ -905,6 +906,7 @@ function reload_keyword_buttons( results, pic_id ) {
             + pic_id
             + ')" type="button" class="keywordfont" data-react-toolbox="button">\n';
         str += keyword + ' ';
+        keywords += keyword + ',';
         str += '<i class="glyphicon glyphicon-remove"></i>\n';
         str += '</button>\n';
         str += '</span>\n';
@@ -912,7 +914,11 @@ function reload_keyword_buttons( results, pic_id ) {
 
     jQuery('.dynamic_keywords').html('');
     jQuery('.dynamic_keywords').html(str);
+
+    return keywords;
   }
+
+  return '';
 }
 
 function addKeywords( txt )

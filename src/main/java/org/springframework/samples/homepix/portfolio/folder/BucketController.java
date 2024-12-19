@@ -341,12 +341,25 @@ class BucketController extends PaginationController {
 			LocalDate startDate = LocalDate.parse(fromDate, formatter);
 			LocalDate endDate = LocalDate.parse(toDate, formatter);
 
-			results = listFilteredFilesPaged(
-				this.pictureFiles.findByFolderName(name, requestDTO.getSearch(), startDate, endDate),
-				requestDTO,
-				authentication,
-				pageable
-			);
+			String search = requestDTO.getSearch();
+
+			if (search.equals(":!*")) {
+				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, startDate, endDate);
+				results = listFilesPaged(
+					files,
+					requestDTO,
+					authentication,
+					pageable
+				);
+			}
+			else {
+				results = listFilteredFilesPaged(
+					this.pictureFiles.findByFolderName(name, search, startDate, endDate),
+					requestDTO,
+					authentication,
+					pageable
+				);
+			}
 		}
 
 		int pageSize = results.getSize();
@@ -383,9 +396,13 @@ class BucketController extends PaginationController {
 		model.put("title", name + " picture folder");
 
 		if (results != null) {
-			PictureFile picture = results.iterator().next();
-			model.put("fullUrl", "collection/" + picture.getId());
-			model.put("picture", picture);
+
+			if (results.iterator().hasNext()) {
+
+				PictureFile picture = results.iterator().next();
+				model.put("fullUrl", "collection/" + picture.getId());
+				model.put("picture", picture);
+			}
 		}
 		else  {
 			model.put("fullUrl", "collection/58123");
@@ -598,7 +615,47 @@ class BucketController extends PaginationController {
 
 			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
-			List<PictureFile> pictureFiles = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
+			final String format = "yyyy-M-d";
+
+			// TODO: Put this repeated fragment dealing with dates into a service
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+			String search = requestDTO.getSearch();
+			List<PictureFile> pictureFiles;
+
+			String fromDate = requestDTO.getFromDate();
+			String toDate = requestDTO.getToDate();
+
+			if (fromDate.equals("")) {
+				fromDate = "1970-01-01";
+			}
+
+			if (toDate.equals("")) {
+
+				Supplier<String> supplier = () -> {
+					DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+					LocalDateTime now = LocalDateTime.now();
+					return dtf.format(now);
+				};
+
+				toDate = supplier.get();
+			}
+
+			LocalDate startDate = LocalDate.parse(fromDate, formatter);
+			LocalDate endDate = LocalDate.parse(toDate, formatter);
+
+			if (search.equals(":!*")) {
+				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, startDate, endDate);
+				pictureFiles = listFiles(
+					files,
+					requestDTO,
+					authentication
+				);
+			}
+			else {
+				pictureFiles = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
+			}
+
 			int count = pictureFiles.size();
 
 			mav.addObject(pictureFiles);

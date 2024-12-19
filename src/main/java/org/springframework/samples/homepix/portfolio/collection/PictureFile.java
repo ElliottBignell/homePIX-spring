@@ -205,7 +205,7 @@ public class PictureFile extends BaseEntity {
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 
-			filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
+			//filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
 
 			String result = "/web-images/" + this.folder.getName() + "/" + filename;
 			return result;

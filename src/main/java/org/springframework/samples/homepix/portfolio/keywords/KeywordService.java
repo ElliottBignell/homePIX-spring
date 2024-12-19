@@ -86,4 +86,8 @@ public class KeywordService {
 			}
 		}
 	}
+
+	public int keyordsCount(PictureFile picture) {
+		return keywordRelationshipsRepository.findByPictureId(picture.getId()).size();
+	}
 }

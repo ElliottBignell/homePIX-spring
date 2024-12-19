@@ -107,6 +107,30 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		@Param("endDate") LocalDate endDate
 	);
 
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE f.name = :folder " +
+		"AND kr.entry_id IS NULL " + // Filter for picture_files with no keywords
+		"AND pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE f.name = :folder " +
+			"AND kr.entry_id IS NULL " + // Filter for picture_files with no keywords
+			"AND pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL", // isValid check
+		nativeQuery = true)
+	List<PictureFile> findByFolderNameAndNoKeywords(
+		@Param("folder") String folder,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate
+	);
+
 	@Query("SELECT picture_file FROM PictureFile picture_file WHERE DATE(picture_file.taken_on) = :date")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);
@@ -151,6 +175,33 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		@Param("searchText") String searchText,
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDate endDate
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+		"AND LOWER(k.word) = LOWER(:searchText) " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+			"AND LOWER(k.word) = LOWER(:searchText)" +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) ",
+		nativeQuery = true)
+	Page<PictureFile> findByWordInKeyword(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
 	);
 
 	@Query(value = "SELECT pf.* FROM picture_file pf " +
@@ -220,7 +271,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
 		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
 		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
-		"AND (LOWER(pf.title) REGEXP CONCAT('(^|[[:space:]])', LOWER(:searchText), '([[:space:]]|$)') " +
+		"AND (LOWER(pf.title) REGEXP CONCAT('(^|[^0-9A-Za-zÜüÖöÄäé])', LOWER(:searchText), '([^0-9A-Za-zÜüÖöÄäé]|$)') " +
 		"OR f.name = :searchText) " +
 		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
 		"GROUP BY pf.id " +
@@ -231,12 +282,37 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
 			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
 			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
-			"AND (LOWER(pf.title) REGEXP CONCAT('(^|[[:space:]])', LOWER(:searchText), '([[:space:]]|$)') " +
+			"AND (LOWER(pf.title) REGEXP CONCAT('(^|[^0-9A-Za-zÜüÖöÄäé])', LOWER(:searchText), '([^0-9A-Za-zÜüÖöÄäé]|$)') " +
 			"OR f.name = :searchText) " +
 			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
 		nativeQuery = true)
 	Page<PictureFile> findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
 		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND kr.entry_id IS NULL " + // Filter for picture_files with no keywords
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id " +
+		"ORDER BY pf.filename ASC", // Sort results by filename
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND kr.entry_id IS NULL " + // Filter for picture_files with no keywords
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByNoKeywordsAndDateRangeAndValidityAndAuthorization(
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDateTime endDate,
 		@Param("isAdmin") boolean isAdmin,
@@ -332,9 +408,9 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query(value = "WITH RECURSIVE word_splitter AS (\n" +
 		"    SELECT\n" +
 		"       id,\n" +
-		"       SUBSTRING_INDEX(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\r\n\f]', ''), ' ', 1) AS word,\n" +
-		"       SUBSTRING(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\n\f]', ''), LOCATE(' ', " +
-		"           REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄä0-9- \t\n\f]', '')) + 1) " +
+		"       SUBSTRING_INDEX(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄäé0-9-/ \t\r\n\f]', ''), ' ', 1) AS word,\n" +
+		"       SUBSTRING(REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄäé0-9-/ \t\n\f]', ''), LOCATE(' ', " +
+		"           REGEXP_REPLACE(title, '[^a-zA-ZÜüÖöÄäé0-9-/ \t\n\f]', '')) + 1) " +
 		"           AS remaining\n" +
 		"    FROM picture_file\n" +
 		"    WHERE title IS NOT NULL AND title != ''\n" +
@@ -368,6 +444,26 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	void replaceWords(
 		@Param("oldWord") String oldWord,
 		@Param("newWord") String newWord
+	);
+
+	@Query(value = "SELECT pf.* " +
+		"FROM picture_file pf " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"WHERE pf.id BETWEEN :start AND :end " +
+		"AND kr.entry_id IS NULL",
+		nativeQuery = true)
+	List<PictureFile> findAllWithNoKeywordsInIdRange(
+		@Param("start") Long start,
+		@Param("end") Long end
+	);
+
+	@Query(value = "SELECT pf.* " +
+		"FROM picture_file pf " +
+		"WHERE pf.id BETWEEN :start AND :end",
+		nativeQuery = true)
+	List<PictureFile> findAllIdRange(
+		@Param("start") Long start,
+		@Param("end") Long end
 	);
 
 	default Map<LocalDate, Long> getCountByTakenOn() {

@@ -127,7 +127,8 @@
                   <form id="editprops">
                     <fieldset>
                       <button type="button" class="tt_title imageresponsive_">
-                        <span style="text-align:left;" th:text="${pictureFile.title}"></span>
+                        <span style="text-align:left;" th:text="@{__${pictureFile.title}__, __${pictureFile.id}__}" th:if="${#authorization.expression('isAuthenticated')}"></span>
+                        <span style="text-align:left;" th:text="${pictureFile.title}" th:if="${!#authorization.expression('isAuthenticated')}"></span>
                       </button>
                     </fieldset>
                   </form>

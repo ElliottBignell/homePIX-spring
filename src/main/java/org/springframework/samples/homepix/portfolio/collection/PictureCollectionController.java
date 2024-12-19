@@ -19,13 +19,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.util.Pair;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.*;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
+import org.springframework.samples.homepix.portfolio.keywords.Keyword;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
@@ -175,38 +179,20 @@ class PictureCollectionController extends PaginationController {
 		model.put("link_params", "");
 
 		String searchText = requestDTO.getSearch();
-
-		Page<PictureFile> files;
-
-		Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
-		Matcher matcher = pattern.matcher(searchText);
-
-		if (matcher.find()) {
-
-			String word = matcher.group(1);
-
-			files = this.pictureFiles.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-				matcher.group(1),
-				dates.getFirst(),
-				endOfDay,
-				isAdmin(authentication),
-				userRoles,
-				pageRequest
-			);
-		}
-		else {
-
-			files = this.pictureFiles.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-				requestDTO.getSearch(),
-				dates.getFirst(),
-				endOfDay,
-				isAdmin(authentication),
-				userRoles,
-				pageRequest
-			);
-		}
+		Page<PictureFile> files = this.pictureFileService.getComplexSearchPage(
+			searchText,
+			dates.getFirst(),
+			endOfDay,
+			isAdmin(authentication),
+			userRoles,
+			pageRequest
+		);
 
 		addParams(pictureID, "", files.toList(), model, true);
+
+		List<Keyword> keywords = this.keywordRelationships.findByPictureId(pictureID).stream()
+			.map(KeywordRelationships::getKeyword)
+			.collect(Collectors.toList());
 
 		model.put("collection", pictureFiles);
 		model.put("baseLink", "/collection/" + -1);
@@ -215,16 +201,18 @@ class PictureCollectionController extends PaginationController {
 			.distinct()
 			.sorted()
 			.collect(Collectors.joining(",")));
-		model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
-			.map(relationship -> relationship.getKeyword())
-			.collect(Collectors.toList()));
+		model.put("keyword_list", keywords);
 
 		// Construct the full URL
 		model.put("fullUrl", "collection/" + pictureID);
 		model.put("focusedField", "send_description");
 		model.put("search", requestDTO.getSearch());
 		model.put("pageNumber", files.getNumber());
-
+		model.put("albums", this.albums.findAll());
+		model.put("folders", this.folders.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList())
+		);
 		Optional<PictureFile> picture = pictureFiles.findById(pictureID);
 
 		if (picture.isPresent()) {
@@ -232,6 +220,28 @@ class PictureCollectionController extends PaginationController {
 			pictureFileService.addMapDetails(picture.get(), model);
 			model.put("picture", picture.get());
 		}
+
+		List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+			.collect(Collectors.toList());
+		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false) // Convert Iterable to Stream
+			.collect(Collectors.toList());
+		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
+
+		model.put("tags", tags.stream()
+			.map(Keyword::getWord)
+			.sorted()
+			.collect(Collectors.toList())
+		);
+		model.put("album_names", albums.stream()
+			.map(Album::getName)
+			.sorted()
+			.collect(Collectors.toList())
+		);
+		model.put("folder_names", folders.stream()
+			.map(Folder::getName)
+			.sorted()
+			.collect(Collectors.toList())
+		);
 
 		return "picture/pictureFile.html";
 	}

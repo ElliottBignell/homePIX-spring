@@ -1,6 +1,8 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import org.checkerframework.checker.nullness.Opt;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumContent;
@@ -17,7 +19,11 @@ import org.springframework.samples.homepix.portfolio.filtering.SortDirection;
 import org.springframework.data.domain.Sort;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -298,5 +304,67 @@ public class PictureFileService {
 		}
 
 		return "redirect:/buckets/" + name;
+	}
+
+	public Page<PictureFile> getComplexSearchPage(String searchText,
+										   LocalDate first,
+										   LocalDateTime last,
+										   boolean isAdmin,
+										   String userRoles,
+										   Pageable pageable
+	) {
+
+		Pattern keywordPattern = Pattern.compile("[:](.*)");
+		Matcher keywordMmatcher = keywordPattern.matcher(searchText);
+
+		if (keywordMmatcher.find()) {
+
+			if (searchText.equals(":!*")) {
+
+				return this.pictureFileRepository.findByNoKeywordsAndDateRangeAndValidityAndAuthorization(
+					first,
+					last,
+					isAdmin,
+					userRoles,
+					pageable
+				);
+			} else {
+
+				return this.pictureFileRepository.findByWordInKeyword(
+					keywordMmatcher.group(1),
+					first,
+					last,
+					isAdmin,
+					userRoles,
+					pageable
+				);
+			}
+		} else {
+
+			Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
+			Matcher matcher = pattern.matcher(searchText);
+
+			if (matcher.find()) {
+
+				return this.pictureFileRepository.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+					matcher.group(1),
+					first,
+					last,
+					isAdmin,
+					userRoles,
+					pageable
+				);
+			} else {
+
+				return this.pictureFileRepository.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+					searchText,
+					first,
+					last,
+					isAdmin,
+					userRoles,
+					pageable
+				);
+			}
+		}
 	}
 }
