@@ -339,7 +339,7 @@ class BucketController extends PaginationController {
 			}
 
 			LocalDate startDate = LocalDate.parse(fromDate, formatter);
-			LocalDate endDate = LocalDate.parse(toDate, formatter);
+			LocalDate endDate = LocalDate.parse(toDate, formatter).plusDays(1);
 
 			String search = requestDTO.getSearch();
 

@@ -62,7 +62,9 @@ public class KeywordRestController {
 
 		for (PictureFile pictureFile : files) {
 			for (String word : words) {
-				keywordService.addKeywordToPicture(pictureFile, word.strip().toLowerCase());
+				if (!word.strip().isEmpty()) {
+					keywordService.addKeywordToPicture(pictureFile, word.strip().toLowerCase());
+				}
 			}
 		}
 
