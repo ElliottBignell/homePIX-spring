@@ -375,12 +375,36 @@ select::-ms-expand {
     }
 }
 
+/* For larger screens (default behavior) */
+.responsive-image-mobile {
+  width: calc(var(--base-size) * var(--aspect-ratio));
+  height: var(--base-size);
+}
+
+/* For mobile screens (less than 600px) */
+@media (max-width: 600px) {
+  .responsive-image-mobile {
+      width: calc(80vw - 20px); /* Example: full viewport width minus padding */
+      height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+  }
+}
+
 img.gallery_picture {
-  position:relative;
-  top:100%;l
-  eft:0%;
-  z-index:0;
-  height:15vh;
+    position:relative;
+    top:100%;
+    eft:0%;
+    z-index:0;
+    height:15vh;
+}
+
+@media (max-width: 600px) {
+    img.gallery_picture {
+      position:relative;
+      top:100%;
+      eft:0%;
+      z-index:0;
+      height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+    }
 }
 
 .keynav {

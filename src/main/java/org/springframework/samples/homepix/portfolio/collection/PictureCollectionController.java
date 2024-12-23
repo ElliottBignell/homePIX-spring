@@ -221,17 +221,14 @@ class PictureCollectionController extends PaginationController {
 			model.put("picture", picture.get());
 		}
 
-		List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+		List<String> tags = this.keywordRelationships.findByNameContainingOrderByUsageDesc().stream()
+			.map(obj -> (String)obj[1])
 			.collect(Collectors.toList());
-		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false) // Convert Iterable to Stream
+		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false)
 			.collect(Collectors.toList());
 		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
 
-		model.put("tags", tags.stream()
-			.map(Keyword::getWord)
-			.sorted()
-			.collect(Collectors.toList())
-		);
+		model.put("tags", tags);
 		model.put("album_names", albums.stream()
 			.map(Album::getName)
 			.sorted()

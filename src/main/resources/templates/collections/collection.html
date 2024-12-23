@@ -4,6 +4,40 @@
 
 <body>
 
+<style>
+  /* For larger screens (default behavior) */
+  .responsive-image-mobile {
+      width: calc(var(--base-size) * var(--aspect-ratio));
+      height: var(--base-size);
+  }
+
+  /* For mobile screens (less than 600px) */
+  @media (max-width: 600px) {
+      .responsive-image-mobile {
+          width: calc(85vw - 20px); /* Example: full viewport width minus padding */
+          height: calc((85vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+      }
+  }
+
+  img.gallery_picture {
+    position:relative;
+    top:100%;
+    eft:0%;
+    z-index:0;
+    height:15vh;
+  }
+
+  @media (max-width: 600px) {
+    img.gallery_picture {
+      position:relative;
+      top:100%;
+      eft:0%;
+      z-index:0;
+      height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+    }
+  }
+</style>
+
 <div class="col-sm-12 panemain" id="panemain" style="width:90%;">
   <div style="background:transparent;">
 
@@ -33,7 +67,8 @@
                   <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
                     <span class="tt_subject">
                       <img th:id="@{picture__${pictureFile.id}__}"
-                           class="lazyload imageinlist imageresponsive"
+                           class="lazyload imageinlist responsive-image-mobile"
+                           th:style="'--aspect-ratio: ' + (${pictureFile?.width ?: 3} / ${pictureFile?.height ?: 2}) + ';'"
                            th:width="${pictureFile.displayWidth}"
                            th:height="${pictureFile.displayHeight}"
                            th:src="${pictureFile.mediumFilename}"

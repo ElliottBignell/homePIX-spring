@@ -4,6 +4,40 @@
 
 <body>
 
+<style>
+  /* For larger screens (default behavior) */
+  .responsive-image-mobile {
+      width: calc(var(--base-size) * var(--aspect-ratio));
+      height: var(--base-size);
+  }
+
+  /* For mobile screens (less than 600px) */
+  @media (max-width: 600px) {
+      .responsive-image-mobile {
+          width: calc(80vw - 20px); /* Example: full viewport width minus padding */
+          height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+      }
+  }
+
+  img.gallery_picture {
+    position:relative;
+    top:100%;
+    eft:0%;
+    z-index:0;
+    height:15vh;
+  }
+
+  @media (max-width: 600px) {
+    img.gallery_picture {
+      position:relative;
+      top:100%;
+      eft:0%;
+      z-index:0;
+      height: calc((85vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+    }
+  }
+</style>
+
 <div class="col-sm-12 panemain" id="panemain">
   <div style="background:transparent;">
 
@@ -20,15 +54,15 @@
         <figcaption th:text="${folder.name}" class="desc">Unnamed</figcaption>
         <a id="@{piclink___${folder.count}__}" th:href="@{/buckets/__${folder.name}__}">
           <section class="wrapper" id="file-number__">
-              <span class="tt_subject">
-                <img th:id="@{'picture-' + ${folder.id}}"
-                     class="gallery_picture lazyloaded variable_aspect"
-                     th:style="'--aspect-ratio: ' + (${thumbnails[folder.thumbnailId]?.width ?: 3} / ${thumbnails[folder.thumbnailId]?.height ?: 2}) + '; height: var(--base-size); width: calc(var(--base-size) * var(--aspect-ratio));'"
-                     th:src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
-                     th:data-src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
-                     th:alt="@{'Contains ' + ${folder.picture_count} + ' shots'}"
-                />
-              </span>
+            <span class="tt_subject">
+              <img th:id="@{'picture-' + ${folder.id}}"
+                   th:style="'--aspect-ratio: ' + (${thumbnails[folder.thumbnailId]?.width ?: 3} / ${thumbnails[folder.thumbnailId]?.height ?: 2}) + ';'"
+                   class="gallery_picture lazyloaded variable_aspect responsive-image-mobile"
+                   th:src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
+                   th:data-src="${thumbnails[folder.thumbnailId]?.mediumFilename}"
+                   th:alt="@{'Contains ' + ${folder.picture_count} + ' shots'}"
+              />
+            </span>
           </section>
         </a>
         <figcaption th:text="@{${folder.picture_count} + ' shots'}"

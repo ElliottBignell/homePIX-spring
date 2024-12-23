@@ -307,13 +307,10 @@ class OrganiseController extends AlbumContentBaseController {
 				.map(Keyword::getWord)
 				.collect(Collectors.joining(",")));
 
-			List<Keyword> tags = StreamSupport.stream(this.keyword.findAll().spliterator(), false) // Convert Iterable to Stream
+			List<String> tags = this.keywordRelationships.findByNameContainingOrderByUsageDesc().stream()
+				.map(obj -> (String)obj[1])
 				.collect(Collectors.toList());
-			model.put("tags", tags.stream()
-				.map(Keyword::getWord)
-				.sorted()
-				.collect(Collectors.toList())
-			);
+			model.put("tags", tags);
 			model.put("album_names", albums.stream()
 				.map(Album::getName)
 				.sorted()

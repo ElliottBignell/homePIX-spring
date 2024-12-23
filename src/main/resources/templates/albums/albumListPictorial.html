@@ -4,6 +4,40 @@
 
 <body>
 
+    <style>
+      /* For larger screens (default behavior) */
+      .responsive-image-mobile {
+          width: calc(var(--base-size) * var(--aspect-ratio));
+          height: var(--base-size);
+      }
+
+      /* For mobile screens (less than 600px) */
+      @media (max-width: 600px) {
+          .responsive-image-mobile {
+              width: calc(80vw - 20px); /* Example: full viewport width minus padding */
+              height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+          }
+      }
+
+      img.gallery_picture {
+        position:relative;
+        top:100%;
+        eft:0%;
+        z-index:0;
+        height:15vh;
+      }
+
+      @media (max-width: 600px) {
+        img.gallery_picture {
+          position:relative;
+          top:100%;
+          eft:0%;
+          z-index:0;
+          height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+        }
+      }
+    </style>
+
     <div class="col-sm-12 panemain" id="panemain" style="width:90%;">
       <div style="background:transparent;">
         
@@ -35,8 +69,8 @@
               <section class="wrapper" id="file-number__">
                 <span class="tt_subject">
                   <img th:id="@{picture-__${album.id}__}"
-                       class="gallery_picture lazyloaded variable_aspect"
-                       th:style="'--aspect-ratio: ' + (${thumbnails[album.thumbnail.id]?.width ?: 3} / ${thumbnails[album.thumbnail.id]?.height ?: 2}) + '; height: var(--base-size); width: calc(var(--base-size) * var(--aspect-ratio));'"
+                       th:style="'--aspect-ratio: ' + (${thumbnails[album.thumbnail.id]?.width ?: 3} / ${thumbnails[album.thumbnail.id]?.height ?: 2}) + ';'"
+                       class="lazyloaded variable_aspect responsive-image-mobile"
                        th:src="${album.thumbnail?.mediumFilename}"
                        th:data-src="${album.thumbnail?.mediumFilename}"
                        th:alt="@{Contains __${album.count}__ shots}"

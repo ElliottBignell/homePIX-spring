@@ -29,4 +29,17 @@ public interface KeywordRelationshipsRepository extends CrudRepository<KeywordRe
 	@Transactional(readOnly = true)
 	Collection<KeywordRelationships> findByBothIds(@Param("picture_id") Integer picture_id,
 												   @Param("keyword_id") Integer keyword_id);
+
+	@Query(value = """
+		SELECT
+		    k.id,
+		    k.word,
+		    COUNT(kr.keyword_id) AS usage_count
+		FROM keyword k
+		LEFT JOIN keyword_relationships_new kr ON k.id = kr.keyword_id
+		GROUP BY k.id, k.word
+		ORDER BY usage_count DESC, k.word
+        """,
+		nativeQuery = true)
+	List<Object[]> findByNameContainingOrderByUsageDesc();
 }

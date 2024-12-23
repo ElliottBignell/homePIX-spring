@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface KeywordRepository extends CrudRepository<Keyword, Integer> {
@@ -23,5 +24,4 @@ public interface KeywordRepository extends CrudRepository<Keyword, Integer> {
 	@Query("SELECT DISTINCT keyword FROM Keyword keyword WHERE keyword.word = :word")
 	@Transactional(readOnly = true)
 	Collection<Keyword> findByContent(@Param("word") String word);
-
 }

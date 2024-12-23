@@ -20,6 +20,40 @@
   </head>
   <body>
 
+  <style>
+    /* For larger screens (default behavior) */
+    .responsive-image-mobile {
+        width: calc(var(--base-size) * var(--aspect-ratio));
+        height: var(--base-size);
+    }
+
+    /* For mobile screens (less than 600px) */
+    @media (max-width: 600px) {
+        .responsive-image-mobile {
+            width: calc(85vw - 20px); /* Example: full viewport width minus padding */
+            height: calc((85vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+        }
+    }
+
+    img.gallery_picture {
+      position:relative;
+      top:100%;
+      eft:0%;
+      z-index:0;
+      height:15vh;
+    }
+
+    @media (max-width: 600px) {
+      img.gallery_picture {
+        position:relative;
+        top:100%;
+        eft:0%;
+        z-index:0;
+        height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+      }
+    }
+  </style>
+
   <script>
     function handleDeleteClick(event, album, picture) {
 
@@ -92,7 +126,8 @@
                   <section class="wrapper" th:id=" @{file-number_${entry.id}}">
                     <span class="tt_subject">
                       <img th:id="@{picture__${entry.id}__}"
-                           class="lazyload imageinlist imageresponsive"
+                           class="lazyload imageinlist responsive-image-mobile"
+                           th:style="'--aspect-ratio: ' + (${entry?.width ?: 3} / ${entry?.height ?: 2}) + ';'"
                            th:width="${entry.displayWidth}"
                            th:height="${entry.displayHeight}"
                            th:src="${entry.mediumFilename}"

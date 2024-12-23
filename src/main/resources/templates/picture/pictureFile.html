@@ -135,9 +135,14 @@
         const handleTouchStart = (e) => {
 
             // Check if the touch event is within `picframe` or its child `picture46286`
-            if (!e.target.closest('#picframe') || !e.target.closest('#picframe img')) {
+            if (!e.target.closest('#picframe')
+             && !e.target.closest('#picframe img')
+             && !e.target.closest('#frame')
+             && !e.target.closest('#frame img')
+             ) {
               return; // Ignore touches outside these elements
             }
+            console.log("touch2");
 
             const touchObj = e.touches[0];
             startX = touchObj.pageX;
@@ -147,7 +152,11 @@
         };
 
         const handleTouchMove = (e) => {
-            if (!e.target.closest('#picframe') || !e.target.closest('#picframe img')) {
+            if (!e.target.closest('#picframe')
+             && !e.target.closest('#picframe img')
+             && !e.target.closest('#frame')
+             && !e.target.closest('#frame img')
+             ) {
               return; // Ignore touches outside these elements
             }
 
@@ -156,7 +165,11 @@
 
         const handleTouchEnd = (e) => {
 
-            if (!e.target.closest('#picframe') || !e.target.closest('#picframe img')) {
+            if (!e.target.closest('#picframe')
+             && !e.target.closest('#picframe img')
+             && !e.target.closest('#frame')
+             && !e.target.closest('#frame img')
+             ) {
               return; // Ignore touches outside these elements
             }
 
@@ -164,6 +177,7 @@
                 // If there was no movement, it's a tap, so let the event propagate
                 return;
             }
+
             const touchObj = e.changedTouches[0];
             const moveX = touchObj.pageX;
             const moveY = touchObj.pageY;
@@ -179,7 +193,6 @@
 
         const navigateBasedOnSwipe = (direction) => {
 
-            return;
             let linkId = direction === 'left' ? 'back' : 'forth';
             let linkElement = document.getElementById(linkId);
 
@@ -360,31 +373,34 @@
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
 
-        // Add a keydown event listener for both input fields
-        [latitudeInput, longitudeInput].forEach(input => {
-          input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-              e.preventDefault(); // Prevent the default action
+        if (latitudeInput != null && longitudeInput != null) {
 
-              var pic_id     = $("input#pic_location_id").val();
-              var latitude = $("input#latitude").val();
-              var longitude = $("input#longitude").val();
+          // Add a keydown event listener for both input fields
+          [latitudeInput, longitudeInput].forEach(input => {
+            input.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent the default action
 
-              $.ajax({
-                method: 'POST',
-                url: '/api/pictures/location/' + pic_id,
-                data: JSON.stringify({
-                  'latitude': latitude,
-                  'longitude': longitude
-                }),
-                contentType: 'application/json',
-                success: function (results) {
-                  console.log("Set location");
-                }
-              });
-            }
+                var pic_id     = $("input#pic_location_id").val();
+                var latitude = $("input#latitude").val();
+                var longitude = $("input#longitude").val();
+
+                $.ajax({
+                  method: 'POST',
+                  url: '/api/pictures/location/' + pic_id,
+                  data: JSON.stringify({
+                    'latitude': latitude,
+                    'longitude': longitude
+                  }),
+                  contentType: 'application/json',
+                  success: function (results) {
+                    console.log("Set location");
+                  }
+                });
+              }
+            });
           });
-        });
+        }
 
         function handlePaste(event) {
           // Get the pasted text
@@ -398,15 +414,21 @@
             // Prevent the default paste behavior
             event.preventDefault();
 
-            // Populate the input fields
-            latitudeInput.value = latitude;
-            longitudeInput.value = longitude;
+            if (latitudeInput != null && longitudeInput != null) {
+
+              // Populate the input fields
+              latitudeInput.value = latitude;
+              longitudeInput.value = longitude;
+            }
           }
         }
 
-        // Add the paste event listener to both input fields
-        latitudeInput.addEventListener('paste', handlePaste);
-        longitudeInput.addEventListener('paste', handlePaste);
+        if (latitudeInput != null && longitudeInput != null) {
+
+          // Add the paste event listener to both input fields
+          latitudeInput.addEventListener('paste', handlePaste);
+          longitudeInput.addEventListener('paste', handlePaste);
+        }
 
         $( '[id^=picture-]' ).on( 'touchstart mousedown', function(e) {
 
