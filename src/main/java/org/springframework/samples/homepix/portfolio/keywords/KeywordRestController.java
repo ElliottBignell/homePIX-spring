@@ -106,6 +106,18 @@ public class KeywordRestController {
 
 		List<PictureFile> pictureFiles = pictureFileRepository.findAllIdRange(start, end);
 
+		// Retrieve the `criteria` object
+		Map<String, Object> criteria = (Map<String, Object>) updates.get("criteria");
+		if (criteria != null) {
+
+			String title = (String) criteria.get("title");
+			if (title != null) {
+				pictureFiles = pictureFiles.stream()
+					.filter(file -> file.getTitle().equals(title))
+					.collect(Collectors.toList());
+			}
+		}
+
 		for (PictureFile file : pictureFiles) {
 
 			for (String word : words) {

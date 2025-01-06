@@ -149,6 +149,32 @@ class PictureCollectionController extends PaginationController {
 		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
+
+	/**
+	 * Custom handler for displaying a collection.
+	 *
+	 * @param id1 the ID of the first element to display
+	 * @param id2 the ID of the last element to display
+	 * @return a ModelMap with the model attributes for the view
+	 */
+	@GetMapping("/collection/items/{id1}-{id2}")
+	public String showMultiFilteredCollection(CollectionRequestDTO requestDTO,
+									     @PathVariable("id1") int start,
+									     @PathVariable("id2") int end,
+										 Map<String, Object> model,
+										 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+										 Authentication authentication
+	) {
+		showFilteredCollection(requestDTO, start, model, pageable, authentication);
+
+		Page<PictureFile> results;
+		List<PictureFile> files = this.pictureFiles.findAllIdRange((long)start, (long)end);
+
+		model.put("collection", files);
+
+		return "picture/pictureList.html";
+	}
+
 	/**
 	 * Custom handler for displaying an collection.
 	 *

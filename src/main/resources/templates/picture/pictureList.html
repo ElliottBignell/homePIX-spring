@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'folders')}">
+
+<body>
+
+  <style>
+    .scary {
+      visibility: hidden;
+    }
+    .show_button {
+      display: none;
+    }
+    .hide_button {
+      display: inline;
+    }
+  </style>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    function hidePicture(pictureId) {
+
+        var elementId = "div" + pictureId;
+
+        if ($(".scary").is(":visible")) {
+          $('#' + elementId).hide();
+        }
+        else {
+          $('#' + elementId).show();
+        }
+
+        $.post('/restrict/' + pictureId, function(response) {
+
+            elementId = "hide-" + pictureId;
+            $('#' + elementId).addClass('show_button');
+            $('#' + elementId).removeClass('hide_button');
+
+            elementId = "show-" + pictureId;
+            $('#' + elementId).addClass('hide_button');
+            $('#' + elementId).removeClass('show_button');
+
+            var elementId = "div" + pictureId;
+            $('#' + elementId).addClass('scary');
+        });
+    }
+
+    function showPicture(pictureId) {
+
+        $.post('/derestrict/' + pictureId, function(response) {
+
+            elementId = "hide-" + pictureId;
+            $('#' + elementId).addClass('hide_button');
+            $('#' + elementId).removeClass('show_button');
+
+            elementId = "show-" + pictureId;
+            $('#' + elementId).addClass('show_button');
+            $('#' + elementId).removeClass('hide_button');
+
+            var elementId = "div" + pictureId;
+            $('#' + elementId).removeClass('scary');
+
+            console.log("Showing " + pictureId);
+        });
+    }
+
+    function toggleRestricted() {
+
+      if ($("#toggle_scary").prop("checked")) {
+        $(".scary").show();
+      } else {
+        $(".scary").hide();
+      }
+    }
+    /*]]>*/
+  </script>
+
+  <style>
+    /* For larger screens (default behavior) */
+    .responsive-image-mobile {
+        width: calc(var(--base-size) * var(--aspect-ratio));
+        height: var(--base-size);
+    }
+
+    /* For mobile screens (less than 600px) */
+    @media (max-width: 600px) {
+        .responsive-image-mobile {
+            width: calc(90vw - 20px); /* Example: full viewport width minus padding */
+            height: calc((90vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+        }
+    }
+
+    img.gallery_picture {
+      position:relative;
+      top:100%;
+      eft:0%;
+      z-index:0;
+      height:15vh;
+    }
+
+    @media (max-width: 600px) {
+      img.gallery_picture {
+        position:relative;
+        top:100%;
+        eft:0%;
+        z-index:0;
+        height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
+      }
+    }
+  </style>
+
+  <div style="position:relative;top:4em;">
+    <div class="centerstage">
+      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+        <div class="row">
+          <div class="col-md-6">
+            <h1 text="Pictures x to y"></h1>
+          </div>
+
+          <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+          >
+            <!-- th:if="${#authorization.expression('hasRole(''ADMIN'')')}"-->
+            <label>Show Restricted Pictures</label>
+            <input id="toggle_scary" onClick="toggleRestricted();" type="checkbox" name="showScary" th:checked="${showScary}" />
+          </div>
+
+          <div style="overflow-y: auto; max-height: 75vh;">
+
+            <figure th:each="pictureFile,iterStat : ${collection}"
+                    th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                    th:id="@{div__${pictureFile.id}__}"
+            >
+              <a th:id="@{picture__${pictureFile.id}__}"
+                 th:href="@{/collection/-1/item/__${pictureFile.id}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+              >
+                <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
+                  <span class="tt_subject">
+                    <img th:id="@{picture__${pictureFile.id}__}"
+                         class="lazyload imageinlist responsive-image-mobile"
+                         th:style="'--aspect-ratio: ' + (${pictureFile?.width ?: 3} / ${pictureFile?.height ?: 2}) + ';'"
+                         th:src="${pictureFile.mediumFilename}"
+                         th:data-src="${pictureFile.mediumFilename}"
+                         th:alt="${pictureFile.title}"
+                    >
+                  </span>
+                </section>
+              </a>
+              <a th:id="@{btn__${pictureFile.id}__}"
+                 th:href="@{/collection/-1/item/__${pictureFile.id}__?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+              >
+                <figcaption class="tt_edit">
+                  <form id="editprops">
+                    <fieldset>
+                      <button type="button" class="tt_title imageresponsive_">
+                        <span style="text-align:left;" th:text="@{__${pictureFile.title}__, __${pictureFile.id}__}" th:if="${#authorization.expression('isAuthenticated')}"></span>
+                        <span style="text-align:left;" th:text="${pictureFile.title}" th:if="${!#authorization.expression('isAuthenticated')}"></span>
+                      </button>
+                    </fieldset>
+                  </form>
+                </figcaption>
+              </a>
+              <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:id="@{header_o__${pictureFile.id}__}" class="tt_left tt_text tt_header">
+                <a href="#"
+                   th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor hide_button' : 'tt_icon_anchor show_button'}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:onclick="'showPicture(\'' + ${pictureFile.id} + '\')'"
+                   th:id="@{show-__${pictureFile.id}__}"
+                >
+                  <i th:id="@{add_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+                    add
+                  </i>
+                </a>
+                <a href="#"
+                   th:class="${pictureFile.getIsScary() ? 'tt_icon_anchor show_button' : 'tt_icon_anchor hide_button'}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:onclick="'hidePicture(\'' + ${pictureFile.id} + '\')'"
+                   th:id="@{hide-__${pictureFile.id}__}"
+                >
+                  <i th:id="@{remove_restricted-__${pictureFile.id}__}" class="material-icons tt_icon">
+                    remove
+                  </i>
+                </a>
+                <a class="tt_icon_anchor"
+                   th:href="@{./delete/__${pictureFile.id}__/}"
+                   th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                >
+                  <i class="material-icons tt_icon">
+                    delete
+                  </i>
+                </a>
+                <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+                  <div th:id="@{header__${pictureFile.id}__}" class="tt_lefttextnooff" th:value="${pictureFile.id}">
+                  </div>
+                </figcaption>
+              </div>
+            </figure>
+            <figure class="tt_base droppable draggable" id="map_preview" th:if="${mapUrl != null && !#strings.isEmpty(mapUrl)}">
+              <a th:href="@{/maps/bucket/__${pictureFile.id}__}">
+                <section class="wrapper" th:id="map_wrapper">
+                  <span class="tt_subject">
+                    <img id="map_img"
+                         class="lazyload imageinlist imageresponsive"
+                         width="300"
+                         height="200"
+                         th:src="${mapUrl}"
+                         alt="Map showing pictures in folder"
+                    >
+                  </span>
+                </section>
+              </a>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
