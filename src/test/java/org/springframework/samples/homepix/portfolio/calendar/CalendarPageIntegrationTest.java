@@ -28,9 +28,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.security.cert.X509Certificate;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.Calendar;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -49,14 +49,16 @@ public class CalendarPageIntegrationTest {
 
 	private final MockMvc mockMvc;
 	private final PictureFileRepository pictureFiles;
+	private final Calendar calendar;
 
 	private final RestTemplate restTemplate;
 
 	@Autowired
-	public CalendarPageIntegrationTest(MockMvc mockMvc, PictureFileRepository pictureFiles) {
+	public CalendarPageIntegrationTest(MockMvc mockMvc, PictureFileRepository pictureFiles, Calendar calendar) {
 
 		this.mockMvc = mockMvc;
 		this.pictureFiles = pictureFiles;
+		this.calendar = calendar;
 
 		// Create a RestTemplate instance
 		restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
@@ -221,5 +223,20 @@ public class CalendarPageIntegrationTest {
 		// For example:
 		String content = response.getContentAsString();
 		assertThat(content).contains("2011");
+	}
+
+	@Test
+	public void testCalendarCount() throws Exception {
+		assertEquals(calendar.getCount(), 0);
+	}
+
+	@Test
+	public void testName() throws Exception {
+
+		assertEquals(calendar.getName(), null);
+		assertEquals(calendar.getId(), null);
+
+		calendar.setName("Fred");
+		assertEquals("Fred", calendar.getName());
 	}
 }

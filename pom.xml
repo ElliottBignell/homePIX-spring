@@ -265,49 +265,33 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>3.1.2</version>
-        <executions>
-          <execution>
-            <!-- Spring Boot Actuator displays build-related information
-              if a META-INF/build-info.properties file is present -->
-            <goals>
-              <goal>build-info</goal>
-            </goals>
-            <configuration>
-              <additionalProperties>
-                <encoding.source>${project.build.sourceEncoding}</encoding.source>
-                <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
-                <java.source>${maven.compiler.source}</java.source>
-                <java.target>${maven.compiler.target}</java.target>
-              </additionalProperties>
-              <layers>
-                <enabled>true</enabled>
-                <includeLayerTools>true</includeLayerTools>
-              </layers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
           <execution>
+            <id>prepare-agent</id>
             <goals>
-              <goal>prepare-agent</goal>
+              <goal>prepare-agent</goal> <!-- Ensure this runs early in the build lifecycle -->
             </goals>
+            <phase>initialize</phase> <!-- Executes early in the lifecycle -->
           </execution>
           <execution>
-            <id>report</id>
-            <phase>prepare-package</phase>
+            <id>generate-report</id>
             <goals>
-              <goal>report</goal>
+              <goal>report</goal> <!-- Generates the coverage report -->
             </goals>
+            <phase>test</phase> <!-- After test execution -->
           </execution>
         </executions>
+
+        <configuration>
+          <reports>
+            <report>html</report>
+            <report>xml</report>
+            <report>csv</report>
+          </reports>
+        </configuration>
       </plugin>
 
       <!-- Spring Boot Actuator displays build-related information if a git.properties
