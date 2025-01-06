@@ -135,7 +135,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);
 
-	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p GROUP BY DATE(p.taken_on)")
+	@Query("SELECT p.taken_on, COUNT(p) FROM PictureFile p GROUP BY p.taken_on")
 	List<Object[]> countByTakenOn();
 
 	@Query("SELECT p FROM PictureFile p WHERE p.filename LIKE %:searchText% AND p.taken_on BETWEEN :startDate AND :endDate")

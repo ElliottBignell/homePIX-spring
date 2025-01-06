@@ -72,8 +72,6 @@ class CalendarController extends PaginationController {
 	@GetMapping("/calendar/{year}")
 	public String processFindCalendars(@PathVariable("year") long year, Calendar calendar, BindingResult result, Map<String, Object> model) {
 
-		logger.log(Level.INFO, "processFindCalendars called: " + year);
-
 		outerLoop:
 		for (CalendarYearGroup group : this.calendar.getItems()) {
 
@@ -84,7 +82,6 @@ class CalendarController extends PaginationController {
 					if (calendarYear.getQuarters() == null || calendarYear.getQuarters().isEmpty()) {
 						this.calendar.populateYear(calendarYear);
 					}
-					logger.log(Level.INFO, "Setting year: " + calendarYear.getYear());
 					model.put("year", calendarYear);
 					break outerLoop;
 				}
