@@ -73,7 +73,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/</loc>\n" +
-			"       <lastmod>2024-11-04</lastmod>\n" +
+			"       <lastmod>2025-01-09</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -108,7 +108,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/albums/1</loc>\n" +
-			"       <lastmod>2024-11-04</lastmod>\n" +
+			"       <lastmod>2025-01-09</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -141,7 +141,7 @@ public class SEOController extends PaginationController {
 			"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
 			"   <url>\n" +
 			"       <loc>https://www.homepix.ch/buckets/" + name + "</loc>\n" +
-			"       <lastmod>2024-11-04</lastmod>\n" +
+			"       <lastmod>2025-01-09</lastmod>\n" +
 			"       <changefreq>monthly</changefreq>\n" +
 			"       <priority>1.0</priority>\n" +
 			"   </url>\n" +
@@ -237,7 +237,7 @@ public class SEOController extends PaginationController {
 				StreamSupport.stream(Spliterators.spliteratorUnknownSize(yearGroup.getYears().iterator(), 0), false)
 					.map(year -> "<url>" +
 						"<loc>https://www.homepix.ch/calendar/" + year.getYear() + "</loc>\n" +
-						"<lastmod>2024-11-04</lastmod>\n" +
+						"<lastmod>2025-01-09</lastmod>\n" +
 						"<changefreq>weekly</changefreq>\n" +
 						"<priority>0.8</priority>\n" +
 						"</url>")
