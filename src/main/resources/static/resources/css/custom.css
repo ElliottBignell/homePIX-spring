@@ -157,9 +157,16 @@ a {
   text-decoration: none;
   background-color: transparent;
 }
+a.location {
+  color: var(--homepix-dark);
+}
 a:hover {
     color: #ffffc0;
     text-decoration: underline;
+}
+a.location:hover {
+  color: #ff;
+    text-decoration: none;
 }
 
 a:not([href]):not([tabindex]) {
@@ -3461,7 +3468,20 @@ input[type="button"].btn-block {
   flex-grow: 1;
   align-items: center; }
 
+.navbar-collapse-dark {
+  background-color:var( --homepix-dark );
+}
+
+.navbar-nowrap {
+  white-space:nowrap;
+}
+
+.nav-iem-2 {
+  background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;
+}
+
 .navbar-toggler {
+  font-size:2em;
   padding: 0.25rem 0.75rem;
   font-size: 1.25rem;
   line-height: 1;
@@ -8813,6 +8833,8 @@ table {
     left:0em;
     width:100%;
     height:88vh;
+     object-fit:contain !important;
+     object-position:center !important;
 }
 
 .homepix-container {
@@ -8863,6 +8885,8 @@ table {
         left:0em;
         width:100vw;
         height:83vh;
+     object-fit:contain !important;
+     object-position:center !important;
     }
 
     .homepix-container {
@@ -8903,6 +8927,8 @@ table {
         left:0em;
         width:100vw;
         height:73vh;
+     object-fit:contain !important;
+     object-position:center !important;
     }
 }
 

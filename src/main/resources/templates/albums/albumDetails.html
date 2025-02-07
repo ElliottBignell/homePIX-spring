@@ -121,7 +121,7 @@
                       th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
                       th:id="@{figure-__${entry.id}__}">
                 <a th:id="@{picture__${entry.id}__}"
-                   th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+                   th:href="@{/albums/__${id}__/item/__${entry.id}__/__${arguments}__}"
                 >
                   <section class="wrapper" th:id=" @{file-number_${entry.id}}">
                     <span class="tt_subject">
@@ -139,7 +139,7 @@
                   </section>
                 </a>
                 <a th:id="@{btn__${entry.id}__}"
-                   th:href="@{/albums/__${id}__/item/__${entry.id}__/?search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
+                   th:href="@{/albums/__${id}__/item/__${entry.id}__/__${arguments}__}"
                 >
                   <figcaption class="tt_edit">
                     <form id="editprops">

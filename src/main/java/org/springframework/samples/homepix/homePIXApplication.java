@@ -21,7 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
- * PetClinic Spring Boot Application.
+ * homePIX Spring Boot Application.
  *
  * @author Dave Syer
  *

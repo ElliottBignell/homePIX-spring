@@ -53,14 +53,14 @@
     ol.carousel-indicators li.active {
       background: white;
     }
- 
+
   </style>
   <body>
 
   <div class="homePIX-all">
-       <div id="header-content" style="position:relative;top:0em;height:100%;left:0em;right:0em;">
-           <table id="maintab" style="position:relative;top:0em;left:0em;width:100%;height:100%;padding:0px;border:0px;">
-             <tr colspan=4 style="height:2em;vertical-align:middle;">
+       <div id="header-content" class="header-content">
+           <table id="maintab" class="maintab">
+             <tr colspan=4 class="colspan-4">
                <td>
                </td>
                <td>
@@ -70,9 +70,9 @@
                <td>
               </td>
              </tr>
-             <tr colspan=4 style="height:calc(100%-em);">
+             <tr colspan=4 class="colspan-2">
     
-                 <td style="width:100%;height:75vh;">
+                 <td class="width-100">
                    <div id="carousel" class="carousel slide homePIX-main-cell" data-ride="carousel">
 
                      <!--
@@ -82,11 +82,12 @@
                          ></li>
                      </ol>
                      -->
-    
-                     <figure th:each="picture : ${collection}" class="carousel-inner mySlides" role="listbox" style="text-align:center;">
+
+                     <h1 class="h1-100">homePIX Welcome Slide-show</h1>
+                     <figure th:each="picture : ${collection}" class="carousel-inner mySlides text-centre" role="listbox">
 
                        <div class="carousel-caption homepix-caption-1">
-                         <h3 th:text="${ picture.title }" style="width:100%;text-align:center;">Title</h3>
+                         <h2 th:text="${ picture.title }" class="h2-100">Title</h2>
                        </div>
                        <div class="carousel-item active homepix-main-picture">
                          <img th:id="@{picture__${picture.id}__}"
@@ -94,21 +95,20 @@
                               th:src="${picture.mediumFilename}"
                               th:data-src="${picture.largeFilename}"
                               th:alt="${picture.title + (keyword_list[picture.id] != '' ? ', ' + keyword_list[picture.id] : '')}"
-                              style="object-fit:contain;object-position:center;"
                          >
 
                          </img>
                          <div class="carousel-caption homepix-caption-2">
-                           <h3 th:text="${picture.title}" style="width:100%;text-align:center;font-size:4vh;">Title</h3>
-                           <h3 th:if="${picture.taken_on != T(java.time.LocalDateTime).of(1970, 1, 1, 0, 0, 0)}"
+                           <h3 th:text="${picture.title}" class="title-text h3-100">Title</h3>
+                           <h4 th:if="${picture.taken_on != T(java.time.LocalDateTime).of(1970, 1, 1, 0, 0, 0)}"
                                th:text="${#temporals.format(picture.taken_on, 'dd MMMM yyyy')}"
-                               style="width;bottom:100%;text-align:center;font-size:2vh;">
+                               class="taken-on">
                              Taken on
-                           </h3>
+                           </h4>
                          </div>
                        </div>
                        <div class="carousel-caption homepix-caption-3">
-                         <h3 th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}">Taken on</h3>
+                         <h4 th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}">Taken on</h4>
                        </div>
 
                        <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
@@ -122,11 +122,11 @@
                      </figure>
                    </div>
                  </td>
-                 <td style="width:7em;">
+                 <td class="width-7">
     
                  </td>
              </tr>
-             <tr colspan=4 style="height:2em;vertical-align:middle;">
+             <tr colspan=4 style="middle">
                <td>
                </td>
                <td>

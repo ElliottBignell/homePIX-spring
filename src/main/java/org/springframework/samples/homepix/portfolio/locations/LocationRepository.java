@@ -3,11 +3,13 @@ package org.springframework.samples.homepix.portfolio.locations;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface LocationRepository extends CrudRepository<Location, Integer> {
@@ -22,4 +24,12 @@ public interface LocationRepository extends CrudRepository<Location, Integer> {
 	@Query("SELECT DISTINCT location FROM Location location WHERE location.location = :place")
 	@Transactional(readOnly = true)
 	Collection<Location> findByContent(@Param("place") String place);
+
+	/**
+	 * Retrieve an {@link Location} from the data store by name.
+	 * @param name the id to search for
+	 * @return the {@link Location} if found
+	 */
+	@Query(value = "SELECT * FROM location WHERE name = :name", nativeQuery = true)
+	List<Location> findByName(@Param("name") String name);
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <canvas id="chart"></canvas>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    var api_url = /*[[${api_url}]]*/ [];
+    /*]]>*/
+  </script>
+  <script>
+    // Fetch chart data from your backend
+    fetch(api_url)
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Photos by Country',
+                        data: data.data,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                    }]
+                },
+                options: {
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            window.location.href = '/chart/bar' + data.links[index];
+                        }
+                    }
+                }
+            });
+        });
+  </script>
+</body>
+</html>

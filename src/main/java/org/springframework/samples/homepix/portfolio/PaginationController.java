@@ -22,6 +22,10 @@ import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.locations.LocationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -74,6 +78,9 @@ public abstract class PaginationController implements AutoCloseable {
 	@Autowired
 	private PictureFileService pictureFileService;
 
+	@Autowired
+	LocationService locationService;
+
 	protected final KeywordRepository keyword;
 
 	protected final KeywordRelationshipsRepository keywordRelationships;
@@ -107,6 +114,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	@Autowired
 	protected FolderService folderService;
+
+	@Autowired
+	protected LocationRelationshipsRepository locationRelationships;
 
 	@Autowired
 	protected PaginationController(AlbumRepository albums,
@@ -364,6 +374,62 @@ public abstract class PaginationController implements AutoCloseable {
 		return results;
 	}
 
+	// TODO: Refactor out common code
+	public String processFindByLocation(String name,
+										CollectionRequestDTO requestDTO,
+										CollectionRequestDTO redirectedDTO,
+										Pageable pageable, // Default page size and sorting
+										Map<String, Object> model,
+										Authentication authentication
+	) {
+		// Check if redirectedDTO is not null, use it if available
+		if (redirectedDTO != null) {
+			requestDTO = redirectedDTO;
+		}
+
+		String userRoles = "ROLE_USER";
+
+		if (authentication != null && authentication.isAuthenticated()) {
+			// User is authenticated
+			boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+			if (isAdmin) {
+				// User is an administrator
+				userRoles = "ROLE_ADMIN";
+			}
+		}
+
+		PageRequest pageRequest = PageRequest.of(
+			pageable.getPageNumber(),
+			pageable.getPageSize(),
+			Sort.by(getOrderColumn(requestDTO))
+		);
+
+		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+		LocalDate endDate = dates.getSecond();
+		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
+
+		Page<PictureFile> files = this.pictureFileService.getComplexSearchPageByLocation(
+			name,
+			dates.getFirst(),
+			endOfDay,
+			isAdmin(authentication),
+			userRoles,
+			pageRequest
+		);
+
+		model.put("collection", files);
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
+		model.put("pageNumber", files.getNumber());
+		model.put("totalPages", files.getTotalPages());
+		model.put("count", files.getTotalElements());
+
+		return "collections/collection";
+	}
+
+	// TODO: Refactor out common code
 	public String processFindCollections(CollectionRequestDTO requestDTO,
 										 CollectionRequestDTO redirectedDTO,
 										 Pageable pageable, // Default page size and sorting
@@ -419,10 +485,11 @@ public abstract class PaginationController implements AutoCloseable {
 
 		model.put("collection", files);
 		model.put("sort", requestDTO.getSort());
-		model.put("search", requestDTO.getSearch());
 		model.put("pageNumber", files.getNumber());
 		model.put("totalPages", files.getTotalPages());
 		model.put("count", files.getTotalElements());
+
+		pictureFileService.applyArguments(model, requestDTO);
 
 		return "collections/collection";
 	}
@@ -466,8 +533,7 @@ public abstract class PaginationController implements AutoCloseable {
 		fromDate = startDate.toString();
 		toDate = endDate.toString();
 
-		model.put("startDate", fromDate);
-		model.put("endDate", toDate);
+		pictureFileService.applyArguments(model, requestDTO);
 
 		return Pair.of(startDate, endDate.atTime(LocalTime.MAX).toLocalDate());
 	}
@@ -1164,10 +1230,7 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		else {
 
-			model.put("startDate", requestDTO.getFromDate());
-			model.put("endDate", requestDTO.getToDate());
-			model.put("sort", requestDTO.getSort());
-			model.put("search", requestDTO.getSearch());
+			pictureFileService.applyArguments(model, requestDTO);
 
 			Folder folder = buckets.iterator().next();
 			model.put("collection", results);
@@ -1200,6 +1263,17 @@ public abstract class PaginationController implements AutoCloseable {
 			.collect(Collectors.joining(",")));
 		model.put("keyword_list", pictureIdToKeywords);
 		model.put("thumbnails", thumbnailsMap);
+
+		if (!pictureIds.isEmpty()) {
+
+			List<Location> locations = this.locationRelationships.findByPictureId(pictureIds.get(0)).stream()
+				.map(LocationRelationship::getLocation)
+				.collect(Collectors.toList());
+			locations = locationService.sortLocationsByHierarchy(locations);
+			model.put("location", locations.stream().map(Location::getName)
+				.collect(Collectors.joining(", "))
+			);
+		}
 	}
 
 	protected void setStructuredDataForModel(@ModelAttribute CollectionRequestDTO requestDTO,
@@ -1251,11 +1325,9 @@ public abstract class PaginationController implements AutoCloseable {
 		model.put("structuredData", structuredData);
 
 		model.put("pageKeywords", keywords);
-		model.put("startDate", requestDTO.getFromDate());
-		model.put("endDate", requestDTO.getToDate());
-		model.put("sort", requestDTO.getSort());
-		model.put("search", requestDTO.getSearch());
 		model.put("description", pageDescription);
+
+		pictureFileService.applyArguments(model, requestDTO);
 	}
 
 	protected void setStructuredDataForModel(@ModelAttribute CollectionRequestDTO requestDTO,
@@ -1304,9 +1376,7 @@ public abstract class PaginationController implements AutoCloseable {
 		model.put("description", picture.getTitle());
 		model.put("title", picture.getTitle());
 		model.put("keywords", keywords);
-		model.put("startDate", requestDTO.getFromDate());
-		model.put("endDate", requestDTO.getToDate());
-		model.put("sort", requestDTO.getSort());
-		model.put("search", requestDTO.getSearch());
+
+		pictureFileService.applyArguments(model, requestDTO);
 	}
 }

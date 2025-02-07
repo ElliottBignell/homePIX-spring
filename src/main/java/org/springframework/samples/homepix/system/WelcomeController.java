@@ -22,6 +22,7 @@ import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -45,7 +46,11 @@ class WelcomeController extends PaginationController {
 
 	private final AlbumContentRepository albumContents;
 
+	@Autowired
 	private AlbumService albumService;
+
+	@Autowired
+	private PictureFileService pictureFileService;
 
 	@Autowired
 	public WelcomeController(PictureFileRepository pictureFiles,
@@ -54,12 +59,10 @@ class WelcomeController extends PaginationController {
 							 AlbumContentRepository albumContents,
 							 KeywordRepository keyword,
 							 KeywordRelationshipsRepository keywordsRelationships,
-							 FolderService folderService,
-							 AlbumService albumService
+							 FolderService folderService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
 		this.albumContents = albumContents;
-		this.albumService = albumService;
 	}
 
 	@GetMapping("/")
@@ -144,15 +147,14 @@ class WelcomeController extends PaginationController {
 			model.put("picture", pictureFiles.findById(58123).get());
 		}
 
-		redirectAttributes.addAttribute("search", requestDTO.getSearch());
-		redirectAttributes.addAttribute("startDate", requestDTO.getSearch());
-		redirectAttributes.addAttribute("endDate", requestDTO.getSearch());
-		redirectAttributes.addAttribute("sort", requestDTO.getSearch());
+		pictureFileService.applyArguments(model, requestDTO);
+
 		model.put("albums", this.albums.findAll());
 		model.put("folders", this.folders.findAll().stream()
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);
+		model.put("canonical", "https://www.homepix.ch/");
 
 		// 1 album found
 		return "welcome";

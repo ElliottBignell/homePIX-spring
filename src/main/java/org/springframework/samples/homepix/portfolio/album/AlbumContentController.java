@@ -9,6 +9,7 @@ import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +31,29 @@ public class AlbumContentController extends AlbumContentBaseController {
 	@Autowired
 	AlbumContentService albumContentService;
 
-	public AlbumContentController(AlbumContentRepository albumContent, AlbumRepository albums, FolderRepository folders, PictureFileRepository pictureFiles, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService, AlbumService albumService) {
+	public AlbumContentController(AlbumContentRepository albumContent,
+									  AlbumRepository albums,
+									  FolderRepository folders,
+									  PictureFileRepository pictureFiles,
+									  KeywordRepository keyword,
+									  KeywordRelationshipsRepository keywordsRelationships,
+									  FolderService folderService,
+									  AlbumService albumService
+	) {
 		super(albumContent, albums, folders, pictureFiles, keyword, keywordsRelationships, folderService, albumService);
+	}
+
+	/**
+	 * Custom handler for displaying an album.
+	 * @param id the ID of the album to display
+	 * @return a ModelMap with the model attributes for the view
+	 */
+	@GetMapping("/album/{id}/")
+	public ModelAndView showAlbumSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("id") long id,
+								  Map<String, Object> model
+	) {
+		return showAlbum(requestDTO, id, model);
 	}
 
 	/**

@@ -32,8 +32,6 @@ import org.springframework.samples.homepix.portfolio.album.AlbumContent;
 import org.springframework.samples.homepix.portfolio.categories.Category;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.locations.Location;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 
 /**
  * Simple business object representing a pet.
@@ -84,10 +82,6 @@ public class PictureFile extends BaseEntity {
 	@Column(name = "taken_on")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime taken_on;
-
-	@ManyToOne
-	@JoinColumn(name = "location_id")
-	private Location location;
 
 	@ManyToOne
 	@JoinColumn(name = "primary_category")

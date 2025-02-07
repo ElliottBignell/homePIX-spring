@@ -50,6 +50,10 @@ public interface FolderRepository extends CrudRepository<Folder, Integer> {
 	@Transactional(readOnly = true)
 	Collection<Folder> findByName(@Param("name") String name);
 
+	@Query("SELECT DISTINCT folder FROM Folder folder WHERE LOWER(folder.name) LIKE :name%")
+	@Transactional(readOnly = true)
+	Collection<Folder> findByNameCaseInsensitive(@Param("name") String name);
+
 	@Query("SELECT DISTINCT folder FROM Folder folder")
 	@Transactional(readOnly = true)
 	Collection<Folder> findAll();

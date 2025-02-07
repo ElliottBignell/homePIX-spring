@@ -885,11 +885,11 @@ function remove_keyword( keyword, pic_id ) {
                   </form>
                   <br>
                 </span>
-                <span th:if="${picture.location}">
+                <span th:if="${location}">
                   <span class="titletext propertyfont">
-                    Location:
+                    Locationuuu:
                   </span>
-                  <span id="location" class="titlecontent" th:text="${picture.location.location}">
+                  <span id="location" class="titlecontent" th:text="${location}">
                   </span>
                   <br>
                 </span>
@@ -912,6 +912,18 @@ function remove_keyword( keyword, pic_id ) {
                     </div>
                     </span>
                   </a>
+                  <br>
+                </span>
+                <span th:if="${location_list != null}">
+                  <span class="titletext propertyfont">
+                    Location:
+                  </span>
+                  <span th:each="location, iterStat : ${location_list}">
+                    <a th:href="@{/location/__${location.name}__}" class="location">
+                      <span th:text="${location.name}" class="titlecontent"></span>
+                    </a>
+                    <span th:if="${!iterStat.last}" class="titlecontent" style="font-size:0.5em;">←</span>
+                  </span>
                   <br>
                 </span>
                 <span class="titletext propertyfont">
@@ -951,8 +963,8 @@ function remove_keyword( keyword, pic_id ) {
                   <span id="datetime" class="titlecontent" th:text="${#temporals.format(picture.taken_on, 'dd-MMM-yyyy')}">
                     {{ picture.taken_on|date:"d M, Y" }}
                   </span>
+                  <br>
                 </span>
-                <br>
 
                 <span class="titletext propertyfont">
                     Dimensions:
@@ -1093,7 +1105,7 @@ function remove_keyword( keyword, pic_id ) {
                   <div id="panel2" style="display:none">
                     <a href=javascript:panel2() class="unembellish">
                       <span class="titletext propertyfont">
-                          Location:
+                          Locationttt:
                       </span>
                     </a>
                     <span id="map">

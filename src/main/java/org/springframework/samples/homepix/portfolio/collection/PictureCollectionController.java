@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,9 @@ import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.locations.LocationService;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -42,7 +46,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,12 +56,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Elliott Bignell
@@ -74,6 +76,12 @@ class PictureCollectionController extends PaginationController {
 	private final PictureElasticSearchService pictureElasticSearchService;
 	protected final AlbumContentRepository albumContent;
 	private final AlbumService albumService;
+
+	@Autowired
+	private PictureService pictureService;
+
+	@Autowired
+	LocationService locationService;
 
 	public PictureCollectionController(PictureFileRepository pictureFiles,
 									   PictureCollectionRepository pictures,
@@ -131,8 +139,8 @@ class PictureCollectionController extends PaginationController {
 											  PictureCollection pictureCollection,
 											  BindingResult result,
 											  Map<String, Object> model,
-											  Authentication authentication) {
-
+											  Authentication authentication
+	) {
 		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
@@ -144,11 +152,36 @@ class PictureCollectionController extends PaginationController {
 													 PictureCollection pictureCollection,
 													 BindingResult result,
 													 Map<String, Object> model,
-													 Authentication authentication) {
-
+													 Authentication authentication
+	) {
 		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
 	}
 
+	// Get all pictures and return as JSON
+	@GetMapping("/location/{name}")
+	public String getPictureByLocation(@ModelAttribute CollectionRequestDTO requestDTO,
+									   @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+									   @PathVariable("name") String name,
+									   @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+									   Authentication authentication,
+									   Map<String, Object> model,
+									   HttpServletRequest request
+	) {
+		return processFindByLocation(name, requestDTO, redirectedDTO, pageable, model, authentication);
+	}
+
+	// Get all pictures and return as JSON
+	@GetMapping("/location/{name}/")
+	public String getPictureByLocationSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+											@ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
+											@PathVariable("name") String name,
+											@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+											Authentication authentication,
+											Map<String, Object> model,
+											HttpServletRequest request
+	) {
+		return processFindByLocation(name, requestDTO, redirectedDTO, pageable, model, authentication);
+	}
 
 	/**
 	 * Custom handler for displaying a collection.
@@ -239,6 +272,12 @@ class PictureCollectionController extends PaginationController {
 			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList())
 		);
+
+		List<Location> locations = this.locationRelationships.findByPictureId(pictureID).stream()
+			.map(LocationRelationship::getLocation)
+			.collect(Collectors.toList());
+		locations = locationService.sortLocationsByHierarchy(locations);
+		model.put("location_list", locations);
 		Optional<PictureFile> picture = pictureFiles.findById(pictureID);
 
 		if (picture.isPresent()) {

@@ -1,3 +1,28 @@
+INSERT INTO albums VALUES (1, 'Texture', 0, 762);
+INSERT INTO albums VALUES (2, 'Bettina', 0, 10152);
+INSERT INTO albums VALUES (3, 'Cats', 0, 7577);
+INSERT INTO albums VALUES (4, 'Wildlife', 0, 9191);
+INSERT INTO albums VALUES (5, 'Slides',0,771);
+
+INSERT IGNORE INTO picture_file VALUES (762, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Exterior of Oerlikon station building, Zürich','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (761, 'https://drive.google.com/file/d/10HienPUgo5A1dGn8zcccw-yyMsoqdgbb/view?usp=drivesdk','Breton shire horses in meadow near Callac','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (763, 'https://drive.google.com/file/d/1ZB5jMnD57UQMUM8iGKkr44UnEzI6zU6k/view?usp=drivesdk','Entrenched platform of the railway in Überlingen, Lake Constance','2020-05-31',1,3);
+INSERT IGNORE INTO picture_file VALUES (764, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Primula elatior; oxlips flowering in ditch in Flums, Switzerland','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (766, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Canal at dawn, Rüthi SG in the Swiss Rhine valley','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (768, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Lavertezzo; the Maldives of Italy, located in the Swiss canton of Ticino','2020-05-31',1,3);
+INSERT IGNORE INTO picture_file VALUES (769, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Buildings in the Old Town part of Chur, Graubünden','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (770, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','The Creux du Van, inland cove in the limestone of Neuchastel','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (772, 'https://drive.google.com/file/d/1AsMj3GdaZeJ_JNgDFFxkIy76rP6j_VQX/view?usp=drivesdk','S. Maria al Castello; Swiss church in Mesocco, Grisons','2020-05-31',1,3);
+INSERT IGNORE INTO picture_file VALUES (774, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Swiss Alpine village of Splügen in Graubünden (Grisons),291448965000000','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (775, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Newly-created station forecourt and bus stop in Sargans, showing Spring foliage and dramatic lighting pillars','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (779, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Pyrrhocorax graculus; Alpine or yellow-billed chough on Säntis, Appenzell','2020-05-31',1,3);
+INSERT IGNORE INTO picture_file VALUES (780, 'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Rocks on Sticks; informal garden in the air at the Eggishorn station, Valais','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (781, 'https://drive.google.com/file/d/1HSYDhMGj_kREgOBMkWfWwFW8zBIMUUJ6/view?usp=drivesdk','Village scene in Maienfeld, Swiss Rhine valley','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (7153,'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','View of morning clouds from above, shot from Säntis in the Swiss Alps','2020-05-31',1,3);
+INSERT IGNORE INTO picture_file VALUES (7154,'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','Autumn woods of Appenzell, Switzerland','2020-05-31',1,1);
+INSERT IGNORE INTO picture_file VALUES (7155,'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','View across Canton Appenzell from the Alpstein','2020-05-31',1,2);
+INSERT IGNORE INTO picture_file VALUES (7156,'https://drive.google.com/file/d/1xPGwLfrsfHGyHqsHW25TtQBpmg9qs7OO/view?usp=drivesdk','View across the fields of Appenzell from Ebenalp, Swiss Alps','2020-05-31',1,3);
+
 INSERT INTO keywords VALUES(1,'graubünden,maienfeld,schweiz,spring',4);
 INSERT INTO keywords VALUES(2,'gates,iron,maienfeld,schweiz,wrought',5);
 INSERT INTO keywords VALUES(3,'barn,building,entrance,exterior,farm,graubuenden,graubünden,maienfeld,raised,schweiz,spring,stairs,stairway,timber,twin,valley,village,wooden,¨rhine',19);

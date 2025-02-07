@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/echarts"></script>
+  <div id="chart" style="width: 80vw;height:80vh;"></div>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    var api_url = /*[[${api_url}]]*/ [];
+    /*]]>*/
+  </script>
+  <script>
+      fetch(api_url)
+          .then(response => response.json())
+          .then(data => {
+              const chart = echarts.init(document.getElementById('chart'));
+              chart.setOption({
+                  tooltip: {
+                      trigger: 'item'
+                  },
+                  series: [
+                      {
+                          type: 'pie',
+                          data: data.labels.map((label, index) => ({
+                              value: data.data[index],
+                              name: label,
+                              link: '/chart/pie' + data.links[index]
+                          })),
+                          label: {
+                              formatter: '{b}: {c} ({d}%)'
+                          }
+                      }
+                  ]
+              });
+
+              chart.on('click', (params) => {
+                  if (params.data.link) {
+                      console.log(params.data.link);
+                      window.location.href = params.data.link;
+                  }
+              });
+          });
+  </script>
+</body>
+</html>

@@ -106,7 +106,7 @@
 }
 
 .bigmenu{
-  font-size: 1.5em;
+  font-size: 1vh;
   font-weight: 400;
   border: 0px;
   position: absolute;
@@ -490,10 +490,10 @@ img.gallery_picture {
   }
 
   #panenavigate {
-    position: absolute;
+    position: relative;
     left: 0;
     right: 100%;
-    top: 70px;
+    top: 10px;
     bottom: 155px;
     max-height: 75px;
   }
@@ -826,4 +826,8 @@ h4{
   .drop-down-menu {
     display: none; /* Show text when in phone view */
   }
+}
+
+.no-radius {
+    border-radius: 0px;
 }

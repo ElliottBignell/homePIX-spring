@@ -79,6 +79,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/licence.html",
 					"/about/",
 					"/buckets/**",
+					"/location/**",
 					"/albums/**",
 					"/album/**",
 					"/collection/**",
@@ -91,6 +92,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/register",
 					"/ads.txt",
 					"/sitemap.xml",
+					"/robots.txt",
 					"/album*.xml",
 					"/folder*.xml",
 					"/api/pictures",
@@ -100,10 +102,12 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/albums",
 					"/api/albums/**",
 					"/api/folders",
+					"/api/chart-data/**",
 					"/api/folders/**",
 					"/logs/docker/homepix",
 					"/containers/**",
 					"/maps/**",
+					"/chart/**",
 					"/words"
 				)
 				.permitAll()

@@ -18,8 +18,10 @@ package org.springframework.samples.homepix.portfolio.folder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +37,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileServi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -80,6 +83,9 @@ class BucketController extends PaginationController {
 	private static Map<String, byte[]> image200pxCacheMap = new HashMap<>();
 
 	private AlbumService albumService;
+
+	@Autowired
+	FolderRepository folderRepository;
 
 	private final PictureFileService pictureFileService;
 
@@ -301,6 +307,10 @@ class BucketController extends PaginationController {
 		boolean reload,
 		HttpServletRequest request
 	) {
+		name = name.replace("-", "_");
+
+		name = folderRepository.findByNameCaseInsensitive(name).iterator().next().getName();
+
 		String userAgent = request.getHeader("User-Agent");
 		logger.info("Request from User-Agent to showFolder: " + userAgent);
 
@@ -589,11 +599,21 @@ class BucketController extends PaginationController {
 		return ResponseEntity.ok(responseData);
 	}
 
+	@GetMapping("/buckets/{name}/item/{id}/")
+	public String showPictureFileSlash(@ModelAttribute CollectionRequestDTO requestDTO,
+								  @PathVariable("name") String name,
+								  @PathVariable("id") Integer id,
+								  Map<String, Object> model,
+								  Authentication authentication,
+								  HttpServletRequest request
+	) {
+		return showPictureFile(requestDTO, name, id, model, authentication, request);
+	}
+
 	@GetMapping("/buckets/{name}/item/{id}")
 	public String showPictureFile(@ModelAttribute CollectionRequestDTO requestDTO,
 								  @PathVariable("name") String name,
 								  @PathVariable("id") Integer id,
-			/* @Value("${homepix.images.path}") String imagePath, */
 								  Map<String, Object> model,
 								  Authentication authentication,
 								  HttpServletRequest request
@@ -710,10 +730,13 @@ class BucketController extends PaginationController {
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
 			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
-				.map(relationship -> relationship.getKeyword())
+				.map(KeywordRelationships::getKeyword)
 				.collect(Collectors.toList()));
 			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
-				.map(relationship -> relationship.getKeyword())
+				.map(KeywordRelationships::getKeyword)
+				.collect(Collectors.toList()));
+			model.put("location_list", this.locationRelationships.findByPictureId(pictureID).stream()
+				.map(LocationRelationship::getLocation)
 				.collect(Collectors.toList()));
 
 			model.put("fullUrl", "collection/" + pictureID);

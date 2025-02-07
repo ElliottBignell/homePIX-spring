@@ -5,6 +5,8 @@ import org.springframework.samples.homepix.portfolio.categories.Category;
 import org.springframework.samples.homepix.portfolio.categories.CategoryRepository;
 import org.springframework.samples.homepix.portfolio.keywords.*;
 import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRepository;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,9 @@ public class PictureService {
 	private LocationRepository locationRepository; // To fetch Location objects
 
 	@Autowired
+	private LocationRelationshipsRepository locationRelationshipsRepository; // To fetch Location objects
+
+	@Autowired
 	private CategoryRepository categoryRepository; // To fetch Category objects
 
 	@Autowired
@@ -47,6 +52,13 @@ public class PictureService {
 	public List<PictureFile> findByBucket(String bucket) {
 		// CrudRepository's findAll() returns an Iterable, convert to List
 		return StreamSupport.stream(pictureFileRepository.findByFolderName(bucket).spliterator(), false)
+			.collect(Collectors.toList());
+	}
+
+	public List<PictureFile> findByLocation(String name) {
+
+		return locationRelationshipsRepository.findByLocation(name).stream()
+			.map(LocationRelationship::getPicture)
 			.collect(Collectors.toList());
 	}
 
@@ -77,7 +89,7 @@ public class PictureService {
 							System.out.println("Location: " + location.getId() + ", " + location.getLocation());
 
 							// Set the Location object in the PictureFile
-							picture.setLocation(location);
+							//picture.setLocation(location);
 						} else if (fieldName.equals("plain_location")) {
 
 							String location_text = (String) update.get("plain_location"); // Assuming location is passed as ID
@@ -98,7 +110,7 @@ public class PictureService {
 							System.out.println("Location: " + newLocation.getId() + ", " + newLocation.getLocation());
 
 							// Set the Location object in the PictureFile
-							picture.setLocation(newLocation);
+							//picture.setLocation(newLocation);
 							this.pictureFileRepository.save(picture);
 						} else if (fieldName.equals("GPSLocation")) {
 

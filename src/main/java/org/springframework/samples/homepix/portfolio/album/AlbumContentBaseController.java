@@ -28,6 +28,7 @@ import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -152,10 +153,9 @@ public class AlbumContentBaseController extends PaginationController {
 
 		model.put("title", album.getName()+ " picture album");
 		model.put("id", album.getId());
-		model.put("startDate", requestDTO.getFromDate());
-		model.put("endDate", requestDTO.getToDate());
-		model.put("sort", requestDTO.getSort());
-		model.put("search", requestDTO.getSearch());
+
+		pictureFileService.applyArguments(model, requestDTO);
+
 		model.put("albums", this.albums.findAll());
 		model.put("folders", this.folders.findAll().stream()
 			.sorted(Comparator.comparing(Folder::getName))

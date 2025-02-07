@@ -4,10 +4,10 @@
 <head>
 
   <th:block th:with="
-      baseTitle = 'homePIX Photo Server by Elliott Bignell',
+      baseTitle = 'homePIX by Elliott Bignell',
       finalTitle = ${
           (title != null) ? title :
-          (picture != null && picture.title != null) ? picture.title + (picture.location != null ? ' in ' + picture.location.location : ''):
+          (picture != null && picture.title != null) ? picture.title + (location != null ? ' in ' + location : ''):
           (album != null && album.name != null) ? album.name :
           (folder != null && folder.name != null) ? folder.name : baseTitle
       },
@@ -29,7 +29,7 @@
           (picture != null && picture.taken_on != null) ? ' taken on ' + #temporals.format(picture.taken_on, 'dd MMMM yyyy') : ''
       },
       descriptionWhere = ${
-          (picture != null && picture.location != null) ? ' at ' + picture.location.location : ''
+          (picture != null && location != null) ? ' at ' + location : ''
       },
       descriptionCamera = ${
           (picture != null && picture.cameraModel != null) ? ' using a ' + picture.cameraModel : ''
@@ -56,7 +56,6 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
       <![endif]-->
 
-    <link th:href="@{/webjars/font-awesome/4.7.0/css/font-awesome.min.css}" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/resources/css/petclinic.css}" />
     <link rel="stylesheet" th:href="@{/resources/css/custom.css}" />
     <link rel="stylesheet" th:href="@{/resources/css/blog.css}" />
@@ -81,7 +80,6 @@
 
     <link href="https://fonts.googleapis.com/css?family=Montserrat|Russo+One" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <link rel="shortcut icon" href="/static/images/favicon.ico">
@@ -97,6 +95,7 @@
     <meta property="og:description" th:content="${aggregateTitle} + '...' + ${description}"/>
     <meta property="og:url" th:content="@{https://www.homepix.ch/__${fullUrl}__}"/>
     <meta property="og:image" th:content="@{https://www.homepix.ch__${picture?.largeFilename}__}"/>
+    <meta property="og:image-alt" th:content="@{__${picture?.title}__}"/>
     <meta property="og:type" content="image/jpg"/>
 
     <meta property="article:publisher" content="https://www.homepix.ch/"/>
@@ -108,33 +107,41 @@
     <link id="google-fonts-toucan" rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Karla:400,700|Lora:700&amp;display=swap">
     <style id="tou-transition-helpers"></style>
 
-    <script src="chrome-extension://lokjgaehpcnlmkebpmjiofccpklbmoci/history-change-listener.js" id="toucan-history-listener"></script>
-
     <script type="application/ld+json" th:utext="${structuredData}"></script>
     <link rel="stylesheet" th:href="@{/resources/css/tags.css}" />
   </th:block>
 
+    <!-- Google tag (gtag.js) -->
+    <script
+      async src="https://www.googletagmanager.com/gtag/js?id=G-XX8GMM0YHB">
+    </script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XX8GMM0YHB');
+  </script>
+    <link th:if="${canonical != null and !#strings.isEmpty(canonical)}" rel="canonical" th:href="${canonical}" />
 </head>
 
 <body>
+
+<form>
+  <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
+</form>
 
 <div class="col-sm-12" id="panetop">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" th:href="@{/resources/css/last-minute.css}" />
 
-    <script>
-      document.querySelector('.toolbar-inputs-toggle').addEventListener('click', function() {
-        this.classList.toggle('active');
-        document.querySelector('.toolbar-inputs').classList.toggle('show');
-      });
-    </script>
-
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom techfont fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom techfont fixed-top no-radius">
 
       <div class="homePIX-navbar">
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1" aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Toggle navigation" style="font-size:2em;">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1" aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -142,22 +149,20 @@
         <span class="navbar-title">homePIX Photos</span>
 
         <!-- Collapsible content -->
-        <div class="collapse navbar-collapse" id="navbarSupportedContent1" style="background-color:var( --homepix-dark )">
+        <div class="collapse navbar-collapse navbar-collapse-dark" id="navbarSupportedContent1">
 
-          <ul class="navbar-nav mr-auto mt-2 mt-lg-0 sf-menu" style="white-space:nowrap;">
-            <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'folders' }} ); height:4em;display: inline-block;">
+          <ul class="navbar-nav navbar-nowrap mr-auto mt-2 mt-lg-0 sf-menu">
+            <li class="nav-item nav-item-2">
               <a href="/" class="navlink bigbrand">
-                <i class="large material-icons"
-                   style="color:var( {{ request.get_full_path|current_background:'folders' }} );"
-                >
+                <i class="large material-icons folders" >
                   home
                 </i>
                 <span class="toolbar-text">Home</span>
               </a>
             </li>
-            <li class="nav-item" style="background-color: var({{ request.get_full_path|current_content:'folders' }}); height: 4em; display: inline-block;">
+            <li class="nav-item nav-item-2">
               <a href="/buckets/" class="navlink bigbrand">
-                <i class="large material-icons" style="color: var({{ request.get_full_path|current_background:'folders' }});">
+                <i class="large material-icons folders" >
                   folder
                 </i>
                 <span class="toolbar-text">Folders</span>
@@ -166,7 +171,7 @@
                 <table>
                   <tr th:each="chunk : ${T(org.springframework.samples.homepix.portfolio.util.ChunkUtil).chunkList(folders, 4)}">
                     <td th:each="folder : ${chunk}">
-                      <a th:href="@{/buckets/__${folder.name}__/}" class="bigmenu" th:text="${folder.displayName}" style="font-size:12px;">
+                      <a th:href="@{/buckets/__${folder.linkName}__/}" class="bigmenu" th:text="${folder.displayName}">
                         Folders
                       </a>
                     </td>
@@ -174,12 +179,10 @@
                 </table>
               </ul>
             </li>
-            <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'albums' }} ); height:4em;display: inline-block;">
+            <li class="nav-item nav-item-2">
                 <a href="/album/" class="bigbrand">
-                  <i class="large material-icons"
-                     style="color:var( {{ request.get_full_path|current_background:'albums' }} );"
-                     >
-                          photo_album
+                  <i class="large material-icons album-icon">
+                    photo_album
                   </i>
                   <span class="toolbar-text">Albums</span>
                 </a>
@@ -189,15 +192,10 @@
                   </li>
                 </ul>
               </li>
-              <li th:if="${#authorization.expression('isAuthenticated')}"
-                  class="nav-item"
-                  style="background-color:var( {{ request.get_full_path|current_content:'organisation' }} ); height:4em;display: inline-block;"
-              >
+              <li th:if="${#authorization.expression('isAuthenticated')}" class="nav-item nav-item-icon">
                 <a href="/organise/" class="navlink bigbrand">
-                  <i class="large material-icons"
-                     style="color:var( {{ request.get_full_path|current_background:'organisation' }} );"
-                     >
-                          view_quilt
+                  <i class="large material-icons quilt">
+                    view_quilt
                   </i>
                   <span class="toolbar-text">Organise</span>
                 </a>
@@ -207,30 +205,62 @@
                   </li>
                 </ul>
               </li>
-              <li class="nav-item" style="background-color:var( {{ request.get_full_path|current_content:'calendar_view_day' }} ); height:4em;display: inline-block;">
-                <a href="/calendar" class="bigbrand">
+            <li class="nav-item calendar">
+              <a href="/calendar" class="bigbrand">
                   <span class="material-symbols-outlined">
                     calendar_month
                   </span>
-                  <span class="toolbar-text">Calendar</span>
-                </a>
-                <ul class="drop-down-menu">
-                  <li>
-                    <table>
-                      <tr th:each="yearGroup : ${yearNames}">
-                        <td th:each="year : ${yearGroup}">
-                          <a th:href="@{/calendar/__${year}__}" class="bigmenu" th:text="${year}" style="font-size:12px;">
-                            year
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item" style="background-color:var( --homepix-dark ); height:4em;display: inline-block;">
+                <span class="toolbar-text">Calendar</span>
+              </a>
+              <ul class="drop-down-menu">
+                <li>
+                  <table>
+                    <tr th:each="yearGroup : ${yearNames}">
+                      <td th:each="year : ${yearGroup}">
+                        <a th:href="@{/calendar/__${year}__}" class="bigmenu font-12" th:text="${year}">
+                          year
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item calendar">
+              <a href="/chart" class="bigbrand">
+                <span class="material-symbols-outlined">
+                  &#9736;
+                </span>
+                <span class="toolbar-text">Charts</span>
+              </a>
+              <ul class="drop-down-menu">
+                <li>
+                  <table>
+                    <tr>
+                      <td>
+                        <a href="/chart/bar" class="bigmenu font-48">
+                          &#9715;
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <a href="/chart/pie" class="bigmenu font-48">
+                          &#9719;
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="chart">
+                      </td>
+                    </tr>
+                  </table>
+                </li>
+              </ul>
+            </li>
+              <li class="nav-item info">
                 <a href="/about/" class="bigbrand">
-                  <i class="large material-icons" style="color:var( {{ request.get_full_path|current_background:'about' }} );">
+                  <i class="large material-icons info">
                         info
                   </i>
                   <span class="toolbar-text">About</span>
@@ -242,26 +272,24 @@
                 </ul>
               </li>
 
-              <li class="nav-item toolbar-tools toolbar-sort">
+              <li class="nav-item toolbar-tools toolbar-sort top-4">
                 <button class="toolbar-sort-toggle">Sort</button>
                 <form class="form-inline toolbar-sort" th:action="${ '' }" method="get">
-                  <select name="sort" id="sort" th:value="${ param.sort }" class="form-control toolbar-sort-select" placeholder="Sort by...">
-                    <c th:if="${pagination}">
-                     <option th:each="option : ${ pagination.sortOptions }" th:value="${option}" th:selected="${ option ==  sort }" th:text="${option}">Sort options</option>
-                    </c>
+                  <select th:if="${pagination}" name="sort" id="sort" th:value="${ param.sort }" class="form-control toolbar-sort-select" placeholder="Sort by...">
+                    <option th:each="option : ${ pagination.sortOptions }" th:value="${option}" th:selected="${ option ==  sort }" th:text="${option}">Sort options</option>
                   </select>
                   <button type="submit" class="toolbar-sort-button">
                     <i class="medium material-icons">sort </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${startDate}" style="visibility:hidden;width:0em;">
-                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
-                  <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
-                  <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
-                  <input name="search"   type="text" th:placeholder="${ param.search }" th:value="${ param.search }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" class="input-hidden" th:if="${pagination}" th:value="${startDate}">
+                  <input name="toDate"   type="date" class="input-hidden" th:if="${pagination}" th:value="${endDate}">
+                  <input name="ID"       type="text" class="input-hidden" th:placeholder="${ param.ID     }" th:value="${ param.ID     }">
+                  <input name="Key"      type="text" class="input-hidden" th:placeholder="${ param.Key    }" th:value="${ param.Key    }">
+                  <input name="search"   type="text" class="input-hidden" th:placeholder="${ param.search }" th:value="${ param.search }">
                 </form>
               </li>
             <li class="nav-item toolbar-tools toolbar-search">
-                <form class="form-inline" th:action="${ '' }" method="get" style="top-margin:0px;left-margin:12px;right-margin:12px;position:relative;width:28em;top:-0.34em;">
+                <form class="form-inline search" th:action="${ '' }" method="get">
                   <input name="search"   type="text" th:value="${ param.search }" placeholder="Search..."
                         class="form-control mr-sm-2 toolbar-search"
                         onmousemove="this.style.backgroundColor='var( --homepix-alarm )'; this.style.color='var( --homepix-dark );';"
@@ -270,18 +298,18 @@
                   <button type="submit" class="toolbar-search-button">
                     <i class="medium material-icons">search </i>
                   </button>
-                  <input name="fromDate" type="date" th:if="${pagination}" th:value="${startDate}" style="visibility:hidden;width:0em;">
-                  <input name="toDate"   type="date" th:if="${pagination}" th:value="${endDate}" style="visibility:hidden;width:0em;">
-                  <input name="ID"       type="text" th:placeholder="${ param.ID     }" th:value="${ param.ID     }" style="visibility:hidden;width:0em;">
-                  <input name="Key"      type="text" th:placeholder="${ param.Key    }" th:value="${ param.Key    }" style="visibility:hidden;width:0em;">
-                  <input name="sort"     type="text" th:placeholder="${ param.sort   }" th:value="${ param.sort   }" style="visibility:hidden;width:0em;">
+                  <input name="fromDate" type="date" class="input-hidden" th:if="${pagination}" th:value="${startDate}">
+                  <input name="toDate"   type="date" class="input-hidden" th:if="${pagination}" th:value="${endDate}">
+                  <input name="ID"       type="text" class="input-hidden" th:placeholder="${ param.ID     }" th:value="${ param.ID     }">
+                  <input name="Key"      type="text" class="input-hidden" th:placeholder="${ param.Key    }" th:value="${ param.Key    }">
+                  <input name="sort"     type="text" class="input-hidden" th:placeholder="${ param.sort   }" th:value="${ param.sort   }">
                 </form>
               </li>
-            <li class="nav-item toolbar-tools toolbar-dates">
+            <li class="nav-item toolbar-tools toolbar-dates top-4">
               <span class="toolbar-dates">
                 <form class="form-inline toolbar-dates-form" th:action="${ '#' }" method="get">
                   <section class="toolbar-group">
-                    <span class="bigbrand toolbar-caption-date-from" style="top:1em;" th:if="${pagination}">From...</span>
+                    <span class="bigbrand toolbar-caption-date-from top-1" th:if="${pagination}">From...</span>
                     <input name="fromDate" type="date" th:if="${pagination}" th:placeholder="${startDate}"
                            th:value="${startDate}"
                            class="form-control mr-sm-2 date-when-start-end toolbar-date-from"
@@ -290,7 +318,7 @@
                     >
                   </section>
                   <section class="toolbar-group">
-                    <span class="bigbrand toolbar-caption-date-to" style="top:1em;" th:if="${pagination}">...to...</span>
+                    <span class="bigbrand toolbar-caption-date-to top-1"  th:if="${pagination}">...to...</span>
                     <input name="toDate"   type="date" th:if="${pagination}" th:placeholder="${endDate}"
                            th:value="${endDate}"
                            class="form-control mr-sm-2 date-when-start-end toolbar-date-to"
@@ -313,9 +341,7 @@
 
         <div class="homepix-right-buttons">
           <div class="homepix-add-photo">
-            <a href="{% url 'picture_new'%}">
-              <i class="large material-icons">add_a_photo </i>
-            </a>
+            <i class="large material-icons">add_a_photo </i>
           </div>
 
           <div th:unless="${#authorization.expression('isAuthenticated')}"
@@ -335,21 +361,21 @@
           </div>
         </div>
 
-        <div th:if="${pagination != null && totalPages > 1}" style="position:absolute;left:2vw;top:4.5em;width:96vw;height:4em;">
+        <div th:if="${pagination != null && totalPages > 1}" class="pagination">
           <ul>
-            <div id="panenavigate" style="position:absolute;left:4.5em;top:1em;right:4em;">
-              <div id="pages" style="position:absolute;top:0px;left:4em;width:20em;">
+            <div id="panenavigate" class="navigate">
+              <div id="pages" class="pages">
                 <span th:if="${pageNumber != null}">
-                  <ul class="pagination" style="margin:0 0;">
+                  <ul class="pagination margin-0">
                     <li th:class="${pageNumber > 0 ? page : disabled}" >
-                      <a th:href="@{.?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;vertical-align: middle;">
+                      <a th:href="@{.?page=0&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" class="navigate middle">
                         <span class="material-symbols-outlined">
                           first_page
                         </span>
                       </a>
                     </li>
                     <li th:class="${pageNumber > 0 ? page : disabled}">
-                      <a th:href="@{.?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <a th:href="@{.?page=__${pageNumber - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" class="navigate middle">
                         <span class="material-symbols-outlined">
                           <span class="material-symbols-outlined">
                             navigate_before
@@ -358,14 +384,14 @@
                       </a>
                     </li>
                     <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                      <a th:href="@{.?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <a th:href="@{.?page=__${pageNumber + 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" class="navigate middle">
                         <span class="material-symbols-outlined">
                           navigate_next
                         </span>
                       </a>
                     </li>
                     <li th:class="${pageNumber < totalPages - 1 ? page : disabled}">
-                      <a th:href="@{.?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" style="font-size:2em;padding:0em;width:2em;text-align:center;">
+                      <a th:href="@{.?page=__${totalPages - 1}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}" class="navigate middle">
                         <span class="material-symbols-outlined">
                           last_page
                         </span>
@@ -374,10 +400,10 @@
                     <li>
                       <div class="scroll-container">
                         <div class="vertical-center">
-                          <div style="width:14em;height:100%;">
-                            <ul class="pagination" style="margin: 0 0;">
+                          <div class="scroll-14">
+                            <ul class="pagination margin-0">
                               <li id="page_no">
-                                <a style="background-color:var( --homepix-dark );color:var( --homepix-bg );"
+                                <a class="dark-bg"
                                    th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
                                    th:text="@{Go to page: __${pageNumber + 1}__}"
                                 >
@@ -391,7 +417,7 @@
                     <li>
                       <div class="scroll-container">
                         <div class="vertical-center">
-                          <div style="position:absolute;top:10px;width:72em;">
+                          <div class="range-holder">
                             <div class="range-slider">
                               <input
                                 class="custom-range form-control-slider"

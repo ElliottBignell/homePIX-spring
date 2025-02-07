@@ -52,7 +52,7 @@
 
       <figure th:each="folder : ${folders}" class="tt_base droppable techfont gallery justified" id="div_2__">
         <figcaption th:text="${folder.name}" class="desc">Unnamed</figcaption>
-        <a id="@{piclink___${folder.count}__}" th:href="@{/buckets/__${folder.name}__}">
+        <a id="@{piclink___${folder.count}__}" th:href="@{/buckets/__${folder.name}__/}">
           <section class="wrapper" id="file-number__">
             <span class="tt_subject">
               <img th:id="@{'picture-' + ${folder.id}}"

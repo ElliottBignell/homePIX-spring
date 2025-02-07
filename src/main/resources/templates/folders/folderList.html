@@ -85,7 +85,7 @@
               <tr th:each="folder : ${folders}">
                 <td></td>
                 <td>
-                  <a th:href="@{/buckets/__${folder.name}__}" th:text="${folder.displayName}" style="color:black;">Folder
+                  <a th:href="@{/buckets/__${folder.name}__/}" th:text="${folder.displayName}" style="color:black;">Folder
                     name</a>
                 </td>
                 <td></td>

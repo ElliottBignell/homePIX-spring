@@ -63,3 +63,9 @@ CREATE TABLE albumcontent (
  );
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_album_id FOREIGN KEY (album_id) REFERENCES albums (id);
 ALTER TABLE albumcontent ADD CONSTRAINT fk_album_entry_id FOREIGN KEY (entry_id) REFERENCES picture_file (id);
+
+CREATE TABLE years (
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    year INTEGER,
+    thumbnail_id INTEGER
+);

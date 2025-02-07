@@ -110,7 +110,7 @@ public class Calendar extends BaseEntity {
 
 			List<CalendarQuarter> quarters = new ArrayList<>();
 
-			Map<LocalDate, Long> objectsOnDates = this.pictureFiles.getCountByTakenOn();
+			Map<LocalDate, Long> objectsOnDates = this.pictureFiles.getCountByTakenOn(calendarYear.getYear());
 
 			int monthIndex = 0;
 

@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.Opt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumContent;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
@@ -306,6 +307,19 @@ public class PictureFileService {
 		return "redirect:/buckets/" + name;
 	}
 
+	public Page<PictureFile> getComplexSearchPageByLocation(String searchText,
+												  LocalDate first,
+												  LocalDateTime last,
+												  boolean isAdmin,
+												  String userRoles,
+												  Pageable pageable
+	) {
+		return this.pictureFileRepository.findFred(
+			searchText,
+			pageable
+		);
+	}
+
 	public Page<PictureFile> getComplexSearchPage(String searchText,
 										   LocalDate first,
 										   LocalDateTime last,
@@ -366,5 +380,24 @@ public class PictureFileService {
 				);
 			}
 		}
+	}
+
+	public void applyArguments(Map<String, Object> model, CollectionRequestDTO requestDTO)
+	{
+		model.put("startDate", requestDTO.getFromDate());
+		model.put("endDate", requestDTO.getToDate());
+		model.put("sort", requestDTO.getSort());
+		model.put("search", requestDTO.getSearch());
+
+		String arguments = "";
+
+		if (!requestDTO.getSearch().equals("")) {
+			arguments += "search=" + requestDTO.getSearch();
+		}
+		if (arguments.length() > 0) {
+			arguments = '?' + arguments + "#";
+		}
+
+		model.put("arguments", arguments);
 	}
 }

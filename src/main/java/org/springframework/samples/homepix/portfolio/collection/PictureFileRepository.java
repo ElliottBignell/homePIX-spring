@@ -135,8 +135,11 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);
 
-	@Query("SELECT p.taken_on, COUNT(p) FROM PictureFile p GROUP BY p.taken_on")
+	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p GROUP BY DATE(p.taken_on)")
 	List<Object[]> countByTakenOn();
+	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p WHERE YEAR(p.taken_on) = :year GROUP BY DATE(p.taken_on)")
+	List<Object[]> countByTakenOnForYear(@Param("year") int year);
+
 
 	@Query("SELECT p FROM PictureFile p WHERE p.filename LIKE %:searchText% AND p.taken_on BETWEEN :startDate AND :endDate")
 	Page<PictureFile> findByFilenameContainingAndTakenOnBetween(
@@ -178,7 +181,48 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	);
 
 	@Query(value = "SELECT pf.* FROM picture_file pf " +
-		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
+		"LEFT JOIN location l ON kr.location_id = l.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+		"AND LOWER(l.location) = LOWER(:searchText) " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
+			"LEFT JOIN location l ON kr.location_id = l.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " + // isValid check
+			"AND LOWER(l.location) = LOWER(:searchText)" +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) ",
+		nativeQuery = true)
+	Page<PictureFile> findByLocation(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
+		"LEFT JOIN location k ON kr.location_id = k.id " +
+		"WHERE pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND LOWER(k.name) = LOWER(:searchText) " +
+		"GROUP BY pf.id",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
+			"LEFT JOIN location k ON kr.location_id = k.id " +
+			"WHERE pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND LOWER(k.name) = LOWER(:searchText) " +
+			"GROUP BY pf.id",
+		nativeQuery = true)
+	Page<PictureFile> findFred(
+		@Param("searchText") String searchText,
+		Pageable pageable
+	);
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
 		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
 		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
 		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
@@ -187,7 +231,6 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
 		"GROUP BY pf.id",
 		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
-			"JOIN folders f ON pf.folder = f.id " +
 			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
 			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
 			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
@@ -466,15 +509,15 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		@Param("end") Long end
 	);
 
-	default Map<LocalDate, Long> getCountByTakenOn() {
+	default Map<LocalDate, Long> getCountByTakenOn(int year) {
 
-		List<Object[]> result = countByTakenOn();
+		List<Object[]> result = countByTakenOnForYear(year);
 
 		return result.stream()
 			.filter(entry -> entry[0] != null && entry[1] != null)
 			.collect(Collectors.toMap(
-				entry -> ((Date) entry[0]).toLocalDate(),
-				entry -> (Long) entry[1]
+				entry -> ((Date) entry[0]).toLocalDate(), // Correctly cast to LocalDateTime
+				entry -> ((Number) entry[1]).longValue() // Handle any potential type variations for the count
 			));
 	}
 

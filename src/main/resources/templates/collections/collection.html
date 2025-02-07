@@ -62,7 +62,7 @@
             <c th:each="pictureFile : ${collection}">
               <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=__${search}__&sort=__${sort}__/}"
+                   th:href="@{/collection/__${pictureFile.id}__/__${arguments}__}"
                 >
                   <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
                     <span class="tt_subject">
@@ -79,7 +79,7 @@
                   </section>
                 </a>
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__?page=__${pageNumber}__&fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=__${search}__&sort=__${sort}__/}"
+                   th:href="@{/collection/__${pictureFile.id}__/__${arguments}__}"
                 >
                   <figcaption class="tt_edit">
                     <form id="editprops">
@@ -93,22 +93,22 @@
                   </figcaption>
                 </a>
                 <div th:id="@{header-o-__${ pictureFile.id }__}" class="tt_left tt_text tt_header">
-                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/-1/__${arguments}__}">
                     <i class="material-icons tt_icon">
                       keyboard_arrow_left
                     </i>
                   </a>
-                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/__${arguments}__}">
                     <i class="material-icons tt_icon">
                       keyboard_arrow_right
                     </i>
                   </a>
-                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                  <a class="tt_icon_anchor" th:href="@{./move/__${ pictureFile.id }__/+1/__${arguments}__}">
                     <i class="material-icons tt_icon">
                       bedtime
                     </i>
                   </a>
-                  <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
+                  <a class="tt_icon_anchor" th:href="@{./delete/__${ pictureFile.id }__/__${arguments}__?fromDate=__${fromDate}__&toDate=__${toDate}__&ID=&Key=&search=&sort=/}">
                     <i class="material-icons tt_icon">
                       delete
                     </i>

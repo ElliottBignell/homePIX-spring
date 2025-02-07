@@ -81,6 +81,10 @@ public class Folder extends BaseEntity {
 		return result;
 	}
 
+	public String getLinkName() {
+		return name.replace('_', '-').toLowerCase();
+	}
+
 	public int getPicture_count() {
 		return this.picture_count;
 	}
