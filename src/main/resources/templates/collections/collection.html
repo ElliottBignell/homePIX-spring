@@ -60,15 +60,18 @@
             </h3>
 
             <c th:each="pictureFile : ${collection}">
-              <figure class="tt_base droppable draggable" th:id="@{figure-__${pictureFile.id}__}">
+              <figure class="tt_base droppable draggable fixed"
+                      th:id="@{figure-__${pictureFile.id}__}"
+                      th:width="${pictureFile.displayWidth}"
+                      th:height="${pictureFile.displayHeight}"
+              >
                 <a th:id="@{picture__${pictureFile.id}__}"
                    th:href="@{/collection/__${pictureFile.id}__/__${arguments}__}"
                 >
                   <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
                     <span class="tt_subject">
                       <img th:id="@{picture__${pictureFile.id}__}"
-                           class="lazyload imageinlist responsive-image-mobile"
-                           th:style="'--aspect-ratio: ' + (${pictureFile?.width ?: 3} / ${pictureFile?.height ?: 2}) + ';'"
+                           class="lazyload imageinlist collection"
                            th:width="${pictureFile.displayWidth}"
                            th:height="${pictureFile.displayHeight}"
                            th:src="${pictureFile.mediumFilename}"

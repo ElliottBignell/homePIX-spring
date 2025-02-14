@@ -130,6 +130,17 @@ public class SEOController extends PaginationController {
 		return new ResponseEntity<>(sitemapContent, httpHeaders, HttpStatus.OK);
 	}
 
+	@GetMapping(value = "/allPictures.txt", produces = MediaType.TEXT_PLAIN_VALUE)
+	public ResponseEntity<String> allPictures(Authentication authentication)
+	{
+		Iterable<PictureFile> pictures = this.pictureFiles.findAll();
+
+		return ResponseEntity.ok(StreamSupport.stream(pictures.spliterator(), false)
+            .map(picture -> picture.getFolder().getName() + "/" +  picture.getFilename())
+			.collect(Collectors.joining("\n"))
+		);
+	}
+
 	@GetMapping(value = "/folder{name}.xml", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<String> folder(@PathVariable("name") String name,
 										 Authentication authentication

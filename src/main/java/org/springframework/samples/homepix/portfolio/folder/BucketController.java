@@ -50,13 +50,16 @@ import org.springframework.web.servlet.ModelAndView;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,6 +69,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.awt.font.FontRenderContext;
 // Define a class-level logger
 
 /**
@@ -463,7 +467,7 @@ class BucketController extends PaginationController {
 			model,
 			"homePIX Photo-sharing Site",
 			"ImageGallery",
-			"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+			"homePIX photo-sharing site featuring landscape, travel, macro and nature photography from Switzerland, Italy, Germany, France and England by Elliott Bignell",
 			results,
 			"photo, sharing, portfolio, elliott, bignell"
 		);
@@ -661,10 +665,11 @@ class BucketController extends PaginationController {
 				toDate = supplier.get();
 			}
 
-			LocalDate startDate = LocalDate.parse(fromDate, formatter);
-			LocalDate endDate = LocalDate.parse(toDate, formatter);
-
 			if (search.equals(":!*")) {
+
+				LocalDate startDate = LocalDate.parse(fromDate, formatter);
+				LocalDate endDate = LocalDate.parse(toDate, formatter);
+
 				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, startDate, endDate);
 				pictureFiles = listFiles(
 					files,
@@ -915,6 +920,194 @@ class BucketController extends PaginationController {
 		return null;
 	}
 
+	@GetMapping(value = "web-images/{directory}/200px/{file}_200px.webp")
+	public ResponseEntity<byte[]> getSmallFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+		return getCompressedFileFromBucket(directory, file);
+	}
+
+	@GetMapping(value = "web-images/{directory}/{file}_200px.webp")
+	public ResponseEntity<byte[]> getCompressedFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+
+		String filepath = directory + '/' + file;
+		String compressedPath = directory + "/200px/" + file;
+
+		byte[] compressedImage = null;
+
+		try {
+			compressedImage = downloadFile("jpegs/" + compressedPath + ".webp");
+		}
+		catch (NoSuchKeyException ex) {
+			logger.info("Compressed file missing; creating " + directory + '/' + file);
+		}
+		catch (IOException ex) {
+			logger.info("Error accessing compressed file \" + directory + '/' + file");
+		}
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		if (null == compressedImage) {
+
+			compressedImage = hitBucket((client, arg1, arg2) -> {
+
+				try {
+					byte[] data = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
+					byte[] compressedBytes = convertToWebP200px(data, 0.1f);
+					return compressedBytes;
+				} catch (Exception e) {
+					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
+					return null;
+				}
+			}, directory, file);
+
+			if (null != compressedImage) {
+
+				// Save watermarked image to the S3-compatible bucket
+				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+					.bucket(bucketName)
+					.key("jpegs/" + compressedPath + ".webp")
+					.build();
+
+				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
+			}
+		}
+
+		if (compressedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(compressedImage);
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
+	@GetMapping(value = "web-images/{directory}/{file}.webp")
+	public ResponseEntity<byte[]> getWebPFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+
+		String filepath = directory + '/' + file;
+		String watermarkedPath = directory + "/watermark/" + file + ".webp";
+
+		byte[] watermarkedImage = null;
+
+		try {
+			watermarkedImage = downloadFile("webp/" + directory + "/watermark/" + file + ".webp");
+		} catch (NoSuchKeyException ex) {
+			logger.info("WebP watermarked file missing; creating " + directory + '/' + file);
+		} catch (IOException ex) {
+			logger.info("Error accessing WebP file " + directory + '/' + file);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		if (watermarkedImage == null) {
+			watermarkedImage = hitBucket((client, arg1, arg2) -> {
+				try {
+					byte[] jpegBytes = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
+					return applyWatermarkToWebP(jpegBytes, 0.1f); // Convert to WebP with watermark
+				} catch (Exception e) {
+					logger.severe("Error downloading file: " + directory + '/' + file + " " + e.getMessage());
+					return null;
+				}
+			}, directory, file);
+
+			if (watermarkedImage != null) {
+				// Save the WebP image to Exoscale S3
+				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+					.bucket(bucketName)
+					.key("webp/" + watermarkedPath)
+					.build();
+
+				s3Client.putObject(putObjectRequest,
+					software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
+			}
+		}
+
+		if (watermarkedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.valueOf("image/webp")).body(watermarkedImage);
+		} else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
+	public static byte[] applyWatermarkToWebP(byte[] originalImageBytes, float quality) throws Exception
+	{
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		String watermarkText = "Copyright ©Elliott Bignell 2025";
+		float targetWidthRatio = 0.5f; // Target width ratio of the image width
+		int imageWidth = originalImage.getWidth();
+
+		if (originalImage.getHeight() < originalImage.getWidth()) {
+			imageWidth = originalImage.getHeight();
+		}
+
+		int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+
+		// Create a mutable copy of the original image
+		BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = watermarkedImage.createGraphics();
+		g2d.drawImage(originalImage, 0, 0, null);
+
+		// Dynamically adjust font size
+		Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10); // Start with a base font size
+		g2d.setFont(font);
+		FontMetrics fontMetrics = g2d.getFontMetrics();
+		int textWidth = fontMetrics.stringWidth(watermarkText);
+		while (textWidth < targetWidth && font.getSize() < imageWidth * 2.0 / 3.0) { // Avoid excessively large font sizes
+			font = new Font(Font.SANS_SERIF, Font.BOLD, font.getSize() + 1);
+			g2d.setFont(font);
+			fontMetrics = g2d.getFontMetrics();
+			textWidth = fontMetrics.stringWidth(watermarkText);
+		}
+
+		// Create a mutable copy of the original image to add the watermark
+		// Add watermark with dynamically adjusted font
+		AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f); // Set transparency
+		g2d.setComposite(alphaChannel);
+		g2d.setColor(Color.WHITE); // Watermark color
+		g2d.setFont(font); // Set the dynamically adjusted font
+
+		// Calculate the position of the watermark
+		fontMetrics = g2d.getFontMetrics(font);
+		Rectangle2D rect = fontMetrics.getStringBounds(watermarkText, g2d);
+		int centerX = (int) ((originalImage.getWidth() - (int) rect.getWidth()) * 2.0 / 3.0);
+		int centerY = (int) (originalImage.getHeight() * 2.0 / 3.0);
+
+		g2d.drawString(watermarkText, centerX, centerY);
+		g2d.dispose();
+
+		// Save watermarked image as a temporary JPEG
+		File tempJpeg = File.createTempFile("watermarked", ".jpg");
+		ImageIO.write(watermarkedImage, "jpg", tempJpeg);
+
+		// Convert JPEG to WebP using Google's `cwebp`
+		File tempWebP = File.createTempFile("output", ".webp");
+		ProcessBuilder pb = new ProcessBuilder(
+			"cwebp", "-q", String.valueOf(quality * 10), tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
+		);
+		pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");
+		pb.redirectErrorStream(true);
+		Process process = pb.start();
+		process.waitFor();
+
+		// Read the WebP file back into a byte array
+		byte[] webpBytes = new byte[(int) tempWebP.length()];
+		FileInputStream fis = new FileInputStream(tempWebP);
+		fis.read(webpBytes);
+		fis.close();
+
+		// Clean up temp files
+		tempJpeg.delete();
+		tempWebP.delete();
+
+		return webpBytes;
+	}
+
+
 	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
 	@GetMapping(value = "web-images/{directory}/{file}")
 	public ResponseEntity<byte[]> getFileFromBucket(@PathVariable("directory") String directory,
@@ -970,11 +1163,126 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	@GetMapping(value = "web-images/{directory}/200px/{file}")
+	public static byte[] convertToWebP200px(byte[] originalImageBytes, float quality) throws Exception
+	{
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		// Calculate new width while maintaining aspect ratio
+		int newHeight = 200;
+		int originalWidth = originalImage.getWidth();
+		int originalHeight = originalImage.getHeight();
+		int newWidth = (int) ((double) originalWidth / originalHeight * newHeight);
+
+		// Create a resized image
+		BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+		g2d.dispose();
+
+		// Save resized image as a temporary JPEG
+		File tempJpeg = File.createTempFile("resized", ".jpg");
+		ImageIO.write(resizedImage, "jpg", tempJpeg);
+
+		// Convert JPEG to WebP using Google's `cwebp`
+		File tempWebP = File.createTempFile("output", ".webp");
+		ProcessBuilder pb = new ProcessBuilder(
+			"cwebp", "-q", String.valueOf(quality * 100),
+			"-resize", String.valueOf(newWidth), "200", // Ensure exact 200px height
+			tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
+		);
+		pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");
+		pb.redirectErrorStream(true);
+		Process process = pb.start();
+		process.waitFor();
+
+		// Read the WebP file back into a byte array
+		byte[] webpBytes = new byte[(int) tempWebP.length()];
+		FileInputStream fis = new FileInputStream(tempWebP);
+		fis.read(webpBytes);
+		fis.close();
+
+		// Clean up temp files
+		tempJpeg.delete();
+		tempWebP.delete();
+
+		return webpBytes;
+	}
+
+	public static byte[] convertToWebP(byte[] originalImageBytes, float quality) throws Exception
+	{
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		float targetWidthRatio = 0.5f; // Target width ratio of the image width
+		int imageWidth = originalImage.getWidth();
+
+		if (originalImage.getHeight() < originalImage.getWidth()) {
+			imageWidth = originalImage.getHeight();
+		}
+
+		int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+
+		// Create a mutable copy of the original image
+		BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = watermarkedImage.createGraphics();
+		g2d.drawImage(originalImage, 0, 0, null);
+
+		// Save watermarked image as a temporary JPEG
+		File tempJpeg = File.createTempFile("watermarked", ".jpg");
+		ImageIO.write(watermarkedImage, "jpg", tempJpeg);
+
+		// Convert JPEG to WebP using Google's `cwebp`
+		File tempWebP = File.createTempFile("output", ".webp");
+		ProcessBuilder pb = new ProcessBuilder(
+			"cwebp", "-q", String.valueOf(quality * 10), tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
+		);
+		pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");
+		pb.redirectErrorStream(true);
+		Process process = pb.start();
+		process.waitFor();
+
+		// Read the WebP file back into a byte array
+		byte[] webpBytes = new byte[(int) tempWebP.length()];
+		FileInputStream fis = new FileInputStream(tempWebP);
+		fis.read(webpBytes);
+		fis.close();
+
+		// Clean up temp files
+		tempJpeg.delete();
+		tempWebP.delete();
+
+		return webpBytes;
+	}
+
+	public static BufferedImage resizeImage(BufferedImage originalImage, int maxWidth, int maxHeight)
+	{
+		int width = originalImage.getWidth();
+		int height = originalImage.getHeight();
+
+		// Maintain aspect ratio
+		float scale = Math.min((float) maxWidth / width, (float) maxHeight / height);
+		int newWidth = (int) (width * scale);
+		int newHeight = (int) (height * scale);
+
+		BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+		g2d.dispose();
+
+		return resizedImage;
+	}
+
+	@GetMapping(value = "web-images/{directory}/200px/{file}_200px.jpg")
 	public ResponseEntity<byte[]> getMediumFileFromBucket(@PathVariable("directory") String directory,
 			@PathVariable("file") String file) {
 
-		String filepath = directory + "/200px/" + file;
+		String filename = file + "_200px.jpg";
+		String filepath = directory + "/200px/" + filename;
 
 		// Try to serve from cache first
 		byte[] cachedImage = image200pxCacheMap.get(filepath);
@@ -993,7 +1301,7 @@ class BucketController extends PaginationController {
 				logger.log(Level.SEVERE, "Error downloading file: " + e.getMessage(), e);
 				return null;
 			}
-		}, directory, file);
+		}, directory, filename);
 
 		if (watermarkedImage != null) {
 
@@ -1003,6 +1311,85 @@ class BucketController extends PaginationController {
 		else {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
+	}
+
+	public static byte[] compressJpegImage(byte[] originalImageBytes, float compressionQuality) throws IOException
+	{
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		// Create a graphics instance to calculate text width
+		float targetWidthRatio = 0.5f; // Target width ratio of the image width
+		int imageWidth = originalImage.getWidth();
+		if (originalImage.getHeight() < originalImage.getWidth()) {
+			imageWidth = originalImage.getHeight();
+		}
+		int targetWidth = (int) (imageWidth * targetWidthRatio); // Target text width
+
+		// Create a mutable copy of the original image
+		BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = watermarkedImage.createGraphics();
+		g2d.drawImage(originalImage, 0, 0, null);
+		g2d.dispose(); // Always dispose Graphics2D object
+
+		// Convert BufferedImage to JPEG with specified compression quality
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+		ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+		jpgWriter.setOutput(ios);
+
+		ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+		if (jpgWriteParam.canWriteCompressed()) {
+			jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			jpgWriteParam.setCompressionQuality(compressionQuality); // Set compression level
+		}
+
+		jpgWriter.write(null, new javax.imageio.IIOImage(watermarkedImage, null, null), jpgWriteParam);
+		ios.close();
+		jpgWriter.dispose();
+
+		return baos.toByteArray();
+	}
+
+	public byte[] applyCompression(byte[] originalImageBytes) throws IOException {
+
+		try {
+
+			byte[] compressedBytes = compressJpegImage(originalImageBytes, 0.2f);
+
+			// Convert byte array to BufferedImage
+			ByteArrayInputStream in = new ByteArrayInputStream(compressedBytes);
+			BufferedImage originalImage = ImageIO.read(in);
+
+			// Create a graphics instance to calculate text width
+			Graphics2D g2d = originalImage.createGraphics();
+
+			// Create a mutable copy of the original image to add the watermark
+			BufferedImage watermarkedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+			g2d = (Graphics2D) watermarkedImage.getGraphics();
+			g2d.drawImage(originalImage, 0, 0, null);
+
+			// Convert the watermarked BufferedImage back to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(watermarkedImage, "jpg", baos);
+			baos.flush();
+			byte[] imageInByte = baos.toByteArray();
+			baos.close();
+
+			return imageInByte;
+		}
+		catch (OutOfMemoryError oome) {
+
+			logger.log(Level.SEVERE, "An error occurred: " + oome.getMessage(), oome);
+			logger.severe("Clearing image chaches");
+			image200pxCacheMap.clear();
+		}
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		return null;
 	}
 
 	public byte[] applyWatermark(byte[] originalImageBytes) throws IOException {

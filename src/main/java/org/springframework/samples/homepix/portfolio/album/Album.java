@@ -58,6 +58,9 @@ public class Album {
 	@Column(name = "thumbnail_id")
 	private int thumbnail_id;
 
+	@Column(name = "description")
+	private String description;
+
 	private PictureFile thumbnail;
 
 	protected void setPictureFilesInternal(List<PictureFile> pictureFiles) {

@@ -4,7 +4,7 @@
 <head>
 
   <th:block th:with="
-      baseTitle = 'homePIX by Elliott Bignell',
+      baseTitle = 'homePIX stock photo resoures by Elliott Bignell',
       finalTitle = ${
           (title != null) ? title :
           (picture != null && picture.title != null) ? picture.title + (location != null ? ' in ' + location : ''):
@@ -21,7 +21,7 @@
   ">
 
   <th:block th:with="
-      baseDescription = 'Stock photo server written by Elliott Bignell.',
+      baseDescription = 'Stock photo resources by Elliott Bignell.',
       firstDescription = ${
           (picture != null && picture.title != null) ? 'Photo of ' + picture.title : baseDescription
       },
@@ -60,7 +60,7 @@
     <link rel="stylesheet" th:href="@{/resources/css/custom.css}" />
     <link rel="stylesheet" th:href="@{/resources/css/blog.css}" />
 
-    <meta name="description" th:content="${aggregateDescription}">
+    <meta name="title" th:content="${aggregateDescription}">
     <meta name="description" th:content="${description}">
 
     <!-- Medium-Style Editor -->
@@ -122,11 +122,62 @@
 
       gtag('config', 'G-XX8GMM0YHB');
   </script>
+    <script>
+      let clsValue = 0;
+
+      new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+            console.log('CLS updated:', clsValue);
+          }
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+
+    </script>
     <link th:if="${canonical != null and !#strings.isEmpty(canonical)}" rel="canonical" th:href="${canonical}" />
 </head>
 
 <body>
 
+<th:block th:with="
+      baseTitle = 'homePIX stock photo resoures by Elliott Bignell',
+      finalTitle = ${
+          (title != null) ? title :
+          (picture != null && picture.title != null) ? picture.title + (location != null ? ' in ' + location : ''):
+          (album != null && album.name != null) ? album.name :
+          (folder != null && folder.name != null) ? folder.name : baseTitle
+      },
+      subtitle = ${
+          (title == null && picture != null && picture.title != null) ?
+          ((album != null && album.name != null) ? ' in album ' + album.name : (folder != null && folder.name != null) ? ' in folder ' + folder.name  : '') : ''
+      },
+      aggregateTitle = ${
+          (finalTitle + subtitle) == baseTitle ? baseTitle : finalTitle + subtitle + ' | ' + baseTitle
+      }
+  ">
+
+  <th:block th:with="
+      baseDescription = 'Stock photo resources by Elliott Bignell.',
+      firstDescription = ${
+          (picture != null && picture.title != null) ? 'Photo of ' + picture.title : baseDescription
+      },
+      descriptionTakenOn = ${
+          (picture != null && picture.taken_on != null) ? ' taken on ' + #temporals.format(picture.taken_on, 'dd MMMM yyyy') : ''
+      },
+      descriptionWhere = ${
+          (picture != null && location != null) ? ' at ' + location : ''
+      },
+      descriptionCamera = ${
+          (picture != null && picture.cameraModel != null) ? ' using a ' + picture.cameraModel : ''
+      },
+      descriptionExposure = ${
+          (picture != null && picture.exposureTime != null && picture.fNumber != null) ? ' at ' + picture.exposureTime + 'sec and f/' + picture.fNumber : ''
+      },
+      aggregateDescription = ${
+          firstDescription + descriptionTakenOn + descriptionWhere + descriptionCamera + descriptionExposure
+      }
+  ">
 <form>
   <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
 </form>
@@ -171,9 +222,11 @@
                 <table>
                   <tr th:each="chunk : ${T(org.springframework.samples.homepix.portfolio.util.ChunkUtil).chunkList(folders, 4)}">
                     <td th:each="folder : ${chunk}">
-                      <a th:href="@{/buckets/__${folder.linkName}__/}" class="bigmenu" th:text="${folder.displayName}">
-                        Folders
-                      </a>
+                      <strong>
+                        <a th:href="@{/buckets/__${folder.linkName}__/}" class="bigmenu" th:text="${folder.displayName}">
+                          Folders
+                        </a>
+                      </strong>
                     </td>
                   </tr>
                 </table>
@@ -188,7 +241,11 @@
                 </a>
                 <ul class="drop-down-menu">
                   <li th:each="album : ${albums}">
-                    <a th:href="@{/albums/__${album.id}__}" class="bigmenu" th:text="${album.name}">Albums</a>
+                    <strong>
+                      <a th:href="@{/albums/__${album.id}__}" class="bigmenu" th:text="${album.name}">
+                        Albums
+                      </a>
+                    </strong>
                   </li>
                 </ul>
               </li>
@@ -342,6 +399,33 @@
         <div class="homepix-right-buttons">
           <div class="homepix-add-photo">
             <i class="large material-icons">add_a_photo </i>
+          </div>
+
+          <div class="homepix-media">
+            <a href="https://api.whatsapp.com/send?text=https://www.homepix.ch/" target="_blank">
+              <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 175.216 175.552">
+                <defs>
+                  <linearGradient id="b" x1="85.915" x2="86.535" y1="32.567" y2="137.092" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#57d163"/><stop offset="1" stop-color="#23b33a"/>
+                  </linearGradient><filter id="a" width="1.115" height="1.114" x="-.057" y="-.057" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3.531"/></filter></defs><path fill="#b3b3b3" d="m54.532 138.45 2.235 1.324c9.387 5.571 20.15 8.518 31.126 8.523h.023c33.707 0 61.139-27.426 61.153-61.135.006-16.335-6.349-31.696-17.895-43.251A60.75 60.75 0 0 0 87.94 25.983c-33.733 0-61.166 27.423-61.178 61.13a60.98 60.98 0 0 0 9.349 32.535l1.455 2.312-6.179 22.558zm-40.811 23.544L24.16 123.88c-6.438-11.154-9.825-23.808-9.821-36.772.017-40.556 33.021-73.55 73.578-73.55 19.681.01 38.154 7.669 52.047 21.572s21.537 32.383 21.53 52.037c-.018 40.553-33.027 73.553-73.578 73.553h-.032c-12.313-.005-24.412-3.094-35.159-8.954zm0 0" filter="url(#a)"/><path fill="#fff" d="m12.966 161.238 10.439-38.114a73.42 73.42 0 0 1-9.821-36.772c.017-40.556 33.021-73.55 73.578-73.55 19.681.01 38.154 7.669 52.047 21.572s21.537 32.383 21.53 52.037c-.018 40.553-33.027 73.553-73.578 73.553h-.032c-12.313-.005-24.412-3.094-35.159-8.954z"/><path fill="url(#linearGradient1780)" d="M87.184 25.227c-33.733 0-61.166 27.423-61.178 61.13a60.98 60.98 0 0 0 9.349 32.535l1.455 2.312-6.179 22.559 23.146-6.069 2.235 1.324c9.387 5.571 20.15 8.518 31.126 8.524h.023c33.707 0 61.14-27.426 61.153-61.135a60.75 60.75 0 0 0-17.895-43.251 60.75 60.75 0 0 0-43.235-17.929z"/><path fill="url(#b)" d="M87.184 25.227c-33.733 0-61.166 27.423-61.178 61.13a60.98 60.98 0 0 0 9.349 32.535l1.455 2.313-6.179 22.558 23.146-6.069 2.235 1.324c9.387 5.571 20.15 8.517 31.126 8.523h.023c33.707 0 61.14-27.426 61.153-61.135a60.75 60.75 0 0 0-17.895-43.251 60.75 60.75 0 0 0-43.235-17.928z"/><path fill="#fff" fill-rule="evenodd" d="M68.772 55.603c-1.378-3.061-2.828-3.123-4.137-3.176l-3.524-.043c-1.226 0-3.218.46-4.902 2.3s-6.435 6.287-6.435 15.332 6.588 17.785 7.506 19.013 12.718 20.381 31.405 27.75c15.529 6.124 18.689 4.906 22.061 4.6s10.877-4.447 12.408-8.74 1.532-7.971 1.073-8.74-1.685-1.226-3.525-2.146-10.877-5.367-12.562-5.981-2.91-.919-4.137.921-4.746 5.979-5.819 7.206-2.144 1.381-3.984.462-7.76-2.861-14.784-9.124c-5.465-4.873-9.154-10.891-10.228-12.73s-.114-2.835.808-3.751c.825-.824 1.838-2.147 2.759-3.22s1.224-1.84 1.836-3.065.307-2.301-.153-3.22-4.032-10.011-5.666-13.647"/>
+              </svg>
+            </a>
+            <a th:href="@{https://www.facebook.com/v5.0/dialog/share/?text=__${aggregateDescription}__&url=http://www.homepix.ch/}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on facebook">
+              <svg width="32" height="32" fill="none" class="bo">
+                <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#fff">
+                </path>
+                <path d="M23.2 5H5.8a.8.8 0 0 0-.8.8V23.2c0 .44.35.8.8.8h9.3v-7.13h-2.38V13.9h2.38v-2.38c0-2.45 1.55-3.66 3.74-3.66 1.05 0 1.95.08 2.2.11v2.57h-1.5c-1.2 0-1.48.57-1.48 1.4v1.96h2.97l-.6 2.97h-2.37l.05 7.12h5.1a.8.8 0 0 0 .79-.8V5.8a.8.8 0 0 0-.8-.79" fill="#47a">
+                </path>
+              </svg>
+            </a>
+            <a th:href="@{https://www.linkedin.com/sharing/share-offsite/?url=https://www.homepix.ch/&text=__${aggregateDescription}__#}" target="_blank" rel="noreferrer noopener" aria-label="Share this image on linkedin">
+              <svg width="32" height="32" fill="none" class="bo">
+                <path d="M5 6.36C5 5.61 5.63 5 6.4 5h16.2c.77 0 1.4.61 1.4 1.36v16.28c0 .75-.63 1.36-1.4 1.36H6.4c-.77 0-1.4-.6-1.4-1.36V6.36z" fill="#07c">
+                </path>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.76 20.9v-8.57H7.89v8.58h2.87zm-1.44-9.75c1 0 1.63-.65 1.63-1.48-.02-.84-.62-1.48-1.6-1.48-.99 0-1.63.64-1.63 1.48 0 .83.62 1.48 1.59 1.48h.01zM12.35 20.9h2.87v-4.79c0-.25.02-.5.1-.7.2-.5.67-1.04 1.46-1.04 1.04 0 1.46.8 1.46 1.95v4.59h2.87v-4.92c0-2.64-1.42-3.87-3.3-3.87-1.55 0-2.23.86-2.61 1.45h.02v-1.24h-2.87c.04.8 0 8.58 0 8.58z" fill="#fff">
+                </path>
+              </svg>
+            </a>
           </div>
 
           <div th:unless="${#authorization.expression('isAuthenticated')}"

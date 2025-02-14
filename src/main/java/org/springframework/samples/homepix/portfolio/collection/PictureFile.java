@@ -152,11 +152,59 @@ public class PictureFile extends BaseEntity {
 		return f.getName();
 	}
 
-	public String getMediumFilename() {
+	public String getCompressedFilename() {
+
+		String filename = getLargeFilename()
+			.replace(".jpg", "_200px.webp");
+		return filename;
+	}
+
+	/*
+	public String _getCompressedFilename() {
 
 		try {
 
 			String[] parts = this.filename.split("/");
+			String filename = parts[parts.length - 1];
+			String[] bodyAndExtension = filename.split("[\\.]");
+
+			int length = bodyAndExtension.length;
+
+			if (length > 1) {
+
+				bodyAndExtension[length - 2] = bodyAndExtension[length - 2] + "_max";
+
+				filename = String.join(".", bodyAndExtension);
+
+				if (null != this.folder) {
+					return "/web-images/" + this.folder.getName() + "/200px/" + filename;
+				}
+				else {
+
+					int slashIndex = this.filename.indexOf('/', 1);
+
+					if (slashIndex > 1) {
+
+						String folderName = this.filename.substring(1, slashIndex);
+
+						return "/web-images/" + folderName + "/200px/" + filename;
+					}
+				}
+			}
+		}
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		return this.filename;
+	}
+		*/
+
+	public String getMediumFilename() {
+
+		try {
+
+			String[] parts = this.filename.replace("jpg", "webp").split("/");
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 
@@ -202,7 +250,7 @@ public class PictureFile extends BaseEntity {
 			//filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
 
 			String result = "/web-images/" + this.folder.getName() + "/" + filename;
-			return result;
+			return result.replace("jpg", "webp");
 		}
 		catch (Exception e) {
 			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);

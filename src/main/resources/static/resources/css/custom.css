@@ -506,9 +506,9 @@ pre {
   position:relative;
   width: 100%;
   top:4.5em;
+  padding-right: 0px;
+  padding-left: 0px;
   height: calc(100vh - 9.5em)
-  padding-right: 15px;
-  padding-left: 15px;
   margin-right: auto;
   margin-left: auto;
 }
@@ -518,8 +518,8 @@ pre {
           width: 100%;
           top:4em;
           height: calc(100vh - 9.5em)
-          padding-right: 15px;
-          padding-left: 15px;
+          padding-right: 0px;
+          padding-left: 0px;
           margin-right: auto;
           margin-left: auto;
           top:8.5vw;
@@ -5001,7 +5001,11 @@ a.close.disabled {
   color: #212529; }
 
 .carousel {
-  position: relative; }
+  position: absolute;
+  left: 0px;
+  width: 100vw;
+  height: 88vh;
+}
 
 .carousel.pointer-event {
   touch-action: pan-y; }
@@ -8833,8 +8837,11 @@ table {
     left:0em;
     width:100%;
     height:88vh;
-     object-fit:contain !important;
-     object-position:center !important;
+    min-height: 88vh
+    background-color: #f3f3f3;
+    overflow: hidden;
+    object-fit:contain !important;
+    object-position:center !important;
 }
 
 .homepix-container {
@@ -8847,9 +8854,17 @@ table {
 
 .homepix-right-buttons {
     position:absolute;
-    left:calc(100% - 8em);
+    left:calc(100% - 18em);
     top:1em;
-    width:4em;
+    width:14em;
+    height:4em;
+}
+
+.homepix-media {
+    position:relative;
+    left:calc(100% - 21em);
+    top:0em;
+    width:14em;
     height:4em;
 }
 
@@ -8872,7 +8887,7 @@ table {
 .homePIX-all {
     position:absolute;
     left:0px;
-    top:0em;
+    top:6em;
     width:100%;
     height:calc(100vh - 4em);"
 }
@@ -8900,7 +8915,7 @@ table {
     .homePIX-all {
         position:absolute;
         left:0px;
-        top:0em;
+        top:6em;
         width:100vw;
         height:calc(100vh - 4em);"
     }
@@ -8914,7 +8929,7 @@ table {
     }
 
     .homepix-right-buttons {
-        left:calc(100% - 5em);
+        left:calc(100% - 15em);
     }
 }
 
@@ -9050,7 +9065,7 @@ div.desc {
 
 .album-main {
     position:relative;
-    top:1em;
+    top:6em;
 }
 
 .organise-left {
@@ -9088,7 +9103,7 @@ div.desc {
 
   .album-main {
       position:relative;
-      top:3em;"
+      top:6em;"
   }
 }
 

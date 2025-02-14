@@ -19,6 +19,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.homepix.model.BaseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -61,6 +62,10 @@ public class Folder extends BaseEntity {
 
 	@Column(name = "thumbnail_id")
 	private int thumbnail_id;
+
+	@Getter
+	@Column(name = "description")
+	private String description;
 
 	public String getName() {
 		return this.name;

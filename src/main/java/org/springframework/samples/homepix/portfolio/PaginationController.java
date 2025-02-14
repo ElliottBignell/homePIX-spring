@@ -1325,7 +1325,7 @@ public abstract class PaginationController implements AutoCloseable {
 		model.put("structuredData", structuredData);
 
 		model.put("pageKeywords", keywords);
-		model.put("description", pageDescription);
+		model.put("description", description);
 
 		pictureFileService.applyArguments(model, requestDTO);
 	}

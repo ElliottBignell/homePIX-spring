@@ -26,8 +26,11 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileServi
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -131,7 +135,7 @@ class WelcomeController extends PaginationController {
 					model,
 					"homePIX Photo-sharing Site",
 					"ImageGallery",
-					"homePIX photo-sharing site featuring landscape, travel, macro and nature photography by Elliott Bignell",
+					"homePIX photo-sharing site featuring landscape, travel, macro and nature photography from Switzerland, Italy, Germany, France and England by Elliott Bignell",
 					slides,
 					"photo, sharing, portfolio, elliott, bignell"
 			);
@@ -144,7 +148,6 @@ class WelcomeController extends PaginationController {
 			else {
 				model.put("fullUrl", "collection/" + results.iterator().next().getThumbnail_id());
 			}
-			model.put("picture", pictureFiles.findById(58123).get());
 		}
 
 		pictureFileService.applyArguments(model, requestDTO);
@@ -156,6 +159,31 @@ class WelcomeController extends PaginationController {
 		);
 		model.put("canonical", "https://www.homepix.ch/");
 
+		Iterable<Album> albumIterable = this.albums.findAll();
+		Iterable<Folder> folderIterable = this.folders.findAll();
+		Iterable<LocationRelationship> locationIterable = this.locationRelationships.findAll();
+
+		List<String> names = Stream.of(
+				StreamSupport.stream(albumIterable.spliterator(), false).map(Album::getName),
+				StreamSupport.stream(folderIterable.spliterator(), false).map(Folder::getName),
+				StreamSupport.stream(locationIterable.spliterator(), false)
+					.map(LocationRelationship::getLocation) // Get Location object
+					.map(Location::getName) // Get name from Location
+			).flatMap(s -> s) // Flatten into a single stream
+			.distinct()
+			.collect(Collectors.toList());
+
+		names.add("homePIX");
+		names.add("Stock");
+		names.add("Licenseable");
+		names.add("Photography");
+		names.add("Nature");
+		names.add("Landscape");
+		names.add("Urban");
+		names.add("Macro");
+		names.add("Calendar");
+
+		model.put("keywords", names);
 		// 1 album found
 		return "welcome";
 	}
@@ -168,5 +196,9 @@ class WelcomeController extends PaginationController {
 	@GetMapping("/logout")
 	public String logout(Album album, BindingResult result, Map<String, Object> model) {
 		return "redirect:/welcome";
+	}
+
+	protected final void loadThumbnailsAndKeywords(Map<Integer, PictureFile> thumbnailsMap, Map<String, Object> model) {
+		super.loadThumbnailsAndKeywords(thumbnailsMap, model);
 	}
 }

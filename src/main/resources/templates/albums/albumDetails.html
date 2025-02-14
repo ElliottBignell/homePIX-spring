@@ -20,40 +20,6 @@
   </head>
   <body>
 
-  <style>
-    /* For larger screens (default behavior) */
-    .responsive-image-mobile {
-        width: calc(var(--base-size) * var(--aspect-ratio));
-        height: var(--base-size);
-    }
-
-    /* For mobile screens (less than 600px) */
-    @media (max-width: 600px) {
-        .responsive-image-mobile {
-            width: calc(85vw - 20px); /* Example: full viewport width minus padding */
-            height: calc((85vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
-        }
-    }
-
-    img.gallery_picture {
-      position:relative;
-      top:100%;
-      eft:0%;
-      z-index:0;
-      height:15vh;
-    }
-
-    @media (max-width: 600px) {
-      img.gallery_picture {
-        position:relative;
-        top:100%;
-        eft:0%;
-        z-index:0;
-        height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
-      }
-    }
-  </style>
-
   <script>
     function handleDeleteClick(event, album, picture) {
 
@@ -101,7 +67,7 @@
   <div class="album-main">
 
     <div class="centerstage">
-      <div class="techfont" id="div_centrestage" style="min-height:60px;">
+      <div class="techfont stage" id="div_centrestage">
         <div class="row">
           <div class="col-md-6">
             <h1 th:text="${album.name + ' - ' + (collection?.size() ?: 0) + ' Photos'}"></h1>
@@ -115,10 +81,12 @@
               <input type="submit" value="Delete Album">
             </form>
 
-            <div style="overflow-y: auto; max-height: 75vh;">
+            <div class="figure">
 
               <figure th:each="entry : ${collection}"
-                      th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                      th:class="${entry.getIsScary() ? 'tt_base droppable draggable scary fixed' : 'tt_base droppable draggable fixed'}"
+                      th:width="${entry.displayWidth}"
+                      th:height="${entry.displayHeight}"
                       th:id="@{figure-__${entry.id}__}">
                 <a th:id="@{picture__${entry.id}__}"
                    th:href="@{/albums/__${id}__/item/__${entry.id}__/__${arguments}__}"
@@ -126,8 +94,7 @@
                   <section class="wrapper" th:id=" @{file-number_${entry.id}}">
                     <span class="tt_subject">
                       <img th:id="@{picture__${entry.id}__}"
-                           class="lazyload imageinlist responsive-image-mobile"
-                           th:style="'--aspect-ratio: ' + (${entry?.width ?: 3} / ${entry?.height ?: 2}) + ';'"
+                           class="lazyload imageinlist album"
                            th:width="${entry.displayWidth}"
                            th:height="${entry.displayHeight}"
                            th:src="${entry.mediumFilename}"
@@ -145,18 +112,20 @@
                     <form id="editprops">
                       <fieldset>
                           <button type="button" class="tt_title imageresponsive_">
-                            <span style="text-align:left;" th:text="${entry.title}"></span>
+                            <span class="title" th:text="${entry.title}"></span>
                           </button>
                       </fieldset>
                     </form>
                   </figcaption>
                 </a>
                 <div th:id="@{header_o__${album.id}__}" class="tt_left tt_text tt_header">
+                  <!--
                   <a class="tt_icon tt_small_icon_anchor" th:href="@{./make_thumbnail/${request.GET.ID}/__${album.id}__/}" style="color:black;height:1em;">
                     <i class="material-icons tt_icon">
                       album
                     </i>
                   </a>
+                  -->
                   <a class="tt_icon tt_small_icon_anchor"
                      href="#"
                      th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
@@ -223,7 +192,7 @@
                       delete
                     </i>
                   </a>
-                  <figcaption style="position:absolute;left:5px;top:5px;right:150px;">
+                  <figcaption class="header">
                     <div th:id="@{header__${album.id}__}" class="tt_lefttextnooff" th:value="${album.id}">
                     </div>
                   </figcaption>

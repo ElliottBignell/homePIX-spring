@@ -5,18 +5,6 @@
 
 <body>
 
-  <style>
-    .scary {
-      visibility: hidden;
-    }
-    .show_button {
-      display: none;
-    }
-    .hide_button {
-      display: inline;
-    }
-  </style>
-
   <script th:inline="javascript">
     /*<![CDATA[*/
     function hidePicture(pictureId) {
@@ -75,41 +63,7 @@
     /*]]>*/
   </script>
 
-  <style>
-    /* For larger screens (default behavior) */
-    .responsive-image-mobile {
-        width: calc(var(--base-size) * var(--aspect-ratio));
-        height: var(--base-size);
-    }
-
-    /* For mobile screens (less than 600px) */
-    @media (max-width: 600px) {
-        .responsive-image-mobile {
-            width: calc(90vw - 20px); /* Example: full viewport width minus padding */
-            height: calc((90vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
-        }
-    }
-
-    img.gallery_picture {
-      position:relative;
-      top:100%;
-      eft:0%;
-      z-index:0;
-      height:15vh;
-    }
-
-    @media (max-width: 600px) {
-      img.gallery_picture {
-        position:relative;
-        top:100%;
-        eft:0%;
-        z-index:0;
-        height: calc((80vw - 20px) / var(--aspect-ratio)); /* Maintain aspect ratio */
-      }
-    }
-  </style>
-
-  <div style="position:relative;top:4em;">
+  <div style="position:relative;top:8em;">
     <div class="centerstage">
       <div class="techfont" id="div_centrestage" style="min-height:60px;">
         <div class="row">
@@ -135,7 +89,9 @@
           <div style="overflow-y: auto; max-height: 75vh;">
 
             <figure th:each="pictureFile,iterStat : ${collection}"
-                    th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable scary' : 'tt_base droppable draggable'}"
+                    th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable fixed scary' : 'tt_base droppable fixed draggable'}"
+                    th:width="${pictureFile.displayWidth}"
+                    th:height="${pictureFile.displayHeight}"
                     th:id="@{div__${pictureFile.id}__}"
             >
               <a th:id="@{picture__${pictureFile.id}__}"
@@ -144,8 +100,9 @@
                 <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
                   <span class="tt_subject">
                     <img th:id="@{picture__${pictureFile.id}__}"
-                         class="lazyload imageinlist responsive-image-mobile"
-                         th:style="'--aspect-ratio: ' + (${pictureFile?.width ?: 3} / ${pictureFile?.height ?: 2}) + ';'"
+                         class="lazyload imageinlist folder"
+                         th:width="${pictureFile.displayWidth}"
+                         th:height="${pictureFile.displayHeight}"
                          th:src="${pictureFile.mediumFilename}"
                          th:data-src="${pictureFile.mediumFilename}"
                          th:alt="${pictureFile.title + (keyword_lists[pictureFile.id] != '' ? ', ' + keyword_lists[pictureFile.id] : '')}"
