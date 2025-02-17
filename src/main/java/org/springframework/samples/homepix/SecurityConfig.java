@@ -109,7 +109,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/containers/**",
 					"/maps/**",
 					"/chart/**",
-					"/words"
+					"/words",
+					"/dist/**"
 				)
 				.permitAll()
 				.anyRequest().authenticated()

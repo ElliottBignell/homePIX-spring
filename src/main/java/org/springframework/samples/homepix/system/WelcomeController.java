@@ -17,7 +17,9 @@
 package org.springframework.samples.homepix.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.CanonicalRedirectFilter;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.ResourceLoaderService;
 import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -48,7 +51,14 @@ import java.util.stream.StreamSupport;
 @Controller
 class WelcomeController extends PaginationController {
 
+	@Autowired
 	private final AlbumContentRepository albumContents;
+
+	@Autowired
+	private final ResourceLoaderService resourceLoaderService;
+
+	@Autowired
+	private CanonicalRedirectFilter canonicalRedirectController;
 
 	@Autowired
 	private AlbumService albumService;
@@ -59,13 +69,14 @@ class WelcomeController extends PaginationController {
 	@Autowired
 	public WelcomeController(PictureFileRepository pictureFiles,
 							 AlbumRepository albums,
-							 FolderRepository folders,
 							 AlbumContentRepository albumContents,
+							 FolderRepository folders,
 							 KeywordRepository keyword,
 							 KeywordRelationshipsRepository keywordsRelationships,
-							 FolderService folderService
+							 FolderService folderService, ResourceLoaderService resourceLoaderService
 	) {
 		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		this.resourceLoaderService = resourceLoaderService;
 		this.albumContents = albumContents;
 	}
 
@@ -75,9 +86,16 @@ class WelcomeController extends PaginationController {
 						  Album album,
 						  BindingResult result,
 						  Map<String, Object> model
-	) {
+	) throws IOException {
 		final String format = "yyyy-MM-dd";
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+
+		String bundleJsContent = resourceLoaderService.readFile("/dist/bundle.js");
+		String stylesCssContent = resourceLoaderService.readFile("/dist/critical.css"); // Read CSS file
+		String stylesContent = resourceLoaderService.readFile("/dist/styles.css"); // Read CSS file
+
+		model.put("inlineJs", bundleJsContent);
+		model.put("inlineCss", stylesCssContent);
 
 		Supplier<String> today = () -> {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
