@@ -1,5 +1,5 @@
 <!doctype html>
-<html th:fragment="layout (template, menu)">
+<html lang="en-GB" th:fragment="layout (template, menu)">
 
 <head>
 
@@ -56,11 +56,7 @@
 
     <script th:utext="${inlineJs}"></script>
     <style th:utext="${inlineCriticalCss}"></style>
-    <link rel="stylesheet" href="/dist/styles.css">
-
-    <link rel="stylesheet" th:href="@{/fonts/material-icons.css}">
-    <link rel="stylesheet" href="/resources/fonts/material-symbols.css">
-    <link rel="stylesheet" href="/resources/fonts/montserrat.css">
+    <link rel="stylesheet" href="/dist/styles.css" media="print" onload="this.onload=null;this.removeAttribute('media');">
 
     <link rel="shortcut icon" href="/static/images/favicon.ico">
 
@@ -110,13 +106,13 @@
           }
         }
       }).observe({ type: 'layout-shift', buffered: true });
-o
     </script>
     <link th:if="${canonical != null and !#strings.isEmpty(canonical)}" rel="canonical" th:href="${canonical}" />
     <script th:utext="${inlineCriticalJs}"></script>
     <script defer src="/dist/bundle.js"></script>
 
-    <link rel="preload" as="image" href="web-images/BadRagaz/Cathedral.webp" type="image/webp">
+    <link th:if="${root != null}" rel="preload" as="image" href="web-images/BadRagaz/Cathedral.webp" type="image/webp">
+    <link th:if="${root != null}" rel="preload" as="image" href="web-images/BadRagaz/200px/Cathedral_200px.webp" type="image/webp">
 
 </head>
 
@@ -165,9 +161,6 @@ o
 </form>
 
 <div class="col-sm-12" id="panetop">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom techfont fixed-top no-radius">
 
