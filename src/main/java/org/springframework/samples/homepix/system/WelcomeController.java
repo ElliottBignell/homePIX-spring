@@ -17,6 +17,7 @@
 package org.springframework.samples.homepix.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.CanonicalRedirectFilter;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.ResourceLoaderService;
@@ -80,6 +81,7 @@ class WelcomeController extends PaginationController {
 		this.albumContents = albumContents;
 	}
 
+	@Cacheable("homePageCache")
 	@GetMapping("/")
 	public String welcome(@ModelAttribute CollectionRequestDTO requestDTO,
 						  RedirectAttributes redirectAttributes,
@@ -91,11 +93,12 @@ class WelcomeController extends PaginationController {
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
 		String bundleJsContent = resourceLoaderService.readFile("/dist/bundle.js");
-		String stylesCssContent = resourceLoaderService.readFile("/dist/critical.css"); // Read CSS file
+		String stylesCriticalContent = resourceLoaderService.readFile("/dist/critical.css"); // Read CSS file
 		String stylesContent = resourceLoaderService.readFile("/dist/styles.css"); // Read CSS file
 
 		model.put("inlineJs", bundleJsContent);
-		model.put("inlineCss", stylesCssContent);
+		model.put("inlineCss", stylesContent);
+		model.put("inlineCriticalCss", stylesCriticalContent);
 
 		Supplier<String> today = () -> {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
@@ -176,6 +179,7 @@ class WelcomeController extends PaginationController {
 			.collect(Collectors.toList())
 		);
 		model.put("canonical", "https://www.homepix.ch/");
+		model.put("root", "true");
 
 		Iterable<Album> albumIterable = this.albums.findAll();
 		Iterable<Folder> folderIterable = this.folders.findAll();
