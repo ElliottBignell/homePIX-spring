@@ -3,56 +3,65 @@
 <html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"th:replace="~{fragments/layout :: layout (~{::body},'home')}">
 
  <style>
-    .mySlideFrames
-    {
-        height:inherit;
-        margin-left: auto;
-        margin-right: auto;
-        display:block;
-        display: flex; // make us of Flexbox
-        object-fit:contain;
-        object-position:center center;
-        justify-content: center; // horizontally centers single line items
-        align-items: center; // does vertically center the desired content
-        text-align: center; // optional, but helps horizontally center text that breaks into multiple lines
-    }
-    .shadowed
-    {
-        height:30vw;
-        box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
-        -webkit-box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
-        -moz-box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
-    }
+  .mySlideFrames
+  {
+      height:inherit;
+      margin-left: auto;
+      margin-right: auto;
+      visibility:visible;
+      object-fit:contain;
+      object-position:center center;
+      justify-content: center; // horizontally centers single line items
+      align-items: center; // does vertically center the desired content
+      text-align: center; // optional, but helps horizontally center text that breaks into multiple lines
+  }
+  .shadowed
+  {
+      height:30vw;
+      box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
+      -webkit-box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
+      -moz-box-shadow: 20px 20px 15px 0 rgb(0, 0, 0, 0.75);
+  }
 
-    .carousel-inner > .item > img 
-    {
-      width: 90%;
-      margin: auto;
-    }
+  .carousel-inner > .item > img
+  {
+    width: 90%;
+    margin: auto;
+  }
 
-    ol.carousel-indicators {
-      position: absolute;
-      bottom: 0;
-      margin: 0;
-      left: 0;
-      right: 0;
-      width: auto;
-    }
+  ol.carousel-indicators {
+    position: absolute;
+    bottom: 0;
+    margin: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+  }
 
-    ol.carousel-indicators li,
-    ol.carousel-indicators li.active {
-      float: left;
-      width: 15%;
-      height: 5px;
-      margin: 5;
-      border-radius: 1;
-      border: 1;
-      background: transparent;
-    }
+  ol.carousel-indicators li,
+  ol.carousel-indicators li.active {
+    float: left;
+    width: 15%;
+    height: 5px;
+    margin: 5;
+    border-radius: 1;
+    border: 1;
+    background: transparent;
+  }
 
-    ol.carousel-indicators li.active {
-      background: white;
-    }
+  ol.carousel-indicators li.active {
+    background: white;
+  }
+
+  .homepix-main-picture-hidden {
+      visibility: hidden;
+      display: block;
+  }
+
+  .homepix-main-picture-visible {
+      visibility: visible;
+      display: block;
+  }
 
   </style>
   <body>
@@ -64,10 +73,8 @@
 
              <h1 class="h1-100">homePIX Welcome Slide-show</h1>
 
-             <figure th:each="picture : ${collection}"
+             <figure th:each="picture, iterStat : ${collection}"
                      class="carousel-inner mySlides text-centre fixed_main"
-                     width="100%"
-                     height="88vh"
                      role="listbox"
              >
 
@@ -75,8 +82,16 @@
                  <figcaption aria-hidden="true" th:text="${ picture.title }" class="h2-100">Title</figcaption>
                </div>
                <div class="carousel-item active homepix-main-picture">
-                 <img th:id="@{picture__${picture.id}__}"
-                      class="lazyload imageinlist imageresponsive homepix-main-picture"
+                 <img  th:if="${iterStat.first}"
+                       th:id="@{picture__${picture.id}__}"
+                       class="lazyload imageinlist imageresponsive homepix-main-picture homepix-main-picture-visible"
+                       th:src="${picture.mediumFilename}"
+                       th:data-src="${picture.largeFilename}"
+                       th:alt="${picture.title + (keyword_list[picture.id] != '' ? ', ' + keyword_list[picture.id] : '')}"
+                 >
+                 <img  th:if="${!iterStat.first}"
+                       th:id="@{picture__${picture.id}__}"
+                      class="lazyload imageinlist imageresponsive homepix-main-picture homepix-main-picture-hidden"
                       th:src="${picture.mediumFilename}"
                       th:data-src="${picture.largeFilename}"
                       th:alt="${picture.title + (keyword_list[picture.id] != '' ? ', ' + keyword_list[picture.id] : '')}"
@@ -126,41 +141,10 @@
 
         var slideIndex = 1;
 
-        /*
-        function theme( cols )
-        {
-            document.querySelector("html").style.setProperty(
-                '--homepix-dark',
-                cols[ 0 ]
-                );
-            document.querySelector("html").style.setProperty(
-                '--homepix-bg',
-                cols[ 1 ]
-                );
-            document.querySelector("html").style.setProperty(
-                '--homepix-br-lightest',
-                cols[ 2 ]
-                );
-            document.querySelector("html").style.setProperty(
-                '--homepix-bg-alarm',
-                cols[ 3 ]
-                );
+        var slides = document.getElementsByClassName("mySlides");
+        if (slides.length > 0) {
+            slides[0].classList.add("active"); // Ensure first slide is visible
         }
-
-        showDivs(slideIndex);
-
-        function showDivs(n) {
-          var i;
-          var x = document.getElementsByClassName("mySlides");
-          if (n > x.length) {slideIndex = 1}
-          if (n < 1) {slideIndex = x.length} ;
-          for (i = 0; i < x.length; i++) {
-            x[i].style.display = "none";
-          }
-          x[slideIndex-1].style.display = "block";
-        }
-        */
-
         carousel();
 
         function plusDivs(n) {
@@ -173,7 +157,7 @@
             var x = document.getElementsByClassName("mySlides");
 
             for (i = 0; i < x.length; i++) {
-                x[i].style.display = "none";
+                slides[i].classList.remove("active");
             }
 
             slideIndex++;
@@ -182,9 +166,10 @@
                 slideIndex = 1;
             }
 
-            x[ slideIndex - 1 ].style.display = "block";
+            // Show the correct slide
+            slides[slideIndex - 1].classList.add("active");
 
-            setTimeout(carousel, 4000); // Change image every 2 seconds
+            setTimeout(carousel, 4000); // Change image every 4 seconds
         }
 
     </script>
