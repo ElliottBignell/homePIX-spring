@@ -267,7 +267,7 @@ public class SEOController extends PaginationController {
 
 	List<String> getFolderTags() {
 
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folders.findAll().iterator(), 0), false)
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folderService.getSortedFolders().iterator(), 0), false)
 			.map(folder -> {
 				// Here you generate your XML tag string based on the album properties
 				// Adjust property names as necessary
@@ -283,7 +283,7 @@ public class SEOController extends PaginationController {
 
 	List<String> getFolderSiteTags() {
 
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folders.findAll().iterator(), 0), false)
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(folderService.getSortedFolders().iterator(), 0), false)
 			.map(folder -> {
 
 				String date = folder.getLastModifiedDate() != null ? folder.getLastModifiedDate().toString() : "2024-11-04";

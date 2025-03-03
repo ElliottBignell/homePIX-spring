@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio.locations;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -14,6 +15,9 @@ public class LocationService {
 
 	@Autowired
 	LocationHierarchyRepository locationHierarchyRepository;
+
+	@Autowired
+	LocationRelationshipsRepository locationRelationshipsRepository;
 
 	public List<Location> sortLocationsByHierarchy(List<Location> locationList) {
 
@@ -49,4 +53,10 @@ public class LocationService {
 		}
 		return depth;
 	}
+
+	@Cacheable("allLocations")
+	public Iterable<LocationRelationship> findAll() {
+		return this.locationRelationshipsRepository.findAll();
+	}
+
 }

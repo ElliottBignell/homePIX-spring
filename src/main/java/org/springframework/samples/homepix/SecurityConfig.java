@@ -75,6 +75,9 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.requestMatchers(
 				"/login",
 					"/",
+					"/error",
+					"/error-404",
+					"/error/**",
 					"/index.xml",
 					"/licence.html",
 					"/about/",
@@ -89,6 +92,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/fonts/**",
 					"/css/**",
 					"/js/**",
+					"/dist/**",
 					"/static/**",
 					"/register",
 					"/ads.txt",
@@ -110,29 +114,28 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/containers/**",
 					"/maps/**",
 					"/chart/**",
-					"/words",
-					"/dist/**"
+					"/words"
 				)
 				.permitAll()
 				.anyRequest().authenticated()
 			.and()
 				.formLogin()
-				.usernameParameter("username")
-				.passwordParameter("password")
-				.permitAll()
+					.usernameParameter("username")
+					.passwordParameter("password")
+					.permitAll()
 			.and()
 				.logout()
 				.permitAll()
 			.and()
 			.exceptionHandling()
-			.accessDeniedHandler(new AccessDeniedHandler() {
-				@Override
-				public void handle(HttpServletRequest request, HttpServletResponse response,
-								   AccessDeniedException accessDeniedException) throws IOException, ServletException {
-					// Customize the response for access denied exception
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied: You do not have permission to access this resource.");
-				}
-			})
+				// Handle 403 Forbidden errors
+				.accessDeniedHandler((request, response, accessDeniedException) -> {
+					response.sendRedirect("/error-404");
+				})
+				// Handle 404 Not Found errors by directing to the error page
+				.authenticationEntryPoint((request, response, authException) -> {
+					response.sendRedirect("/error-404"); // Redirect all errors to your custom 404 page
+				})
 			.and()
 			.csrf()
 				.disable(); // For simplicity; handle CSRF properly in a production environment
@@ -159,6 +162,6 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/images/**", "/js/**", "/webjars/**");
+		return (web) -> web.ignoring().requestMatchers("/images/**", "/js/**", "/webjars/**", "/dist/**", "/static/**");
 	}
 }

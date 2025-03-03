@@ -203,11 +203,8 @@ class AlbumController extends PaginationController {
 
 		model.put("title", "Gallery of photo albums");
 		model.put("selections", results);
-		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("albums", albumService.getSortedAlbums());
+		model.put("folders", folderService.getSortedFolders());
 
 		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
 			this.albums.findAll()

@@ -3,9 +3,12 @@
 <html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"th:replace="~{fragments/layout :: layout (~{::body},'error')}">
 
   <body>
-    <img src="../static/resources/images/pictureFiles.png" th:src="@{/resources/images/pictureFiles.png}"/>
-    <h2>Something happened...</h2>
-    <p th:text="${message}">Exception message</p>
+    <div class="error-page">
+      <h1>Something bad happened...</h1>
+      <p th:text="${message}">Exception message</p>
+      <img class="lazyload error-img" src="/web-images/Stuff/200px/dsc_185760_200px.webp" data-src="/web-images/Stuff/200px/dsc_185760_max.webp"/>
+      <h2>Have some chillies by way of compensation!</h2>
+    </div>
   </body>
 
 </html>

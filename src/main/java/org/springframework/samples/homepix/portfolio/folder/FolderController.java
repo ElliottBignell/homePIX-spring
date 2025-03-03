@@ -31,6 +31,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,7 +51,7 @@ import java.util.stream.StreamSupport;
  * @author Elliott Bignell
  */
 @Controller
-class FolderController extends PaginationController {
+public class FolderController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
@@ -71,6 +72,15 @@ class FolderController extends PaginationController {
 	@InitBinder
 	public void setAllowedFields(WebDataBinder dataBinder) {
 		dataBinder.setDisallowedFields("id");
+	}
+
+	public S3Client getS3Clent() {
+
+		if (null == s3Client){
+			initialiseS3Client();
+		}
+
+		return s3Client;
 	}
 
 	@Secured("ROLE_ADMIN")
@@ -207,7 +217,7 @@ class FolderController extends PaginationController {
 
 		model.put("collection", pictures);
 		model.put("baseLink", "/folders/" + folderName);
-		model.put("albums", this.albums.findAll());
+		model.put("albums", albumService.getSortedAlbums());
 
 		return "redirect:/folders/{name}";
 	}
@@ -265,7 +275,7 @@ class FolderController extends PaginationController {
 
 			model.put("collection", pictureFiles);
 			model.put("baseLink", "/folders/" + name);
-			model.put("albums", this.albums.findAll());
+			model.put("albums", albumService.getSortedAlbums());
 
 			Iterable<Album> albums = this.albums.findAll();
 
@@ -385,7 +395,7 @@ class FolderController extends PaginationController {
 
 		folderCache = null;
 		loadBuckets(folder, result, model);
-		folderCache = this.folders.findAll();
+		folderCache = this.folderService.getSortedFolders();
 
 		return folderCache;
 	}
@@ -393,12 +403,12 @@ class FolderController extends PaginationController {
 	//@GetMapping(name = "/folders")
 	Collection<Folder> findAllFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
-		folderCache = this.folders.findAll();
+		folderCache = this.folderService.getSortedFolders();
 
 		if (null == folderCache) {
 
 			loadBuckets(folder, result, model);
-			folderCache = this.folders.findAll();
+			folderCache = this.folderService.getSortedFolders();
 		}
 		return folderCache;
 	}

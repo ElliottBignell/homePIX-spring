@@ -126,7 +126,7 @@ public class Folder extends BaseEntity {
 			String dir = imagePath + this.name;
 
 			List<String> jpegNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
-					.filter(file -> file.getName().endsWith(".jpg")).map(File::getName).sorted()
+					.filter(file -> file.getName().endsWith(".webp")).map(File::getName).sorted()
 					.collect(Collectors.toList());
 
 			int index = 0;

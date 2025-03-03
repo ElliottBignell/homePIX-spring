@@ -89,6 +89,10 @@
 .sf-menu > li {
 	float: left;
 }
+.sf-menu li > ul,
+.sf-menu li > ul {
+	display: none;
+}
 .sf-menu li:hover > ul,
 .sf-menu li.sfHover > ul {
 	display: block;
@@ -311,7 +315,7 @@
 }
 .slicknav_menu {
     background:#4c4c4c;
-    padding:5px;
+
 }
 .slicknav_nav {
     color:#fff;

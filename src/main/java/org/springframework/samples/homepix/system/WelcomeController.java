@@ -34,6 +34,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.locations.LocationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,6 +69,9 @@ class WelcomeController extends PaginationController {
 	private PictureFileService pictureFileService;
 
 	@Autowired
+	LocationService locationService;
+
+	@Autowired
 	public WelcomeController(PictureFileRepository pictureFiles,
 							 AlbumRepository albums,
 							 AlbumContentRepository albumContents,
@@ -81,7 +85,6 @@ class WelcomeController extends PaginationController {
 		this.albumContents = albumContents;
 	}
 
-	@Cacheable("homePageCache")
 	@GetMapping("/")
 	public String welcome(@ModelAttribute CollectionRequestDTO requestDTO,
 						  RedirectAttributes redirectAttributes,
@@ -89,16 +92,21 @@ class WelcomeController extends PaginationController {
 						  BindingResult result,
 						  Map<String, Object> model
 	) throws IOException {
+
 		final String format = "yyyy-MM-dd";
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
-		String bundleJsContent = resourceLoaderService.readFile("/dist/bundle.js");
-		String stylesCriticalContent = resourceLoaderService.readFile("/dist/critical.css"); // Read CSS file
-		String stylesContent = resourceLoaderService.readFile("/dist/styles.css"); // Read CSS file
+		Map<String, String> resources = resourceLoaderService.getStandardResources();
+
+		String bundleJsContent = resources.get("/dist/bundle.js");
+		String stylesCriticalContentLayout = resources.get("/dist/critical-layout.css"); // Read CSS file
+		String stylesCriticalContentWelcome = resources.get("/dist/critical-welcome.css"); // Read CSS file
+		String stylesContent = resources.get("/dist/styles.css"); // Read CSS file
 
 		model.put("inlineJs", bundleJsContent);
 		model.put("inlineCss", stylesContent);
-		model.put("inlineCriticalCss", stylesCriticalContent);
+		model.put("inlineCriticalLayoutCss", stylesCriticalContentLayout);
+		model.put("inlineCriticalWelcomeCss", stylesCriticalContentWelcome);
 
 		Supplier<String> today = () -> {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
@@ -121,69 +129,46 @@ class WelcomeController extends PaginationController {
 			return "redirect:/collection/";
 		}
 
-		long id = 0;
+		Map<Integer, PictureFile> thumbnailsMap = albumService.slidesThumbnailMap();
+		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
+			albumService.getSortOrder(this.albumContents, album, item1) - albumService.getSortOrder(this.albumContents, album, item2);
+		};
+
+		Collection<PictureFile> slides = albumService.geSlides();
+
+		loadThumbnailsAndKeywords(thumbnailsMap, model);
+
+		setStructuredDataForModel(
+				requestDTO,
+				model,
+				"homePIX Photo-sharing Site",
+				"ImageGallery",
+				"homePIX photo-sharing site featuring landscape, travel, macro and nature photography from Switzerland, Italy, Germany, France and England by Elliott Bignell",
+				slides,
+				"photo, sharing, portfolio, elliott, bignell"
+		);
+
+		model.put("collection", slides);
 
 		Collection<Album> results = this.albums.findByName("Slides");
 
-		if (!results.isEmpty()) {
-			id = results.iterator().next().getId();
+		if (results.isEmpty()) {
+			model.put("fullUrl", "collection/58123");
 		}
-
-		Collection<AlbumContent> contents = this.albumContents.findByAlbumId(id);
-
-		if (!contents.isEmpty()) {
-
-			final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
-				getSortOrder(this.albumContents, album, item1) - getSortOrder(this.albumContents, album, item2);
-			};
-
-			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO, defaultSort);
-
-			Collection<PictureFile> slides = contents.stream().map(item -> item.getPictureFile())
-				.sorted(orderBy)
-				.collect(Collectors.toList());
-
-			Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
-				StreamSupport.stream(slides.spliterator(), false) // Convert Iterable to Stream
-					.map(PictureFile::getId)
-					.collect(Collectors.toList())
-			);
-
-			loadThumbnailsAndKeywords(thumbnailsMap, model);
-
-			setStructuredDataForModel(
-					requestDTO,
-					model,
-					"homePIX Photo-sharing Site",
-					"ImageGallery",
-					"homePIX photo-sharing site featuring landscape, travel, macro and nature photography from Switzerland, Italy, Germany, France and England by Elliott Bignell",
-					slides,
-					"photo, sharing, portfolio, elliott, bignell"
-			);
-
-			model.put("collection", slides);
-
-			if (results.isEmpty()) {
-				model.put("fullUrl", "collection/58123");
-			}
-			else {
-				model.put("fullUrl", "collection/" + results.iterator().next().getThumbnail_id());
-			}
+		else {
+			model.put("fullUrl", "collection/" + results.iterator().next().getThumbnail_id());
 		}
 
 		pictureFileService.applyArguments(model, requestDTO);
 
-		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("albums", albumService.getSortedAlbums());
+		model.put("folders", folderService.getSortedFolders());
 		model.put("canonical", "https://www.homepix.ch/");
 		model.put("root", "true");
 
 		Iterable<Album> albumIterable = this.albums.findAll();
-		Iterable<Folder> folderIterable = this.folders.findAll();
-		Iterable<LocationRelationship> locationIterable = this.locationRelationships.findAll();
+		Iterable<Folder> folderIterable = folderService.getSortedFolders();
+		Iterable<LocationRelationship> locationIterable = this.locationService.findAll();
 
 		List<String> names = Stream.of(
 				StreamSupport.stream(albumIterable.spliterator(), false).map(Album::getName),

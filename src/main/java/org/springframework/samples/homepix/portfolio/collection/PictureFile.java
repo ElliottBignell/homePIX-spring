@@ -152,19 +152,18 @@ public class PictureFile extends BaseEntity {
 		return f.getName();
 	}
 
-	public String getCompressedFilename() {
+	public String _getCompressedFilename() {
 
 		String filename = getLargeFilename()
 			.replace(".jpg", "_200px.webp");
 		return filename;
 	}
 
-	/*
-	public String _getCompressedFilename() {
+	public String getCompressedFilename() {
 
 		try {
 
-			String[] parts = this.filename.split("/");
+			String[] parts = this.filename.replace("jpg", "webp").split("/");
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 
@@ -198,7 +197,6 @@ public class PictureFile extends BaseEntity {
 
 		return this.filename;
 	}
-		*/
 
 	public String getMediumFilename() {
 

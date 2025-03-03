@@ -267,11 +267,8 @@ class PictureCollectionController extends PaginationController {
 		model.put("focusedField", "send_description");
 		model.put("search", requestDTO.getSearch());
 		model.put("pageNumber", files.getNumber());
-		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("albums", albumService.getSortedAlbums());
+		model.put("folders", folderService.getSortedFolders());
 
 		List<Location> locations = this.locationRelationships.findByPictureId(pictureID).stream()
 			.map(LocationRelationship::getLocation)
@@ -291,7 +288,7 @@ class PictureCollectionController extends PaginationController {
 			.collect(Collectors.toList());
 		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false)
 			.collect(Collectors.toList());
-		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
+		List<Folder> folders = new ArrayList<>(folderService.getSortedFolders());
 
 		model.put("tags", tags);
 		model.put("album_names", albums.stream()

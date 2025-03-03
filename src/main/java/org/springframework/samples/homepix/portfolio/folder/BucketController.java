@@ -167,13 +167,14 @@ class BucketController extends PaginationController {
 
 		loadBuckets(folder, result, model);
 
-		List<Folder> folders = new ArrayList<>(this.folders.findAll());
+		List<Folder> folders = new ArrayList<>(this.folderService.getSortedFolders());
 		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
 
 		List<PictureFile> files = folders.stream().map(item -> {
 				return this.pictureFiles.findById(item.getThumbnailId()).orElse(null);
 		})
-		.collect(Collectors.toList());
+			.filter(file -> file != null)
+			.collect(Collectors.toList());
 
 	    setStructuredDataForModel(
 				requestDTO,
@@ -185,7 +186,7 @@ class BucketController extends PaginationController {
 				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
 		);
 
-		List<Integer> pictureIds = new ArrayList<>(thumbnailsMap.keySet());
+		Set<Integer> pictureIds = new HashSet<>(thumbnailsMap.keySet());
 
 		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
 
@@ -194,7 +195,7 @@ class BucketController extends PaginationController {
 			.collect(Collectors.toList())
 		);
 		model.put("thumbnails", thumbnailsMap);
-		model.put("albums", this.albums.findAll());
+		model.put("albums", albumService.getSortedAlbums());
 		model.put("title", "Gallery of picture folders");
 		model.put("description", pageDescription);
 		model.put("keywords", relations.stream()
@@ -240,7 +241,7 @@ class BucketController extends PaginationController {
 			}
 		}
 
-		List<Folder> folders = new ArrayList<>(this.folders.findAll());
+		List<Folder> folders = new ArrayList<>(this.folderService.getSortedFolders());
 		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
 		model.put("thumbnails", thumbnailsMap);
 
@@ -396,11 +397,8 @@ class BucketController extends PaginationController {
 
 		// Add the results to the model
 		model.put("results", results);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
-		model.put("albums", this.albums.findAll());
+		model.put("folders", folderService.getSortedFolders());
+		model.put("albums", albumService.getSortedAlbums());
 		model.put("pageNumber", results.getNumber());
 		model.put("pageSize", results.getSize());
 		model.put("totalPages", results.getTotalPages());
@@ -572,7 +570,7 @@ class BucketController extends PaginationController {
 
 		model.put("collection", files);
 		model.put("baseLink", "/folders/" + name);
-		model.put("albums", this.albums.findAll());
+		model.put("albums", albumService.getSortedAlbums());
 
 		return "redirect:/buckets/{name}";
 	}
@@ -726,11 +724,8 @@ class BucketController extends PaginationController {
 			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
 			model.put("description", "This description");
 			model.put("baseLink", "/buckets/" + name);
-			model.put("albums", this.albums.findAll());
-			model.put("folders", this.folders.findAll().stream()
-				.sorted(Comparator.comparing(Folder::getName))
-				.collect(Collectors.toList())
-			);
+			model.put("albums", albumService.getSortedAlbums());
+			model.put("folders", folderService.getSortedFolders());
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);
@@ -771,43 +766,6 @@ class BucketController extends PaginationController {
 
 			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 		}
-	}
-
-	private List<String> listFileNames(S3Client s3Client, String subFolder) {
-
-		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
-
-		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-				.build();
-
-		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
-
-		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
-				.filter(object -> !object.key().startsWith(prefix + "200px/"))
-				.filter(object -> object.key().endsWith(".jpg")).collect(Collectors.toList());
-
-		List<String> results = new ArrayList<>();
-
-		for (S3Object s3Object : filteredObjects) {
-
-			try {
-
-				String name = s3Object.key();
-				String extension = name.substring(name.length() - 4).toLowerCase();
-
-				if (extension.equals(".jpg")) {
-
-					String suffix = name.substring(5, name.length());
-					results.add(suffix);
-				}
-			}
-			catch (Exception ex) {
-				System.out.println(ex);
-				ex.printStackTrace();
-			}
-		}
-
-		return results;
 	}
 
 	public String movePictureToFolder(String sourceFolder, String targetFolder, PictureFile file) {
@@ -920,14 +878,14 @@ class BucketController extends PaginationController {
 		return null;
 	}
 
-	@GetMapping(value = "web-images/{directory}/200px/{file}_200px.webp")
+	@GetMapping(value = "/web-images/{directory}/200px/{file}_200px.webp")
 	public ResponseEntity<byte[]> getSmallFileFromBucket(@PathVariable("directory") String directory,
 															  @PathVariable("file") String file) {
-		return getCompressedFileFromBucket(directory, file);
+		return getSmallCompressedFileFromBucket(directory, file);
 	}
 
-	@GetMapping(value = "web-images/{directory}/{file}_200px.webp")
-	public ResponseEntity<byte[]> getCompressedFileFromBucket(@PathVariable("directory") String directory,
+	@GetMapping(value = "/web-images/{directory}/{file}_200px.webp")
+	public ResponseEntity<byte[]> getSmallCompressedFileFromBucket(@PathVariable("directory") String directory,
 															  @PathVariable("file") String file) {
 
 		String filepath = directory + '/' + file;
@@ -949,6 +907,67 @@ class BucketController extends PaginationController {
 		}
 
 		if (null == compressedImage) {
+		//if (true) {
+
+			compressedImage = hitBucket((client, arg1, arg2) -> {
+
+				try {
+					byte[] data = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
+					byte[] compressedBytes = convertToSmallWebP200px(data, 1f);
+					return compressedBytes;
+				} catch (Exception e) {
+					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
+					return null;
+				}
+			}, directory, file);
+
+			if (null != compressedImage) {
+
+				// Save watermarked image to the S3-compatible bucket
+				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+					.bucket(bucketName)
+					.key("jpegs/" + compressedPath + ".webp")
+					.build();
+
+				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
+			}
+			else {
+				System.out.println("");
+			}
+		}
+
+		if (compressedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(compressedImage);
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
+	@GetMapping(value = "web-images/{directory}/200px/{file}_max.webp")
+	public ResponseEntity<byte[]> getCompressedFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+
+		String filepath = directory + '/' + file;
+		String compressedPath = directory + "/200px/" + file + "_max";
+
+		byte[] compressedImage = null;
+
+		try {
+			compressedImage = downloadFile("jpegs/" + compressedPath + ".webp");
+		}
+		catch (NoSuchKeyException ex) {
+			logger.info("Compressed file missing; creating " + directory + '/' + file);
+		}
+		catch (IOException ex) {
+			logger.info("Error accessing compressed file \" + directory + '/' + file");
+		}
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		if (null == compressedImage) {
+		//if (true) {
 
 			compressedImage = hitBucket((client, arg1, arg2) -> {
 
@@ -981,6 +1000,7 @@ class BucketController extends PaginationController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+
 
 	@GetMapping(value = "web-images/{directory}/{file}.webp")
 	public ResponseEntity<byte[]> getWebPFileFromBucket(@PathVariable("directory") String directory,
@@ -1163,7 +1183,7 @@ class BucketController extends PaginationController {
 		}
 	}
 
-	public static byte[] convertToWebP200px(byte[] originalImageBytes, float quality) throws Exception
+	public static byte[] convertToSmallWebP200px(byte[] originalImageBytes, float quality) throws Exception
 	{
 		// Convert byte array to BufferedImage
 		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
@@ -1211,6 +1231,67 @@ class BucketController extends PaginationController {
 		return webpBytes;
 	}
 
+	public static byte[] convertToWebP200px(byte[] originalImageBytes, float quality) throws Exception
+	{
+		// Convert byte array to BufferedImage
+		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
+		BufferedImage originalImage = ImageIO.read(in);
+
+		int originalWidth = originalImage.getWidth();
+		int originalHeight = originalImage.getHeight();
+
+		if (originalWidth > originalHeight) {
+
+			if (originalWidth > 2000) {
+
+				originalHeight = originalHeight * 2000 / originalWidth;
+				originalWidth = 2000;
+			}
+		}
+		else {
+
+			if (originalHeight > 2000) {
+
+				originalWidth = originalWidth * 2000 / originalHeight;
+				originalHeight = 2000;
+			}
+		}
+
+		// Create a resized image
+		BufferedImage resizedImage = new BufferedImage(originalWidth, originalHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.drawImage(originalImage, 0, 0, originalWidth, originalHeight, null);
+		g2d.dispose();
+
+		// Save resized image as a temporary JPEG
+		File tempJpeg = File.createTempFile("resized", ".jpg");
+		ImageIO.write(resizedImage, "jpg", tempJpeg);
+
+		// Convert JPEG to WebP using Google's `cwebp`
+		File tempWebP = File.createTempFile("output", ".webp");
+		ProcessBuilder pb = new ProcessBuilder(
+			"cwebp", "-q", String.valueOf(quality * 100),
+			"-resize", String.valueOf(originalWidth), String.valueOf(originalHeight), // Ensure exact 200px height
+			tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
+		);
+		pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");
+		pb.redirectErrorStream(true);
+		Process process = pb.start();
+		process.waitFor();
+
+		// Read the WebP file back into a byte array
+		byte[] webpBytes = new byte[(int) tempWebP.length()];
+		FileInputStream fis = new FileInputStream(tempWebP);
+		fis.read(webpBytes);
+		fis.close();
+
+		// Clean up temp files
+		tempJpeg.delete();
+		tempWebP.delete();
+
+		return webpBytes;
+	}
 	public static byte[] convertToWebP(byte[] originalImageBytes, float quality) throws Exception
 	{
 		// Convert byte array to BufferedImage
@@ -1473,7 +1554,7 @@ class BucketController extends PaginationController {
 
 		String dir = imagePath + name;
 
-		List<String> jpegNames = listFileNames(s3Client, "jpegs/" + name);
+		List<String> jpegNames = folderService.listFileNames(s3Client, bucketName, "jpegs/" + name);
 
 		int index = 0;
 

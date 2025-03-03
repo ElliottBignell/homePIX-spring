@@ -93,13 +93,9 @@ class CalendarController extends PaginationController {
 		}
 
 		model.put("title", "Photo calendar view for " + year);
-		model.put("albums", this.albums.findAll());
+		model.put("albums", albumService.getSortedAlbums());
 		model.put("calendar", this.calendar);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
-
+		model.put("folders", folderService.getSortedFolders());
 
 		return "calendar/calendarYear";
 	}
@@ -115,11 +111,8 @@ class CalendarController extends PaginationController {
 		model.put("title", "Photo calendar view");
 		model.put("yearThumbnailMap", yearThumbnailMap);
 		model.put("years", this.calendar.getItems());
-		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("albums", albumService.getSortedAlbums());
+		model.put("folders", folderService.getSortedFolders());
 
 		return "calendar/calendar";
 	}

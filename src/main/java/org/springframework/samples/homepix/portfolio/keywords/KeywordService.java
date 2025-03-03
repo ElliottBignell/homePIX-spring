@@ -1,16 +1,14 @@
 package org.springframework.samples.homepix.portfolio.keywords;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.keywords.Keyword;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -89,5 +87,10 @@ public class KeywordService {
 
 	public int keyordsCount(PictureFile picture) {
 		return keywordRelationshipsRepository.findByPictureId(picture.getId()).size();
+	}
+
+	@Cacheable(value = "keywordRelationshipsCache")
+	public Collection<KeywordRelationships> findByPictureIds(Set<Integer> pictureIds) {
+		return keywordRelationshipsRepository.findByPictureIds(pictureIds);
 	}
 }

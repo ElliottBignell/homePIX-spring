@@ -6,10 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
-import org.springframework.samples.homepix.portfolio.album.Album;
-import org.springframework.samples.homepix.portfolio.album.AlbumContent;
-import org.springframework.samples.homepix.portfolio.album.AlbumContentRepository;
-import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -18,10 +15,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileServi
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
-import org.springframework.samples.homepix.portfolio.keywords.Keyword;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.keywords.*;
 import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
@@ -81,6 +75,9 @@ public abstract class PaginationController implements AutoCloseable {
 	@Autowired
 	LocationService locationService;
 
+	@Autowired
+	KeywordService keywordService;
+
 	protected final KeywordRepository keyword;
 
 	protected final KeywordRelationshipsRepository keywordRelationships;
@@ -114,6 +111,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	@Autowired
 	protected FolderService folderService;
+
+	@Autowired
+	protected AlbumService albumService;
 
 	@Autowired
 	protected LocationRelationshipsRepository locationRelationships;
@@ -876,7 +876,8 @@ public abstract class PaginationController implements AutoCloseable {
 	}
 
 	private Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
-		List<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toList());
+
+		Set<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toSet());
 
 		// Fetch all keyword relationships for the given picture files
 		Collection<KeywordRelationships> keywordRelationshipsList = keywordRelationships.findByPictureIds(fileIds);
@@ -1205,20 +1206,6 @@ public abstract class PaginationController implements AutoCloseable {
 		return "filename";
 	}
 
-	protected int getSortOrder(AlbumContentRepository albumContent, Album album, PictureFile item) {
-
-		int pictureId = item.getId();
-		long albumId = album.getId();
-
-		Collection<AlbumContent> content = albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
-
-		if (!content.isEmpty()) {
-			return content.iterator().next().getSort_order();
-		}
-
-		return -1;
-	}
-
 	protected String setModel(CollectionRequestDTO requestDTO,
 							  Map<String, Object> model,
 							  Collection<Folder> buckets,
@@ -1242,9 +1229,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected void loadThumbnailsAndKeywords(Map<Integer, PictureFile> thumbnailsMap, Map<String, Object> model) {
 
-		List<Integer> pictureIds = new ArrayList<>(thumbnailsMap.keySet());
+		Set<Integer> pictureIds = new HashSet<>(thumbnailsMap.keySet());
 
-		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
+		Collection<KeywordRelationships> relations = this.keywordService.findByPictureIds(pictureIds);
 
 		Map<Integer, String> pictureIdToKeywords = relations.stream()
 			.collect(Collectors.groupingBy(
@@ -1266,7 +1253,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 		if (!pictureIds.isEmpty()) {
 
-			List<Location> locations = this.locationRelationships.findByPictureId(pictureIds.get(0)).stream()
+			List<Location> locations = this.locationRelationships.findByPictureId(pictureIds.iterator().next()).stream()
 				.map(LocationRelationship::getLocation)
 				.collect(Collectors.toList());
 			locations = locationService.sortLocationsByHierarchy(locations);

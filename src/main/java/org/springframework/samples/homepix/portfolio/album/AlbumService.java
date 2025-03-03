@@ -1,8 +1,10 @@
 package org.springframework.samples.homepix.portfolio.album;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -105,5 +107,78 @@ public class AlbumService {
 		}
 
 		return "redirect:/albums";
+	}
+
+	@Cacheable("slides")
+	public Collection<PictureFile> geSlides() {
+
+		long id = 0;
+
+		Collection<Album> results = this.albumRepository.findByName("Slides");
+		Album album = results.iterator().next();
+
+		id = album.getId();
+
+		Collection<AlbumContent> contents = this.albumContentRepository.findByAlbumId(id);
+
+		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
+			getSortOrder(this.albumContentRepository, album, item1) - getSortOrder(this.albumContentRepository, album, item2);
+		};
+
+		return contents.stream().map(item -> item.getPictureFile())
+			.sorted(defaultSort)
+			.collect(Collectors.toList());
+	}
+
+	@Cacheable("slidesThumbnails")
+	public Map<Integer, PictureFile> slidesThumbnailMap() {
+
+		long id = 0;
+
+		Collection<Album> results = this.albumRepository.findByName("Slides");
+
+		if (!results.isEmpty()) {
+			id = results.iterator().next().getId();
+		}
+
+		Collection<AlbumContent> contents = this.albumContentRepository.findByAlbumId(id);
+		Collection<Album> albums = this.albumRepository.findByName("Slides");
+		Album album = albums.iterator().next();
+
+ 		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
+			getSortOrder(this.albumContentRepository, album, item1) - getSortOrder(this.albumContentRepository, album, item2);
+		};
+
+		Comparator<PictureFile> orderBy = (item1, item2 ) -> { return item1.getFilename().compareTo(item2.getFilename()); };
+
+		Collection<PictureFile> slides = contents.stream().map(item -> item.getPictureFile())
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+
+		return getThumbnailsMap(
+			StreamSupport.stream(slides.spliterator(), false) // Convert Iterable to Stream
+				.map(PictureFile::getId)
+				.collect(Collectors.toList())
+		);
+	}
+
+	public int getSortOrder(AlbumContentRepository albumContent, Album album, PictureFile item) {
+
+		int pictureId = item.getId();
+		long albumId = album.getId();
+
+		Collection<AlbumContent> content = albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
+
+		if (!content.isEmpty()) {
+			return content.iterator().next().getSort_order();
+		}
+
+		return -1;
+	}
+
+	@Cacheable("importedAlbums")
+	public List<Album> getSortedAlbums() {
+		return StreamSupport.stream(albumRepository.findAll().spliterator(), false)
+			.collect(Collectors.toList());
 	}
 }

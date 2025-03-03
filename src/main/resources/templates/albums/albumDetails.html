@@ -134,9 +134,10 @@
                   >
                     <i class="material-icons tt_icon">
                       <span class="material-symbols-outlined">
-                        <span class="material-symbols-outlined">
-                          first_page
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed">
+                          <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
+                          <path d="M24 24H0V0h24v24z" fill="none"/>
+                        </svg>
                       </span>
                     </i>
                   </a>
@@ -148,9 +149,10 @@
                   >
                     <i class="material-icons tt_icon">
                       <span class="material-symbols-outlined">
-                        <span class="material-symbols-outlined">
-                          navigate_before
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed">
+                          <path d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
                       </span>
                     </i>
                   </a>
@@ -162,9 +164,10 @@
                   >
                     <i class="material-icons tt_icon">
                       <span class="material-symbols-outlined">
-                        <span class="material-symbols-outlined">
-                          navigate_next
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed">
+                          <path d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
                       </span>
                     </i>
                   </a>
@@ -176,21 +179,23 @@
                   >
                     <i class="material-icons tt_icon">
                       <span class="material-symbols-outlined">
-                        <span class="material-symbols-outlined">
-                          last_page
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed">
+                          <path d="M0 0h24v24H0V0z" fill="none"/>
+                          <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
+                        </svg>
                       </span>
                     </i>
                   </a>
                   <a class="tt_icon tt_small_icon_anchor" th:href="@{./move/__${album.id}__/+1/}">
-                    <i class="material-icons tt_icon">
-                      bedtime
-                    </i>
+                    <svg width="24" height="24" fill="white" class="bo" viewBox="0 -960 960 960">
+                      <path d="M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-146 93-257.5T410-880q-18 99 11 193.5T521-521q71 71 165.5 100T880-410q-26 144-138 237T484-80Zm0-80q88 0 163-44t118-121q-86-8-163-43.5T464-465q-61-61-97-138t-43-163q-77 43-120.5 118.5T160-484q0 135 94.5 229.5T484-160Zm-20-305Z"/>
+                    </svg>
                   </a>
                   <a class="tt_icon tt_small_icon_anchor" href="#" th:onclick="@{handleDeleteClick( event, __${album.id}__, __${entry.id}__ );}">
-                    <i class="material-icons tt_icon">
-                      delete
-                    </i>
+                    <svg width="24" height="24" fill="white" class="bo" viewBox="0 -960 960 960">
+                      <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z">
+                      </path>
+                    </svg>
                   </a>
                   <figcaption class="header">
                     <div th:id="@{header__${album.id}__}" class="tt_lefttextnooff" th:value="${album.id}">

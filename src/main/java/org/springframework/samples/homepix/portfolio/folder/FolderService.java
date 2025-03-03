@@ -1,20 +1,15 @@
 package org.springframework.samples.homepix.portfolio.folder;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.portfolio.album.Album;
-import org.springframework.samples.homepix.portfolio.album.AlbumContent;
-import org.springframework.samples.homepix.portfolio.album.AlbumContentRepository;
-import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +18,9 @@ public class FolderService {
 	// Assuming you have a PictureFileRepository to fetch PictureFiles
 	@Autowired
 	private PictureFileRepository pictureFileRepository;
+
+	@Autowired
+	FolderRepository folderRepository;
 
 	public Map<Integer, PictureFile> getThumbnailsMap(List<Folder> folders) {
 		// Extract thumbnail IDs
@@ -37,4 +35,55 @@ public class FolderService {
 		return thumbnails.stream()
 			.collect(Collectors.toMap(PictureFile::getId, pictureFile -> pictureFile));
 	}
+
+	public List<String> listFileNames(S3Client s3Client, String bucketName, String subFolder) {
+
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
+
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+			.build();
+
+		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+		List<S3Object> filteredObjects = listObjectsResponse.contents().stream()
+			.filter(object -> !object.key().startsWith(prefix + "200px/"))
+			.filter(object -> object.key().endsWith(".webp")).collect(Collectors.toList());
+
+		List<String> results = new ArrayList<>();
+
+		for (S3Object s3Object : filteredObjects) {
+
+			try {
+
+				String name = s3Object.key();
+				String extension = name.substring(name.length() - 4).toLowerCase();
+
+				if (extension.equals(".jpg")) {
+
+					String suffix = name.substring(5, name.length());
+					results.add(suffix);
+				}
+			}
+			catch (Exception ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+			}
+		}
+
+		return results;
+	}
+
+	@Cacheable("importedFolders")
+	public List<Folder> getSortedFolders() {
+		return folderRepository.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
+			.collect(Collectors.toList());
+	}
+
+	@CacheEvict(value = "importedFolders", allEntries = true)
+    public void resetFolders() {
+        // This will clear the "folders" cache.
+        // Optionally re-fetch or do nothing here;
+        // next call to getSortedFolders() will reload.
+    }
 }

@@ -111,10 +111,7 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("leftCollection", leftFolder);
 		model.put("rightFolder", folderRight);
 		model.put("rightCollection", rightFolder);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_ORGANISATION_FORM;
 	}
@@ -146,7 +143,7 @@ class OrganiseController extends AlbumContentBaseController {
 	@GetMapping("/organise/")
 	public String organise(Map<String, Object> model) {
 
-		Collection<Folder> folder = this.folders.findAll();
+		Collection<Folder> folder = folderService.getSortedFolders();
 		Folder folderLeft = folder.iterator().next();
 
 		List<PictureFile> collection = this.pictureFiles.findByFolderName(folderLeft.getName());
@@ -155,10 +152,7 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("current_picture", file);
 		model.put("folder", folderLeft);
 		model.put("collection", collection);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
 	}
@@ -178,10 +172,7 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("current_picture", file);
 		model.put("folder", folderLeft);
 		model.put("collection", folder);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
 	}
@@ -282,17 +273,13 @@ class OrganiseController extends AlbumContentBaseController {
 
 		addParams(pictureId, "", pictureCollection, model, true);
 
-		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false) // Convert Iterable to Stream
-			.collect(Collectors.toList()); // Collect the results into a List
-		List<Folder> folders = new ArrayList<>(this.folders.findAll()); // Collect the results into a List
+		List<Album> albums = albumService.getSortedAlbums();
+		List<Folder> folders = folderService.getSortedFolders();
 
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album.orElse(null));
 		model.put("albums", albums);
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("folders", folders);
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
@@ -403,7 +390,7 @@ class OrganiseController extends AlbumContentBaseController {
 		Optional<Album> album = albums.findById(id);
 
 		Comparator<Folder> nameComparator = Comparator.comparing(Folder::getName);
-		Collection<Folder> folderList = folders.findAll().stream().sorted(nameComparator).collect(Collectors.toList());
+		Collection<Folder> folderList = folderService.getSortedFolders();
 
 		if (album.isPresent() && !folderList.isEmpty()) {
 

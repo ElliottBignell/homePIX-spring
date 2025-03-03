@@ -3,14 +3,20 @@ package org.springframework.samples.homepix.portfolio.collection;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.folder.FolderController;
+import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
@@ -23,6 +29,15 @@ public class PictureRestController {
 
 	@Autowired
 	private PictureFileRepository pictureFileRepository;
+
+	@Autowired
+	private FolderRepository folderRepository;
+
+	@Autowired
+	private FolderService folderService;
+
+	@Autowired
+	private FolderController folderController;
 
 	@PostMapping("/locations")
 	public ResponseEntity<String> patchGPSData(@RequestBody List<Map<String, Object>> locations) throws Exception {
@@ -209,5 +224,23 @@ public class PictureRestController {
 	@GetMapping("/buckets/{bucket}/deep")
 	public List<Map<String, Object>> getAllPicturesWithKeywords(@PathVariable("bucket") String bucket) throws Exception {
 		return pictureService.getAllPicturesWithKeywords(bucket);
+	}
+
+	// Get all pictures with their keywords
+	@GetMapping("/all")
+	public List<String> getAllPictures() throws Exception {
+
+		String bucketName = "picture-files";
+		S3Client s3Client = folderController.getS3Clent();
+
+		Collection<Folder> folders = this.folderRepository.findAll();
+
+		return folders.stream()
+			.flatMap(folder ->
+				pictureFileRepository.findByFolderName(folder.getName())
+					.stream()
+					.map(picture->folder.getName() + "/" + picture.getFilename())
+			)
+			.collect(Collectors.toList());
 	}
 }

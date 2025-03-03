@@ -52,7 +52,7 @@ public class AlbumContentBaseController extends PaginationController {
 	protected final AlbumContentRepository albumContent;
 
 	@Autowired
-	private AlbumService albumService;
+	protected AlbumService albumService;
 
 	@Autowired
 	private PictureFileService pictureFileService;
@@ -88,7 +88,7 @@ public class AlbumContentBaseController extends PaginationController {
 		ModelAndView mav = new ModelAndView(template);
 
 		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
-			getSortOrder(this.albumContent, album, item1) - getSortOrder(this.albumContent, album, item2);
+			albumService.getSortOrder(this.albumContent, album, item1) - albumService.getSortOrder(this.albumContent, album, item2);
 		};
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO, defaultSort);
@@ -125,7 +125,7 @@ public class AlbumContentBaseController extends PaginationController {
 		Collection<KeywordRelationships> keywordRelationships = this.keywordRelationships.findByPictureIds(
 			content.stream()
 				.map(PictureFile::getId)
-				.collect(Collectors.toList())
+				.collect(Collectors.toSet())
 		);
 
 		// Now create a Map<Integer, List<Keyword>> from the KeywordRelationships.
@@ -156,11 +156,8 @@ public class AlbumContentBaseController extends PaginationController {
 
 		pictureFileService.applyArguments(model, requestDTO);
 
-		model.put("albums", this.albums.findAll());
-		model.put("folders", this.folders.findAll().stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
+		model.put("albums", albumService.getSortedAlbums());
+		model.put("folders", folderService.getSortedFolders());
 
 		model.put("collection", content);
 		model.put("keyword_map", pictureKeywordsMap);
