@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.homepix.system;
+package org.springframework.samples.homepix.portfolio.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.CanonicalRedirectFilter;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.ResourceLoaderService;
-import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -29,7 +27,6 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileServi
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
-import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.Location;
@@ -49,6 +46,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.springframework.cache.annotation.Cacheable;
 
 @Controller
 class WelcomeController extends PaginationController {
@@ -96,7 +94,7 @@ class WelcomeController extends PaginationController {
 		final String format = "yyyy-MM-dd";
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
 
-		Map<String, String> resources = resourceLoaderService.getStandardResources();
+		Map<String, String> resources = getResources();
 
 		String bundleJsContent = resources.get("/dist/bundle.js");
 		String stylesCriticalContentLayout = resources.get("/dist/critical-layout.css"); // Read CSS file
@@ -166,6 +164,33 @@ class WelcomeController extends PaginationController {
 		model.put("canonical", "https://www.homepix.ch/");
 		model.put("root", "true");
 
+		model.put("keywords", getKeywords());
+		// 1 album found
+		return "welcome";
+	}
+
+	@Override
+	public void close() throws Exception {
+
+	}
+
+	@GetMapping("/logout")
+	public String logout(Album album, BindingResult result, Map<String, Object> model) {
+		return "redirect:/welcome";
+	}
+
+	protected final void loadThumbnailsAndKeywords(Map<Integer, PictureFile> thumbnailsMap, Map<String, Object> model) {
+		super.loadThumbnailsAndKeywords(thumbnailsMap, model);
+	}
+
+	@Cacheable(value = "css_resources", key = "'css_resources'")
+	private Map<String, String> getResources() throws IOException {
+		return this.resourceLoaderService.getStandardResources();
+	}
+
+	@Cacheable(value = "keywords", key = "'keywords'")
+	private List<String> getKeywords() {
+
 		Iterable<Album> albumIterable = this.albums.findAll();
 		Iterable<Folder> folderIterable = folderService.getSortedFolders();
 		Iterable<LocationRelationship> locationIterable = this.locationService.findAll();
@@ -190,22 +215,6 @@ class WelcomeController extends PaginationController {
 		names.add("Macro");
 		names.add("Calendar");
 
-		model.put("keywords", names);
-		// 1 album found
-		return "welcome";
-	}
-
-	@Override
-	public void close() throws Exception {
-
-	}
-
-	@GetMapping("/logout")
-	public String logout(Album album, BindingResult result, Map<String, Object> model) {
-		return "redirect:/welcome";
-	}
-
-	protected final void loadThumbnailsAndKeywords(Map<Integer, PictureFile> thumbnailsMap, Map<String, Object> model) {
-		super.loadThumbnailsAndKeywords(thumbnailsMap, model);
+		return names;
 	}
 }

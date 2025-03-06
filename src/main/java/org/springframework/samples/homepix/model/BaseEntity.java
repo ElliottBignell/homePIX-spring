@@ -19,8 +19,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 
 /**
  * Simple JavaBean domain object with an id property. Used as a base class for objects

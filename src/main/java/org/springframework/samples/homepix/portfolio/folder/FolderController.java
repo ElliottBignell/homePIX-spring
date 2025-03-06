@@ -16,7 +16,7 @@
 package org.springframework.samples.homepix.portfolio.folder;
 
 import jakarta.validation.Valid;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumService;
@@ -217,7 +217,6 @@ public class FolderController extends PaginationController {
 
 		model.put("collection", pictures);
 		model.put("baseLink", "/folders/" + folderName);
-		model.put("albums", albumService.getSortedAlbums());
 
 		return "redirect:/folders/{name}";
 	}
@@ -275,7 +274,6 @@ public class FolderController extends PaginationController {
 
 			model.put("collection", pictureFiles);
 			model.put("baseLink", "/folders/" + name);
-			model.put("albums", albumService.getSortedAlbums());
 
 			Iterable<Album> albums = this.albums.findAll();
 

@@ -17,18 +17,16 @@ package org.springframework.samples.homepix.portfolio.album;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
-import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -155,9 +153,6 @@ public class AlbumContentBaseController extends PaginationController {
 		model.put("id", album.getId());
 
 		pictureFileService.applyArguments(model, requestDTO);
-
-		model.put("albums", albumService.getSortedAlbums());
-		model.put("folders", folderService.getSortedFolders());
 
 		model.put("collection", content);
 		model.put("keyword_map", pictureKeywordsMap);

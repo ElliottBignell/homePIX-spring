@@ -1,11 +1,12 @@
-package org.springframework.samples.homepix.portfolio;
+package org.springframework.samples.homepix.portfolio.controllers;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.CredentialsRunner;
+import org.springframework.samples.homepix.portfolio.Pagination;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
 import org.springframework.samples.homepix.portfolio.collection.PictureCollection;
@@ -215,6 +216,7 @@ public abstract class PaginationController implements AutoCloseable {
 		return this.albums.findAll();
 	}
 
+	@Cacheable("yearNames")
 	@ModelAttribute("yearNames")
 	protected List<List<String>> populateDates() {
 

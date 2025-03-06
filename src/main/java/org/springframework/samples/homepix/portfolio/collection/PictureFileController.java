@@ -15,10 +15,9 @@
  */
 package org.springframework.samples.homepix.portfolio.collection;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.samples.homepix.portfolio.*;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -28,9 +27,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
-import java.util.List;
-import org.springframework.ui.Model;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Juergen Hoeller

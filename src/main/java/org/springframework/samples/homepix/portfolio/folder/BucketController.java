@@ -21,13 +21,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumService;
@@ -50,11 +49,9 @@ import org.springframework.web.servlet.ModelAndView;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -69,7 +66,6 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import java.awt.font.FontRenderContext;
 // Define a class-level logger
 
 /**
@@ -190,12 +186,7 @@ class BucketController extends PaginationController {
 
 		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
 
-		model.put("folders", folderCache.stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
 		model.put("thumbnails", thumbnailsMap);
-		model.put("albums", albumService.getSortedAlbums());
 		model.put("title", "Gallery of picture folders");
 		model.put("description", pageDescription);
 		model.put("keywords", relations.stream()
@@ -224,10 +215,6 @@ class BucketController extends PaginationController {
 		loadBuckets(folder, result, model);
 
 		// multiple folders found
-		model.put("folders", folderCache.stream()
-			.sorted(Comparator.comparing(Folder::getName))
-			.collect(Collectors.toList())
-		);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication != null && authentication.isAuthenticated()) {
@@ -397,8 +384,6 @@ class BucketController extends PaginationController {
 
 		// Add the results to the model
 		model.put("results", results);
-		model.put("folders", folderService.getSortedFolders());
-		model.put("albums", albumService.getSortedAlbums());
 		model.put("pageNumber", results.getNumber());
 		model.put("pageSize", results.getSize());
 		model.put("totalPages", results.getTotalPages());
@@ -570,7 +555,6 @@ class BucketController extends PaginationController {
 
 		model.put("collection", files);
 		model.put("baseLink", "/folders/" + name);
-		model.put("albums", albumService.getSortedAlbums());
 
 		return "redirect:/buckets/{name}";
 	}
@@ -724,8 +708,6 @@ class BucketController extends PaginationController {
 			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
 			model.put("description", "This description");
 			model.put("baseLink", "/buckets/" + name);
-			model.put("albums", albumService.getSortedAlbums());
-			model.put("folders", folderService.getSortedFolders());
 			model.put("id", id);
 			model.put("next", (id + 1) % count);
 			model.put("previous", (id + count - 1) % count);

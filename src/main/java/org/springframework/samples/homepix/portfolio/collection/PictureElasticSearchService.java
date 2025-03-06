@@ -1,16 +1,11 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
 import lombok.Getter;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
 import java.net.http.HttpClient;
-import java.security.KeyStore;
 import java.util.Base64;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service

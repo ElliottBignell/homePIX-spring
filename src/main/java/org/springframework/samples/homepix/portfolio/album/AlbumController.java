@@ -17,10 +17,9 @@ package org.springframework.samples.homepix.portfolio.album;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -203,8 +202,6 @@ class AlbumController extends PaginationController {
 
 		model.put("title", "Gallery of photo albums");
 		model.put("selections", results);
-		model.put("albums", albumService.getSortedAlbums());
-		model.put("folders", folderService.getSortedFolders());
 
 		Map<Integer, PictureFile> thumbnailsMap = albumService.getThumbnailsMap(
 			this.albums.findAll()

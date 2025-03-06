@@ -111,7 +111,6 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("leftCollection", leftFolder);
 		model.put("rightFolder", folderRight);
 		model.put("rightCollection", rightFolder);
-		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_ORGANISATION_FORM;
 	}
@@ -152,7 +151,6 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("current_picture", file);
 		model.put("folder", folderLeft);
 		model.put("collection", collection);
-		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
 	}
@@ -172,7 +170,6 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("current_picture", file);
 		model.put("folder", folderLeft);
 		model.put("collection", folder);
-		model.put("folders", folderService.getSortedFolders());
 
 		return VIEWS_WHOLE_PANE_ORGANISATION_FORM;
 	}
@@ -278,8 +275,6 @@ class OrganiseController extends AlbumContentBaseController {
 
 		model.put("baseLink", "/album/" + id);
 		model.put("album", album.orElse(null));
-		model.put("albums", albums);
-		model.put("folders", folders);
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {

@@ -16,13 +16,12 @@
 package org.springframework.samples.homepix.portfolio.calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.stereotype.Controller;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -93,9 +91,7 @@ class CalendarController extends PaginationController {
 		}
 
 		model.put("title", "Photo calendar view for " + year);
-		model.put("albums", albumService.getSortedAlbums());
 		model.put("calendar", this.calendar);
-		model.put("folders", folderService.getSortedFolders());
 
 		return "calendar/calendarYear";
 	}
@@ -111,8 +107,6 @@ class CalendarController extends PaginationController {
 		model.put("title", "Photo calendar view");
 		model.put("yearThumbnailMap", yearThumbnailMap);
 		model.put("years", this.calendar.getItems());
-		model.put("albums", albumService.getSortedAlbums());
-		model.put("folders", folderService.getSortedFolders());
 
 		return "calendar/calendar";
 	}

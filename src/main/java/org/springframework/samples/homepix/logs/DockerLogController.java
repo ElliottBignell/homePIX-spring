@@ -1,7 +1,7 @@
 package org.springframework.samples.homepix.logs;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

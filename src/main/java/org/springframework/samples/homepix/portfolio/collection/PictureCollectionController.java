@@ -20,11 +20,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.util.Pair;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.PaginationController;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
@@ -267,8 +266,6 @@ class PictureCollectionController extends PaginationController {
 		model.put("focusedField", "send_description");
 		model.put("search", requestDTO.getSearch());
 		model.put("pageNumber", files.getNumber());
-		model.put("albums", albumService.getSortedAlbums());
-		model.put("folders", folderService.getSortedFolders());
 
 		List<Location> locations = this.locationRelationships.findByPictureId(pictureID).stream()
 			.map(LocationRelationship::getLocation)
