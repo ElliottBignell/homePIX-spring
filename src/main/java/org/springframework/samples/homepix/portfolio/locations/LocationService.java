@@ -2,16 +2,17 @@ package org.springframework.samples.homepix.portfolio.locations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class LocationService {
+
+	@Autowired
+	LocationRepository locationRepository;
 
 	@Autowired
 	LocationHierarchyRepository locationHierarchyRepository;
@@ -39,6 +40,31 @@ public class LocationService {
 		return locationList.stream()
 			.sorted(Comparator.comparingInt(location -> getHierarchyDepth(location.getId(), childToParentMap)))
 			.collect(Collectors.toList());
+	}
+
+	public void addLocationToPicture(PictureFile picture, String word) {
+
+		Collection<Location> existing = locationRepository.findByPlaceName(word);
+		Location newLocation;
+
+		if (existing.isEmpty()) {
+
+			newLocation = new Location();
+			newLocation.setLocation(word);
+			this.locationRepository.save(newLocation);
+		}
+		else
+			newLocation = existing.iterator().next();
+
+		Collection<LocationRelationship> relations = this.locationRelationshipsRepository.findByBothIds(picture.getId(), newLocation.getId());
+
+		if (relations.isEmpty()) {
+
+			LocationRelationship relation = new LocationRelationship();
+			relation.setPicture(picture);
+			relation.setLocation(newLocation);
+			this.locationRelationshipsRepository.save(relation);
+		}
 	}
 
 	/**

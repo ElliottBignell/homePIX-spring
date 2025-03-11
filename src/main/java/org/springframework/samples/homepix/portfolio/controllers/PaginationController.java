@@ -1259,7 +1259,7 @@ public abstract class PaginationController implements AutoCloseable {
 				.map(LocationRelationship::getLocation)
 				.collect(Collectors.toList());
 			locations = locationService.sortLocationsByHierarchy(locations);
-			model.put("location", locations.stream().map(Location::getName)
+			model.put("location", locations.stream().map(Location::getLocation)
 				.collect(Collectors.joining(", "))
 			);
 		}

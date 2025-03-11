@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileValidator;
+import org.springframework.samples.homepix.portfolio.collection.PictureRangeService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/api/keywords")
-//@Secured("ROLE_ADMIN")
+@Secured("ROLE_ADMIN")
 public class KeywordRestController {
 
 	@Autowired
@@ -30,6 +31,9 @@ public class KeywordRestController {
 
 	@Autowired
 	private KeywordRelationshipsRepository keywordRelationshipsRepository;
+
+	@Autowired
+	PictureRangeService pictureRangeService;
 
 	// Get all pictures and return as JSON
 	@GetMapping("/")
@@ -81,42 +85,11 @@ public class KeywordRestController {
 	@ResponseBody
 	public ResponseEntity<List<String>> addKeywords(@RequestBody Map<String, Object> updates, @PathVariable("ids") String ids) {
 
-		final Pattern series = Pattern.compile("[0-9]+-[0-9]+");
+		String places = (String) updates.get("places");
+		String[] words = places.split(",");
 
-		String vocabulary = (String) updates.get("vocabulary");
-		String[] words = vocabulary.split(",");
-
-		String sStart = ids;
-		String sEnd = ids;
-
-		Matcher hideMatcher = series.matcher(ids);
-
-		if (hideMatcher.find()) {
-
-			String[] idArray = ids.split( "-" );
-
-			sStart = idArray[0];
-			sEnd = idArray[1];
-		}
-
-		Long start = Long.parseLong(sStart);
-		Long end = Long.parseLong(sEnd);
-
+		List<PictureFile> pictureFiles = pictureRangeService.getPictureRangeByIds(updates, ids);
 		List<String> response = new ArrayList<>();
-
-		List<PictureFile> pictureFiles = pictureFileRepository.findAllIdRange(start, end);
-
-		// Retrieve the `criteria` object
-		Map<String, Object> criteria = (Map<String, Object>) updates.get("criteria");
-		if (criteria != null) {
-
-			String title = (String) criteria.get("title");
-			if (title != null) {
-				pictureFiles = pictureFiles.stream()
-					.filter(file -> file.getTitle().equals(title))
-					.collect(Collectors.toList());
-			}
-		}
 
 		for (PictureFile file : pictureFiles) {
 

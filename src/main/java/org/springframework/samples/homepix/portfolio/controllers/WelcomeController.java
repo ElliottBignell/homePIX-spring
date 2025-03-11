@@ -200,7 +200,7 @@ class WelcomeController extends PaginationController {
 				StreamSupport.stream(folderIterable.spliterator(), false).map(Folder::getName),
 				StreamSupport.stream(locationIterable.spliterator(), false)
 					.map(LocationRelationship::getLocation) // Get Location object
-					.map(Location::getName) // Get name from Location
+					.map(Location::getLocation) // Get name from Location
 			).flatMap(s -> s) // Flatten into a single stream
 			.distinct()
 			.collect(Collectors.toList());

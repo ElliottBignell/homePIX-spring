@@ -1,16 +1,11 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
-import org.checkerframework.checker.nullness.Opt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.portfolio.album.Album;
-import org.springframework.samples.homepix.portfolio.album.AlbumContent;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
-import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.samples.homepix.portfolio.filtering.DateRangeSpecification;
@@ -19,19 +14,15 @@ import org.springframework.samples.homepix.portfolio.filtering.SearchTextSpecifi
 import org.springframework.samples.homepix.portfolio.filtering.SortDirection;
 import org.springframework.data.domain.Sort;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.stereotype.Service;
-
-import javax.swing.text.html.Option;
 
 // Service Layer
 @Service
@@ -314,7 +305,7 @@ public class PictureFileService {
 												  String userRoles,
 												  Pageable pageable
 	) {
-		return this.pictureFileRepository.findFred(
+		return this.pictureFileRepository.findByLocationOnly(
 			searchText,
 			pageable
 		);

@@ -7,11 +7,13 @@ import org.springframework.samples.homepix.portfolio.folder.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/folders")
@@ -20,6 +22,9 @@ public class FolderRestController {
 
 	@Autowired
 	FolderRepository folderRepository;
+
+	@Autowired
+	FolderController folderController;
 
 	@Autowired
 	PictureFileRepository pictureFileRepository;
@@ -54,5 +59,22 @@ public class FolderRestController {
 		}
 
 		return ResponseEntity.badRequest().body("Picture ID not found");
+	}
+
+	@GetMapping("/{name}/ids")
+	public List<String> getPictureIdsForFolder(@PathVariable("name") String name) throws Exception {
+
+		String bucketName = "picture-files";
+		S3Client s3Client = folderController.getS3Clent();
+
+		Collection<Folder> folders = this.folderRepository.findByName(name);
+
+		return folders.stream()
+			.flatMap(folder ->
+				pictureFileRepository.findByFolderName(folder.getName())
+					.stream()
+					.map(picture->picture.getId().toString())
+			)
+			.collect(Collectors.toList());
 	}
 }

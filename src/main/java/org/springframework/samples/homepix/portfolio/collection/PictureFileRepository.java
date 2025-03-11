@@ -209,16 +209,16 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
 		"LEFT JOIN location k ON kr.location_id = k.id " +
 		"WHERE pf.width IS NOT NULL AND pf.height IS NOT NULL " +
-		"AND LOWER(k.name) = LOWER(:searchText) " +
+		"AND LOWER(k.location) = LOWER(:searchText) " +
 		"GROUP BY pf.id",
 		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
 			"LEFT JOIN location_relationships kr ON pf.id = kr.picture_id " +
 			"LEFT JOIN location k ON kr.location_id = k.id " +
 			"WHERE pf.width IS NOT NULL AND pf.height IS NOT NULL " +
-			"AND LOWER(k.name) = LOWER(:searchText) " +
+			"AND LOWER(k.location) = LOWER(:searchText) " +
 			"GROUP BY pf.id",
 		nativeQuery = true)
-	Page<PictureFile> findFred(
+	Page<PictureFile> findByLocationOnly(
 		@Param("searchText") String searchText,
 		Pageable pageable
 	);

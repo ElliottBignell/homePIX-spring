@@ -110,22 +110,27 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/folders",
 					"/api/chart-data/**",
 					"/api/folders/**",
+					"/api/locations/",
+					"/api/locations/**",
 					"/logs/docker/homepix",
 					"/containers/**",
+					"/actuator",
+					"/actuator/**",
 					"/maps/**",
 					"/chart/**",
-					"/words"
+					"/words",
+					"/debug/mappings"
 				)
 				.permitAll()
 				.anyRequest().authenticated()
 			.and()
-				.formLogin()
-					.usernameParameter("username")
-					.passwordParameter("password")
-					.permitAll()
-			.and()
-				.logout()
+			.formLogin(form -> form
+				.loginPage("/login")  // Ensure login page is registered
+				.defaultSuccessUrl("/", true) // Redirect to home after login
 				.permitAll()
+			)
+			.logout()
+			.permitAll()
 			.and()
 			.exceptionHandling()
 				// Handle 403 Forbidden errors

@@ -887,7 +887,7 @@ function remove_keyword( keyword, pic_id ) {
                 </span>
                 <span th:if="${location}">
                   <span class="titletext propertyfont">
-                    Locationuuu:
+                    Location:
                   </span>
                   <span id="location" class="titlecontent" th:text="${location}">
                   </span>
@@ -919,8 +919,8 @@ function remove_keyword( keyword, pic_id ) {
                     Location:
                   </span>
                   <span th:each="location, iterStat : ${location_list}">
-                    <a th:href="@{/location/__${location.name}__}" class="location">
-                      <span th:text="${location.name}" class="titlecontent"></span>
+                    <a th:href="@{/location/__${location.location}__}" class="location">
+                      <span th:text="${location.location}" class="titlecontent"></span>
                     </a>
                     <span th:if="${!iterStat.last}" class="titlecontent" style="font-size:0.5em;">←</span>
                   </span>

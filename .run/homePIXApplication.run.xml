@@ -16,7 +16,9 @@
       <env name="spring.datasource.url" value="jdbc:mysql://homepix-db-exoscale-2da4e244-e568-49ca-82e2-2987cf441726.a.aivencloud.com:21699/defaultdb?useSSL=true&amp;requireSSL=true" />
       <env name="spring.datasource.username" value="avnadmin" />
       <env name="spring.profiles.active" value="mysql" />
+      <env name="SPRING_PROFILES_ACTIVE" value="default" />
       <env name="SSL_KEYSTORE" value="file:$USER_HOME$/Downloads/certificate.p12" />
+      <env name="SPRING_CONFIG_LOCATION" value="classpath:/application-mysql-debug.properties " />
     </envs>
     <option name="MAIN_CLASS_NAME" value="org.springframework.samples.homepix.homePIXApplication" />
     <module name="spring-homepix" />

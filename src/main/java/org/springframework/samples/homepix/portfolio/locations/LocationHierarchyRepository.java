@@ -15,4 +15,6 @@ public interface LocationHierarchyRepository extends CrudRepository<LocationHier
 
 	@Query("SELECT lh FROM LocationHierarchy lh WHERE lh.parentLocation.id = :parentId")
 	List<LocationHierarchy> findHierarchyForParent(@Param("parentId") Integer parentId);
+
+	boolean existsByParentLocationAndChildLocation(Location child, Location parent);
 }

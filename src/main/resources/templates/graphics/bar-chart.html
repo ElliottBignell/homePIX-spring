@@ -4,7 +4,9 @@
 
 <body>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <canvas id="chart" style="position:absolute; top:10vh;height=80vh;"></canvas>
+  <div style="position:absolute;top:10vh;height:80vh;left:10vw;width:80vw;">
+  <canvas id="chart"></canvas>
+  </div>
   <script th:inline="javascript">
     /*<![CDATA[*/
     var api_url = /*[[${api_url}]]*/ [];

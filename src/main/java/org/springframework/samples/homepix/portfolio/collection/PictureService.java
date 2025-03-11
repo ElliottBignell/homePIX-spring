@@ -95,7 +95,7 @@ public class PictureService {
 							String location_text = (String) update.get("plain_location"); // Assuming location is passed as ID
 
 							// Fetch the Location object by ID
-							Collection<Location> existing = locationRepository.findByContent(location_text);
+							Collection<Location> existing = locationRepository.findByPlaceName(location_text);
 
 							Location newLocation;
 

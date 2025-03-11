@@ -22,8 +22,4 @@ public class Location extends BaseEntity {
 	@Column(name = "location")
 	@NotEmpty
 	private String location;
-
-	@Column(name = "name")
-	@NotEmpty
-	private String name;
 }

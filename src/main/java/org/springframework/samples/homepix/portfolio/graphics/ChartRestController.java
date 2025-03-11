@@ -53,7 +53,7 @@ public class ChartRestController {
 
 		// Transform the data into chart-friendly JSON
 		List<String> labels = locations.stream()
-			.map(Location::getName)
+			.map(Location::getLocation)
 			.collect(Collectors.toList());
 
 		List<Integer> counts = locations.stream()
@@ -61,7 +61,7 @@ public class ChartRestController {
 			.collect(Collectors.toList());
 
 		List<String> links = locations.stream()
-			.map(location -> "/location/" + location.getName() + "/")
+			.map(location -> "/location/" + location.getLocation() + "/")
 			.collect(Collectors.toList());
 
 		return Map.of(
