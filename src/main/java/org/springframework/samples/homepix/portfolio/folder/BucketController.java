@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -861,17 +862,13 @@ class BucketController extends PaginationController {
 	}
 
 	@GetMapping(value = "/web-images/{directory}/200px/{file}_200px.webp")
+	@Cacheable("getCompressedImageAsBytes")
 	public ResponseEntity<byte[]> getSmallFileFromBucket(@PathVariable("directory") String directory,
 															  @PathVariable("file") String file) {
 		return getSmallCompressedFileFromBucket(directory, file);
 	}
 
-	@GetMapping(value = "/web-images/{directory}/{file}_200px.webp")
-	public ResponseEntity<byte[]> getSmallCompressedFileFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
-
-		String filepath = directory + '/' + file;
-		String compressedPath = directory + "/200px/" + file;
+	private byte[] getCompressedImageAsBytes(String compressedPath, String directory, String file) {
 
 		byte[] compressedImage = null;
 
@@ -889,7 +886,7 @@ class BucketController extends PaginationController {
 		}
 
 		if (null == compressedImage) {
-		//if (true) {
+			//if (true) {
 
 			compressedImage = hitBucket((client, arg1, arg2) -> {
 
@@ -917,6 +914,18 @@ class BucketController extends PaginationController {
 				System.out.println("");
 			}
 		}
+
+		return compressedImage;
+	}
+
+	@GetMapping(value = "/web-images/{directory}/{file}_200px.webp")
+	public ResponseEntity<byte[]> getSmallCompressedFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+
+		String filepath = directory + '/' + file;
+		String compressedPath = directory + "/200px/" + file;
+
+		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file);
 
 		if (compressedImage != null) {
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(compressedImage);

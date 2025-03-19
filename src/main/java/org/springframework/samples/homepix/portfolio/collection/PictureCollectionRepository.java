@@ -48,7 +48,7 @@ public interface PictureCollectionRepository extends CrudRepository<PictureColle
 	@Transactional(readOnly = true)
 	Collection<PictureCollection> findByName(@Param("name") String name);
 
-	@Query("SELECT picture_file FROM PictureFile picture_file WHERE NOT (DATE(picture_file.taken_on) > :to OR DATE(picture_file.taken_on) < :from)")
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE NOT (CAST(picture_file.taken_on AS LocalDate) > :to OR CAST(picture_file.taken_on AS LocalDate) < :from)")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDates(@Param("from") LocalDate from, @Param("to") LocalDate to);
 

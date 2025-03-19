@@ -131,13 +131,13 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		@Param("endDate") LocalDate endDate
 	);
 
-	@Query("SELECT picture_file FROM PictureFile picture_file WHERE DATE(picture_file.taken_on) = :date")
+	@Query("SELECT picture_file FROM PictureFile picture_file WHERE CAST(picture_file.taken_on AS localDate) = :date")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByDate(@Param("date") LocalDate date);
 
-	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p GROUP BY DATE(p.taken_on)")
+	@Query("SELECT CAST(p.taken_on AS LocalDate), COUNT(p) FROM PictureFile p GROUP BY CAST(p.taken_on AS LocalDate)")
 	List<Object[]> countByTakenOn();
-	@Query("SELECT DATE(p.taken_on), COUNT(p) FROM PictureFile p WHERE YEAR(p.taken_on) = :year GROUP BY DATE(p.taken_on)")
+	@Query("SELECT CAST(p.taken_on AS LocalDate), COUNT(p) FROM PictureFile p WHERE YEAR(p.taken_on) = :year GROUP BY DATE(p.taken_on)")
 	List<Object[]> countByTakenOnForYear(@Param("year") int year);
 
 
@@ -516,7 +516,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		return result.stream()
 			.filter(entry -> entry[0] != null && entry[1] != null)
 			.collect(Collectors.toMap(
-				entry -> ((Date) entry[0]).toLocalDate(), // Correctly cast to LocalDateTime
+				entry -> ((LocalDate) entry[0]), // Correctly cast to LocalDateTime
 				entry -> ((Number) entry[1]).longValue() // Handle any potential type variations for the count
 			));
 	}

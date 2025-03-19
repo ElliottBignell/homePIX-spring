@@ -16,7 +16,7 @@ public class YearThumbnail {
 	@Column(name = "id")
 	private long id;
 
-	@Column(name = "year")
+	@Column(name = "`year`")
 	private int year;
 
 	@OneToOne(fetch = FetchType.LAZY)

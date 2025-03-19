@@ -8,6 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
 public class TestConfig {
 
 	TestConfig() {
-		System.out.println("Configuring");
+		System.out.println("Configuring tests");
 	}
 }
