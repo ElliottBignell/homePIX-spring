@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio.calendar;
 
 import net.bytebuddy.implementation.bind.annotation.Argument;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,12 +26,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.*;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.security.cert.X509Certificate;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,37 +49,81 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ActiveProfiles("test") // Assuming you need the "mysql" profile active for this test
 @AutoConfigureMockMvc
+@Transactional
 @Import(com.example.test.config.TestConfig.class)
 public class CalendarPageIntegrationTest {
 
-	private final MockMvc mockMvc;
-	private final PictureFileRepository pictureFiles;
-	private final Calendar calendar;
-
-	private final RestTemplate restTemplate;
+	@Autowired
+	private MockMvc mockMvc;
 
 	@Autowired
-	public CalendarPageIntegrationTest(MockMvc mockMvc, PictureFileRepository pictureFiles, Calendar calendar) {
+	private PictureFileRepository pictureFiles;
 
-		this.mockMvc = mockMvc;
-		this.pictureFiles = pictureFiles;
-		this.calendar = calendar;
+	@Autowired
+	private Calendar calendar;
 
-		// Create a RestTemplate instance
-		restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
-			@Override
-			protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
-				if (connection instanceof HttpsURLConnection) {
-					((HttpsURLConnection) connection).setHostnameVerifier(new HostnameVerifier() {
-						public boolean verify(String hostname, SSLSession session) {
-							return true;
-						}
-					});
-					((HttpsURLConnection) connection).setSSLSocketFactory(getTrustingSSLSocketFactory());
-				}
-				super.prepareConnection(connection, httpMethod);
+	private RestTemplate restTemplate;
+
+	@BeforeAll
+    void setUp() {
+        restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+                if (connection instanceof HttpsURLConnection) {
+                    ((HttpsURLConnection) connection).setHostnameVerifier((hostname, session) -> true);
+                    ((HttpsURLConnection) connection).setSSLSocketFactory(getTrustingSSLSocketFactory());
+                }
+                super.prepareConnection(connection, httpMethod);
+            }
+        });
+
+        // Populate test data
+        addExamplePictureFiles();
+    }
+
+	private void addExamplePictureFiles() {
+
+		Month[] months = Month.values();
+
+		for (int i = 0; i < months.length; i++) {
+			PictureFile pic = new PictureFile();
+			pic.setFilename("test" + (i + 1) + ".jpg");
+			pic.setTitle("Dummy " + (i + 1));
+
+			// Pick different days for each month, including fencepost cases
+			int day;
+			if (i == 0) {
+				day = 1; // first day of January
+			} else if (i == 1) {
+				day = months[i].length(true); // last day of February in leap year (fencepost)
+			} else if (i == 11) {
+				day = 31; // last day of December (fencepost)
+			} else {
+				// For other months, pick the 15th
+				day = 15;
 			}
-		});
+
+			pic.setTaken_on(LocalDateTime.of(2024, months[i], day, 0, 0, 0));
+			pictureFiles.save(pic);
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("years")
+	public void PopulateYearIntegrationTest(CalendarYear calendarYear) throws Exception {
+
+		Calendar calendar = new Calendar(pictureFiles);
+		calendar.populateYear(calendarYear);
+		assertEquals(0, calendar.getCount());
+	}
+
+	private Stream<CalendarYear> years() {
+
+		return Stream.of(
+			new CalendarYear(1988),
+			new CalendarYear(2013),
+			new CalendarYear(2024)
+		);
 	}
 
 	private static SSLSocketFactory getTrustingSSLSocketFactory() {
@@ -104,7 +153,7 @@ public class CalendarPageIntegrationTest {
 
 	private List<String> getAnnualTags() {
 
-		org.springframework.samples.homepix.portfolio.calendar.Calendar calendar = new org.springframework.samples.homepix.portfolio.calendar.Calendar(this.pictureFiles);
+		Calendar calendar = new Calendar(this.pictureFiles);
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(calendar.getItems().iterator(), 0), false)
 			.flatMap(yearGroup ->
@@ -126,43 +175,12 @@ public class CalendarPageIntegrationTest {
 	private Stream<Arguments> getDailyTags() {
 
 		return Stream.of(
+			Arguments.of("2013-09-02"),
+			Arguments.of("2016-03-06"),
 			Arguments.of("2024-12-01"),
 			Arguments.of("2024-12-02"),
 			Arguments.of("2024-12-03")
 		);
-
-		/*org.springframework.samples.homepix.portfolio.calendar.Calendar calendar = new org.springframework.samples.homepix.portfolio.calendar.Calendar(this.pictureFiles);
-
-		for (CalendarYearGroup group : calendar.getItems()) {
-
-			for (CalendarYear calendarYear : group.getYears()) {
-
-				if (calendarYear.getQuarters() == null || calendarYear.getQuarters().isEmpty()) {
-					calendar.populateYear(calendarYear);
-				}
-			}
-		}
-
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(calendar.getItems().iterator(), 0), false)
-			.flatMap(yearGroup ->
-				StreamSupport.stream(Spliterators.spliteratorUnknownSize(yearGroup.getYears().iterator(), 0), false)
-					.flatMap(year ->
-						Optional.ofNullable(year.getQuarters()).orElse(Collections.emptyList()).stream()
-							.flatMap(quarter ->
-								StreamSupport.stream(Spliterators.spliteratorUnknownSize(quarter.getMonths().iterator(), 0), false)
-									.flatMap(month ->
-										StreamSupport.stream(Spliterators.spliteratorUnknownSize(month.getWeeks().iterator(), 0), false)
-											.flatMap(week ->
-												week.getDays().stream()
-													.filter(day -> !pictureFiles.findByDate(LocalDate.of(year.getYear(), Integer.valueOf(month.getIndex()), day.getDayOfMonth() + 1)).isEmpty())
-													.limit(1) // Limit to the first record
-													.map(day -> String.format("%d-%02d-%02d", year.getYear(), Integer.valueOf(month.getIndex()), day.getDayOfMonth() + 1))
-											)
-									)
-							)
-					)
-			)
-			.collect(Collectors.toList());*/
 	}
 
 	public Stream<Arguments> getCalendarDayEndpoints() {

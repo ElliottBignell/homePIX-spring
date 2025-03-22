@@ -137,7 +137,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 
 	@Query("SELECT CAST(p.taken_on AS LocalDate), COUNT(p) FROM PictureFile p GROUP BY CAST(p.taken_on AS LocalDate)")
 	List<Object[]> countByTakenOn();
-	@Query("SELECT CAST(p.taken_on AS LocalDate), COUNT(p) FROM PictureFile p WHERE YEAR(p.taken_on) = :year GROUP BY DATE(p.taken_on)")
+	@Query("SELECT CAST(p.taken_on AS LocalDate), COUNT(p) FROM PictureFile p WHERE YEAR(p.taken_on) = :year GROUP BY CAST(p.taken_on AS LocalDate)")
 	List<Object[]> countByTakenOnForYear(@Param("year") int year);
 
 

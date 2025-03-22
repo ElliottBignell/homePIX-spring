@@ -63,39 +63,6 @@ public class Album {
 
 	private PictureFile thumbnail;
 
-	protected void setPictureFilesInternal(List<PictureFile> pictureFiles) {
-		// this.pictureFiles = pictureFiles;
-	}
-
-	public void addPictureFile(PictureFile pictureFile) {
-
-		/*
-		 * Optional<PictureFile> newFile =
-		 * this.pictureFileRepository.findById(pictureFile.getId());
-		 *
-		 * if (newFile.isEmpty()) { pictureFileRepository.save(newFile.get()); }
-		 *
-		 * PictureFile existingFile = this.albumContent.stream() .filter(entry ->
-		 * entry.getPictureFile().getId() == pictureFile.getId())
-		 * .map(AlbumContent::getPictureFile).findAny().orElse(null);
-		 *
-		 * if (null == existingFile) { getPictureFilesInternal().add(pictureFile); }
-		 */
-	}
-
-	public void deletePictureFile(PictureFile pictureFile) {
-
-		/*
-		 * PictureFile existingFile = this.albumContent.stream() .filter(entry ->
-		 * entry.getPictureFile().getId() == pictureFile.getId())
-		 * .map(AlbumContent::getPictureFile).findAny().orElse(null);
-		 *
-		 * if (null != existingFile) { this.albumContent.removeIf(item ->
-		 * item.getPictureFile().getId() == pictureFile.getId()); }
-		 */
-		// pictureFile.setOwner(this);
-	}
-
 	@Override
 	public String toString() {
 		return new ToStringCreator(this).append("id", this.getId()).append("name", this.getName()).toString();

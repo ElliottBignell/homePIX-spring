@@ -36,6 +36,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFileRepos
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
+import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.security.access.annotation.Secured;
@@ -87,6 +88,9 @@ class BucketController extends PaginationController {
 
 	@Autowired
 	FolderRepository folderRepository;
+
+	@Autowired
+	KeywordRelationshipsService keywordRelationshipsService;
 
 	private final PictureFileService pictureFileService;
 
@@ -167,11 +171,7 @@ class BucketController extends PaginationController {
 		List<Folder> folders = new ArrayList<>(this.folderService.getSortedFolders());
 		Map<Integer, PictureFile> thumbnailsMap = folderService.getThumbnailsMap(folders);
 
-		List<PictureFile> files = folders.stream().map(item -> {
-				return this.pictureFiles.findById(item.getThumbnailId()).orElse(null);
-		})
-			.filter(file -> file != null)
-			.collect(Collectors.toList());
+		List<PictureFile> files = folderService.getThumbnails(folders);
 
 	    setStructuredDataForModel(
 				requestDTO,
@@ -185,7 +185,7 @@ class BucketController extends PaginationController {
 
 		Set<Integer> pictureIds = new HashSet<>(thumbnailsMap.keySet());
 
-		Collection<KeywordRelationships> relations = this.keywordRelationships.findByPictureIds(pictureIds);
+		Collection<KeywordRelationships> relations = keywordRelationshipsService.getRelationshipsByPictureIds(pictureIds);
 
 		model.put("thumbnails", thumbnailsMap);
 		model.put("title", "Gallery of picture folders");

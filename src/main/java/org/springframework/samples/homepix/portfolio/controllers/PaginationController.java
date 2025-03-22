@@ -312,7 +312,7 @@ public abstract class PaginationController implements AutoCloseable {
 			String bucketName = "picture-files";
 
 			if (null == folderCache) {
-				folderCache = listSubFolders(s3Client, "jpegs");
+				folderCache = folderService.listSubFolders( s3Client, "jpegs");
 			}
 
 			if (folderCache.isEmpty()) {
@@ -338,42 +338,6 @@ public abstract class PaginationController implements AutoCloseable {
 			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
 		}
 		return "folders/folderList";
-	}
-
-	protected List<Folder> listSubFolders(S3Client s3Client, String parentFolder) {
-
-		String prefix = parentFolder.endsWith("/") ? parentFolder : parentFolder + "/";
-
-		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-				.delimiter("/").build();
-
-		ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
-
-		List<Folder> results = new ArrayList<Folder>();
-
-		listObjectsResponse.commonPrefixes().forEach(subFolder -> {
-
-			String name = subFolder.prefix();
-			String folderName = name.substring(parentFolder.length() + 1, name.length() - 1);
-
-			Collection<Folder> folders = this.folders.findByName(folderName);
-
-			if (folders.isEmpty()) {
-
-				Folder folder = new Folder();
-
-				folder.setName(folderName);
-				folder.setPicture_count(0);
-
-				results.add(folder);
-				this.folders.save(folder);
-			}
-			else {
-				results.add(folders.iterator().next());
-			}
-		});
-
-		return results;
 	}
 
 	// TODO: Refactor out common code

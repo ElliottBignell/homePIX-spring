@@ -196,19 +196,6 @@ public class Calendar extends BaseEntity {
 						addWeek(days, weeks);
 					}
 
-					while (weeks.size() < 6) {
-
-						List<CalendarDay> days = new ArrayList<>();
-
-						for (int day = 0; day < 7; day++) {
-
-							CalendarDay newDay = new CalendarDay(this.dayNames[day], null);
-							days.add(newDay);
-						}
-
-						addWeek(days, weeks);
-					}
-
 					months.get(monthNo).setWeeks(weeks);
 				}
 

@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+
+<rdf:Description rdf:about='dsc_195630-dsc_195635.jpg'
+  xmlns:et='http://ns.exiftool.org/1.0/' et:toolkit='Image::ExifTool 12.65'
+  xmlns:ExifTool='http://ns.exiftool.org/ExifTool/1.0/'
+  xmlns:System='http://ns.exiftool.org/File/System/1.0/'
+  xmlns:File='http://ns.exiftool.org/File/1.0/'
+  xmlns:JFIF='http://ns.exiftool.org/JFIF/JFIF/1.0/'
+  xmlns:IFD0='http://ns.exiftool.org/EXIF/IFD0/1.0/'
+  xmlns:ExifIFD='http://ns.exiftool.org/EXIF/ExifIFD/1.0/'
+  xmlns:Nikon='http://ns.exiftool.org/MakerNotes/Nikon/1.0/'
+  xmlns:PreviewIFD='http://ns.exiftool.org/MakerNotes/PreviewIFD/1.0/'
+  xmlns:GPS='http://ns.exiftool.org/EXIF/GPS/1.0/'
+  xmlns:IPTC='http://ns.exiftool.org/IPTC/IPTC/1.0/'
+  xmlns:XMP-x='http://ns.exiftool.org/XMP/XMP-x/1.0/'
+  xmlns:XMP-aux='http://ns.exiftool.org/XMP/XMP-aux/1.0/'
+  xmlns:XMP-dc='http://ns.exiftool.org/XMP/XMP-dc/1.0/'
+  xmlns:XMP-exif='http://ns.exiftool.org/XMP/XMP-exif/1.0/'
+  xmlns:XMP-tiff='http://ns.exiftool.org/XMP/XMP-tiff/1.0/'
+  xmlns:Composite='http://ns.exiftool.org/Composite/1.0/'>
+ <ExifTool:ExifToolVersion>12.65</ExifTool:ExifToolVersion>
+ <System:FileName>dsc_195630-dsc_195635.jpg</System:FileName>
+ <System:Directory>.</System:Directory>
+ <System:FileSize>4.1 MB</System:FileSize>
+ <System:FileModifyDate>2021:10:20 22:48:49+02:00</System:FileModifyDate>
+ <System:FileAccessDate>2024:01:02 22:09:22+01:00</System:FileAccessDate>
+ <System:FileInodeChangeDate>2024:01:02 22:10:49+01:00</System:FileInodeChangeDate>
+ <System:FilePermissions>-rw-r--r--</System:FilePermissions>
+ <File:FileType>JPEG</File:FileType>
+ <File:FileTypeExtension>jpg</File:FileTypeExtension>
+ <File:MIMEType>image/jpeg</File:MIMEType>
+ <File:ExifByteOrder>Big-endian (Motorola, MM)</File:ExifByteOrder>
+ <File:CurrentIPTCDigest>7b939446d8c53328e76364526bfd8cce</File:CurrentIPTCDigest>
+ <File:Comment>Marc und Karina&#39;s</File:Comment>
+ <File:ImageWidth>3665</File:ImageWidth>
+ <File:ImageHeight>3210</File:ImageHeight>
+ <File:EncodingProcess>Baseline DCT, Huffman coding</File:EncodingProcess>
+ <File:BitsPerSample>8</File:BitsPerSample>
+ <File:ColorComponents>3</File:ColorComponents>
+ <File:YCbCrSubSampling>YCbCr4:4:4 (1 1)</File:YCbCrSubSampling>
+ <JFIF:JFIFVersion>1.01</JFIF:JFIFVersion>
+ <JFIF:ResolutionUnit>inches</JFIF:ResolutionUnit>
+ <JFIF:XResolution>300</JFIF:XResolution>
+ <JFIF:YResolution>300</JFIF:YResolution>
+ <IFD0:ImageDescription>Marc und Karina&#39;s</IFD0:ImageDescription>
+ <IFD0:Make>NIKON CORPORATION</IFD0:Make>
+ <IFD0:Model>NIKON D300</IFD0:Model>
+ <IFD0:XResolution>300</IFD0:XResolution>
+ <IFD0:YResolution>300</IFD0:YResolution>
+ <IFD0:ResolutionUnit>inches</IFD0:ResolutionUnit>
+ <IFD0:Software>Ver.1.11</IFD0:Software>
+ <IFD0:ModifyDate>2016:12:10 11:05:47</IFD0:ModifyDate>
+ <IFD0:Artist>Elliott Bignell</IFD0:Artist>
+ <IFD0:YCbCrPositioning>Centered</IFD0:YCbCrPositioning>
+ <IFD0:ReferenceBlackWhite>0 255 0 255 0 255</IFD0:ReferenceBlackWhite>
+ <IFD0:Copyright>Elliott Bignell</IFD0:Copyright>
+ <ExifIFD:ExposureTime>1/320</ExifIFD:ExposureTime>
+ <ExifIFD:FNumber>10.0</ExifIFD:FNumber>
+ <ExifIFD:ExposureProgram>Aperture-priority AE</ExifIFD:ExposureProgram>
+ <ExifIFD:ISO>200</ExifIFD:ISO>
+ <ExifIFD:ExifVersion>0230</ExifIFD:ExifVersion>
+ <ExifIFD:DateTimeOriginal>2016:12:10 11:05:47</ExifIFD:DateTimeOriginal>
+ <ExifIFD:CreateDate>2016:12:10 11:05:47</ExifIFD:CreateDate>
+ <ExifIFD:ComponentsConfiguration>Y, Cb, Cr, -</ExifIFD:ComponentsConfiguration>
+ <ExifIFD:ExposureCompensation>0</ExifIFD:ExposureCompensation>
+ <ExifIFD:MaxApertureValue>3.9</ExifIFD:MaxApertureValue>
+ <ExifIFD:MeteringMode>Multi-segment</ExifIFD:MeteringMode>
+ <ExifIFD:LightSource>Unknown</ExifIFD:LightSource>
+ <ExifIFD:FocalLength>26.0 mm</ExifIFD:FocalLength>
+ <ExifIFD:UserComment>Elliott Bignell, 2016</ExifIFD:UserComment>
+ <ExifIFD:SubSecTime>40</ExifIFD:SubSecTime>
+ <ExifIFD:SubSecTimeOriginal>40</ExifIFD:SubSecTimeOriginal>
+ <ExifIFD:SubSecTimeDigitized>40</ExifIFD:SubSecTimeDigitized>
+ <ExifIFD:FlashpixVersion>0100</ExifIFD:FlashpixVersion>
+ <ExifIFD:ColorSpace>sRGB</ExifIFD:ColorSpace>
+ <ExifIFD:SensingMethod>One-chip color area</ExifIFD:SensingMethod>
+ <ExifIFD:FileSource>Digital Camera</ExifIFD:FileSource>
+ <ExifIFD:SceneType>Directly photographed</ExifIFD:SceneType>
+ <ExifIFD:CFAPattern>[Red,Green][Green,Blue]</ExifIFD:CFAPattern>
+ <ExifIFD:CustomRendered>Normal</ExifIFD:CustomRendered>
+ <ExifIFD:ExposureMode>Auto</ExifIFD:ExposureMode>
+ <ExifIFD:WhiteBalance>Manual</ExifIFD:WhiteBalance>
+ <ExifIFD:DigitalZoomRatio>1</ExifIFD:DigitalZoomRatio>
+ <ExifIFD:FocalLengthIn35mmFormat>39 mm</ExifIFD:FocalLengthIn35mmFormat>
+ <ExifIFD:SceneCaptureType>Standard</ExifIFD:SceneCaptureType>
+ <ExifIFD:GainControl>None</ExifIFD:GainControl>
+ <ExifIFD:Contrast>Normal</ExifIFD:Contrast>
+ <ExifIFD:Saturation>Normal</ExifIFD:Saturation>
+ <ExifIFD:Sharpness>Normal</ExifIFD:Sharpness>
+ <ExifIFD:SubjectDistanceRange>Unknown</ExifIFD:SubjectDistanceRange>
+ <ExifIFD:SerialNumber>4004922</ExifIFD:SerialNumber>
+ <Nikon:MakerNoteVersion>2.10</Nikon:MakerNoteVersion>
+ <Nikon:ISO>200</Nikon:ISO>
+ <Nikon:Quality>RAW</Nikon:Quality>
+ <Nikon:WhiteBalance>5000K</Nikon:WhiteBalance>
+ <Nikon:FocusMode>Manual</Nikon:FocusMode>
+ <Nikon:FlashSetting>Normal</Nikon:FlashSetting>
+ <Nikon:FlashType></Nikon:FlashType>
+ <Nikon:WhiteBalanceFineTune>0 0</Nikon:WhiteBalanceFineTune>
+ <Nikon:WB_RBLevels>1.53125 1.3515625 1 1</Nikon:WB_RBLevels>
+ <Nikon:ProgramShift>0</Nikon:ProgramShift>
+ <Nikon:ExposureDifference>0</Nikon:ExposureDifference>
+ <Nikon:FlashExposureComp>0</Nikon:FlashExposureComp>
+ <Nikon:ISOSetting>200</Nikon:ISOSetting>
+ <Nikon:ExternalFlashExposureComp>0</Nikon:ExternalFlashExposureComp>
+ <Nikon:FlashExposureBracketValue>0.0</Nikon:FlashExposureBracketValue>
+ <Nikon:ExposureBracketValue>0</Nikon:ExposureBracketValue>
+ <Nikon:CropHiSpeed>Off (4352x2868 cropped to 4352x2868 at pixel 0,0)</Nikon:CropHiSpeed>
+ <Nikon:ExposureTuning>0</Nikon:ExposureTuning>
+ <Nikon:SerialNumber>4004922</Nikon:SerialNumber>
+ <Nikon:ColorSpace>sRGB</Nikon:ColorSpace>
+ <Nikon:VRInfoVersion>0100</Nikon:VRInfoVersion>
+ <Nikon:VibrationReduction>On</Nikon:VibrationReduction>
+ <Nikon:VRMode>Normal</Nikon:VRMode>
+ <Nikon:ImageAuthentication>Off</Nikon:ImageAuthentication>
+ <Nikon:ActiveD-Lighting>Off</Nikon:ActiveD-Lighting>
+ <Nikon:PictureControlVersion>0100</Nikon:PictureControlVersion>
+ <Nikon:PictureControlName>Standard</Nikon:PictureControlName>
+ <Nikon:PictureControlBase>Standard</Nikon:PictureControlBase>
+ <Nikon:PictureControlAdjust>Default Settings</Nikon:PictureControlAdjust>
+ <Nikon:PictureControlQuickAdjust>Normal</Nikon:PictureControlQuickAdjust>
+ <Nikon:Sharpness>3</Nikon:Sharpness>
+ <Nikon:Contrast>Normal</Nikon:Contrast>
+ <Nikon:Brightness>Normal</Nikon:Brightness>
+ <Nikon:Saturation>Normal</Nikon:Saturation>
+ <Nikon:HueAdjustment>None</Nikon:HueAdjustment>
+ <Nikon:FilterEffect>n/a</Nikon:FilterEffect>
+ <Nikon:ToningEffect>n/a</Nikon:ToningEffect>
+ <Nikon:ToningSaturation>n/a</Nikon:ToningSaturation>
+ <Nikon:TimeZone>+01:00</Nikon:TimeZone>
+ <Nikon:DaylightSavings>No</Nikon:DaylightSavings>
+ <Nikon:DateDisplayFormat>Y/M/D</Nikon:DateDisplayFormat>
+ <Nikon:ISO>200</Nikon:ISO>
+ <Nikon:ISOExpansion>Off</Nikon:ISOExpansion>
+ <Nikon:ISO2>200</Nikon:ISO2>
+ <Nikon:ISOExpansion2>Off</Nikon:ISOExpansion2>
+ <Nikon:LensType>G VR</Nikon:LensType>
+ <Nikon:Lens>16-300mm f/3.5-6.3</Nikon:Lens>
+ <Nikon:FlashMode>Did Not Fire</Nikon:FlashMode>
+ <Nikon:ShootingMode>Continuous, Exposure Bracketing</Nikon:ShootingMode>
+ <Nikon:LensFStops>5.33</Nikon:LensFStops>
+ <Nikon:ContrastCurve>(Binary data 578 bytes, use -b option to extract)</Nikon:ContrastCurve>
+ <Nikon:ShotInfoVersion>0210</Nikon:ShotInfoVersion>
+ <Nikon:FirmwareVersion>1.11 </Nikon:FirmwareVersion>
+ <Nikon:NEFCompression>Lossless</Nikon:NEFCompression>
+ <Nikon:NoiseReduction>Off</Nikon:NoiseReduction>
+ <Nikon:NEFLinearizationTable>(Binary data 46 bytes, use -b option to extract)</Nikon:NEFLinearizationTable>
+ <Nikon:WB_GRBGLevels>256 392 346 256</Nikon:WB_GRBGLevels>
+ <Nikon:LensDataVersion>0203</Nikon:LensDataVersion>
+ <Nikon:ExitPupilPosition>97.5 mm</Nikon:ExitPupilPosition>
+ <Nikon:AFAperture>3.9</Nikon:AFAperture>
+ <Nikon:FocusPosition>0xff</Nikon:FocusPosition>
+ <Nikon:FocusDistance>28.18 m</Nikon:FocusDistance>
+ <Nikon:FocalLength>25.9 mm</Nikon:FocalLength>
+ <Nikon:LensIDNumber>234</Nikon:LensIDNumber>
+ <Nikon:LensFStops>5.33</Nikon:LensFStops>
+ <Nikon:MinFocalLength>16.3 mm</Nikon:MinFocalLength>
+ <Nikon:MaxFocalLength>302.0 mm</Nikon:MaxFocalLength>
+ <Nikon:MaxApertureAtMinFocal>3.6</Nikon:MaxApertureAtMinFocal>
+ <Nikon:MaxApertureAtMaxFocal>6.3</Nikon:MaxApertureAtMaxFocal>
+ <Nikon:MCUVersion>223</Nikon:MCUVersion>
+ <Nikon:EffectiveMaxAperture>3.9</Nikon:EffectiveMaxAperture>
+ <Nikon:RawImageCenter>2176 1434</Nikon:RawImageCenter>
+ <Nikon:RetouchHistory>None</Nikon:RetouchHistory>
+ <Nikon:ShutterCount>195630</Nikon:ShutterCount>
+ <Nikon:FlashInfoVersion>0103</Nikon:FlashInfoVersion>
+ <Nikon:FlashSource>None</Nikon:FlashSource>
+ <Nikon:ExternalFlashFirmware>n/a</Nikon:ExternalFlashFirmware>
+ <Nikon:ExternalFlashFlags>(none)</Nikon:ExternalFlashFlags>
+ <Nikon:FlashCommanderMode>Off</Nikon:FlashCommanderMode>
+ <Nikon:FlashControlMode>Off</Nikon:FlashControlMode>
+ <Nikon:FlashCompensation>0</Nikon:FlashCompensation>
+ <Nikon:FlashGNDistance>0</Nikon:FlashGNDistance>
+ <Nikon:FlashColorFilter>None</Nikon:FlashColorFilter>
+ <Nikon:FlashGroupAControlMode>Off</Nikon:FlashGroupAControlMode>
+ <Nikon:FlashGroupBControlMode>Off</Nikon:FlashGroupBControlMode>
+ <Nikon:FlashGroupCControlMode>Off</Nikon:FlashGroupCControlMode>
+ <Nikon:FlashGroupACompensation>0</Nikon:FlashGroupACompensation>
+ <Nikon:FlashGroupBCompensation>0</Nikon:FlashGroupBCompensation>
+ <Nikon:FlashGroupCCompensation>0</Nikon:FlashGroupCCompensation>
+ <Nikon:MultiExposureVersion>0100</Nikon:MultiExposureVersion>
+ <Nikon:MultiExposureMode>Off</Nikon:MultiExposureMode>
+ <Nikon:MultiExposureShots>0</Nikon:MultiExposureShots>
+ <Nikon:MultiExposureAutoGain>Off</Nikon:MultiExposureAutoGain>
+ <Nikon:HighISONoiseReduction>Off</Nikon:HighISONoiseReduction>
+ <Nikon:PowerUpTime>2016:09:22 09:08:20</Nikon:PowerUpTime>
+ <Nikon:AFInfo2Version>0100</Nikon:AFInfo2Version>
+ <Nikon:ContrastDetectAF>Off</Nikon:ContrastDetectAF>
+ <Nikon:AFAreaMode>Single Area</Nikon:AFAreaMode>
+ <Nikon:PhaseDetectAF>Off</Nikon:PhaseDetectAF>
+ <Nikon:PrimaryAFPoint>(none)</Nikon:PrimaryAFPoint>
+ <Nikon:AFPointsUsed>(none)</Nikon:AFPointsUsed>
+ <Nikon:ContrastDetectAFInFocus>No</Nikon:ContrastDetectAFInFocus>
+ <Nikon:FileInfoVersion>0100</Nikon:FileInfoVersion>
+ <Nikon:MemoryCardNumber>0</Nikon:MemoryCardNumber>
+ <Nikon:DirectoryNumber>119</Nikon:DirectoryNumber>
+ <Nikon:FileNumber>8546</Nikon:FileNumber>
+ <Nikon:AFFineTune>On (1)</Nikon:AFFineTune>
+ <Nikon:AFFineTuneIndex>n/a</Nikon:AFFineTuneIndex>
+ <Nikon:AFFineTuneAdj>0</Nikon:AFFineTuneAdj>
+ <Nikon:AFFineTuneAdjTele>0</Nikon:AFFineTuneAdjTele>
+ <PreviewIFD:Compression>JPEG (old-style)</PreviewIFD:Compression>
+ <PreviewIFD:XResolution>300</PreviewIFD:XResolution>
+ <PreviewIFD:YResolution>300</PreviewIFD:YResolution>
+ <PreviewIFD:ResolutionUnit>inches</PreviewIFD:ResolutionUnit>
+ <PreviewIFD:PreviewImageStart>9670</PreviewIFD:PreviewImageStart>
+ <PreviewIFD:PreviewImageLength>0</PreviewIFD:PreviewImageLength>
+ <PreviewIFD:YCbCrPositioning>Co-sited</PreviewIFD:YCbCrPositioning>
+ <GPS:GPSVersionID>2.2.0.0</GPS:GPSVersionID>
+ <GPS:GPSLatitudeRef>North</GPS:GPSLatitudeRef>
+ <GPS:GPSLatitude>47 deg 31&#39; 42.57&quot;</GPS:GPSLatitude>
+ <GPS:GPSLongitudeRef>East</GPS:GPSLongitudeRef>
+ <GPS:GPSLongitude>7 deg 35&#39; 18.45&quot;</GPS:GPSLongitude>
+ <GPS:GPSAltitudeRef>Above Sea Level</GPS:GPSAltitudeRef>
+ <GPS:GPSAltitude>432.3 m</GPS:GPSAltitude>
+ <GPS:GPSTimeStamp>09:05:47</GPS:GPSTimeStamp>
+ <GPS:GPSMapDatum>WGS-84</GPS:GPSMapDatum>
+ <GPS:GPSDateStamp>2016:12:10</GPS:GPSDateStamp>
+ <IPTC:Keywords>Schweiz,Basel</IPTC:Keywords>
+ <IPTC:ApplicationRecordVersion>4</IPTC:ApplicationRecordVersion>
+ <XMP-x:XMPToolkit>Image::ExifTool 10.10</XMP-x:XMPToolkit>
+ <XMP-aux:FlashCompensation>0</XMP-aux:FlashCompensation>
+ <XMP-aux:Lens>16-300mm f/3.5-6.3</XMP-aux:Lens>
+ <XMP-dc:Format>image/tiff</XMP-dc:Format>
+ <XMP-exif:FlashFired>False</XMP-exif:FlashFired>
+ <XMP-exif:FlashFunction>False</XMP-exif:FlashFunction>
+ <XMP-exif:FlashMode>Unknown</XMP-exif:FlashMode>
+ <XMP-exif:FlashRedEyeMode>False</XMP-exif:FlashRedEyeMode>
+ <XMP-exif:FlashReturn>No return detection</XMP-exif:FlashReturn>
+ <XMP-exif:GPSDateTime>2016:12:10 09:05:47Z</XMP-exif:GPSDateTime>
+ <XMP-tiff:BitsPerSample>14</XMP-tiff:BitsPerSample>
+ <XMP-tiff:Compression>Nikon NEF Compressed</XMP-tiff:Compression>
+ <XMP-tiff:DateTime>2017:03:08 21:48:30</XMP-tiff:DateTime>
+ <XMP-tiff:ImageHeight>2868</XMP-tiff:ImageHeight>
+ <XMP-tiff:ImageWidth>4352</XMP-tiff:ImageWidth>
+ <XMP-tiff:PhotometricInterpretation>Color Filter Array</XMP-tiff:PhotometricInterpretation>
+ <XMP-tiff:PlanarConfiguration>Chunky</XMP-tiff:PlanarConfiguration>
+ <XMP-tiff:SamplesPerPixel>1</XMP-tiff:SamplesPerPixel>
+ <XMP-tiff:YCbCrPositioning>Co-sited</XMP-tiff:YCbCrPositioning>
+ <Composite:Aperture>10.0</Composite:Aperture>
+ <Composite:BlueBalance>1.351563</Composite:BlueBalance>
+ <Composite:ImageSize>3665x3210</Composite:ImageSize>
+ <Composite:Megapixels>11.8</Composite:Megapixels>
+ <Composite:RedBalance>1.53125</Composite:RedBalance>
+ <Composite:ScaleFactor35efl>1.5</Composite:ScaleFactor35efl>
+ <Composite:ShutterSpeed>1/320</Composite:ShutterSpeed>
+ <Composite:SubSecCreateDate>2016:12:10 11:05:47.40</Composite:SubSecCreateDate>
+ <Composite:SubSecDateTimeOriginal>2016:12:10 11:05:47.40</Composite:SubSecDateTimeOriginal>
+ <Composite:SubSecModifyDate>2016:12:10 11:05:47.40</Composite:SubSecModifyDate>
+ <Composite:GPSAltitude>432.3 m Above Sea Level</Composite:GPSAltitude>
+ <Composite:GPSDateTime>2016:12:10 09:05:47Z</Composite:GPSDateTime>
+ <Composite:GPSLatitude>47 deg 31&#39; 42.57&quot; N</Composite:GPSLatitude>
+ <Composite:GPSLongitude>7 deg 35&#39; 18.45&quot; E</Composite:GPSLongitude>
+ <Composite:AutoFocus>Off</Composite:AutoFocus>
+ <Composite:LensID>Tamron 16-300mm f/3.5-6.3 Di II VC PZD (B016)</Composite:LensID>
+ <Composite:LensSpec>16-300mm f/3.5-6.3 G VR</Composite:LensSpec>
+ <Composite:Flash>No Flash</Composite:Flash>
+ <Composite:CircleOfConfusion>0.020 mm</Composite:CircleOfConfusion>
+ <Composite:DOF>inf (3.02 m - inf)</Composite:DOF>
+ <Composite:FOV>49.5 deg (25.99 m)</Composite:FOV>
+ <Composite:FocalLength35efl>26.0 mm (35 mm equivalent: 39.0 mm)</Composite:FocalLength35efl>
+ <Composite:GPSPosition>47 deg 31&#39; 42.57&quot; N, 7 deg 35&#39; 18.45&quot; E</Composite:GPSPosition>
+ <Composite:HyperfocalDistance>3.37 m</Composite:HyperfocalDistance>
+ <Composite:LightValue>14.0</Composite:LightValue>
+</rdf:Description>
+</rdf:RDF>

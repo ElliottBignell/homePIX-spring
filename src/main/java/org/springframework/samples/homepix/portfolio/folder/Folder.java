@@ -30,6 +30,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -117,46 +118,41 @@ public class Folder extends BaseEntity {
 
 	private List<PictureFile> loadPictureFiles(String imagePath) {
 
-		List<PictureFile> pictureFiles = null;
+		List<PictureFile> pictureFiles = new ArrayList<>();
 
-		if (pictureFiles == null) {
+		String dir = imagePath + this.name;
 
-			pictureFiles = new ArrayList<>();
+		List<String> jpegNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
+				.filter(file -> file.getName().endsWith(".webp")).map(File::getName).sorted()
+				.collect(Collectors.toList());
 
-			String dir = imagePath + this.name;
+		int index = 0;
 
-			List<String> jpegNames = Stream.of(new File(dir).listFiles()).filter(file -> !file.isDirectory())
-					.filter(file -> file.getName().endsWith(".webp")).map(File::getName).sorted()
-					.collect(Collectors.toList());
+		for (String name : jpegNames) {
 
-			int index = 0;
+			PictureFile item = new PictureFile();
 
-			for (String name : jpegNames) {
+			item.setId(index++);
+			item.setFilename("/images/" + this.name + '/' + name);
 
-				PictureFile item = new PictureFile();
-
-				item.setId(index++);
-				item.setFilename("/images/" + this.name + '/' + name);
-
-				try {
-					item.setTitle(getExifTitle(dir + "/" + name));
-				}
-				catch (Exception e) {
-					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
-				}
-
-				// TODO: Add folder name to keywords in the controller
-				/*Keywords keywords = new Keywords();
-				keywords.setContent(this.name);
-
-				KeywordRelationships relation = new KeywordRelationships();
-				relation.setPictureFile(item);
-				relation.setKeywords(keywords);
-
-				item.setKeywords(keywords);*/
-
-				pictureFiles.add(item);
+			try {
+				item.setTitle(getExifTitle(dir + "/" + name));
 			}
+			catch (IOException e) {
+				logger.log(Level.SEVERE, "An input/output error occurred: " + e.getMessage(), e);
+			}
+
+			// TODO: Add folder name to keywords in the controller
+			/*Keywords keywords = new Keywords();
+			keywords.setContent(this.name);
+
+			KeywordRelationships relation = new KeywordRelationships();
+			relation.setPictureFile(item);
+			relation.setKeywords(keywords);
+
+			item.setKeywords(keywords);*/
+
+			pictureFiles.add(item);
 		}
 
 		return pictureFiles;
@@ -187,6 +183,10 @@ public class Folder extends BaseEntity {
 					}
 				}
 			}
+		}
+		catch (FileNotFoundException e) {
+			title = "No Exif data for title";
+			System.out.println("❌ Can't find EXIF file " + path);
 		}
 		catch (Exception e) {
 
