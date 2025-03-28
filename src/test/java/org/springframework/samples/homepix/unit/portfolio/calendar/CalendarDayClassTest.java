@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.calendar;
+package org.springframework.samples.homepix.unit.portfolio.calendar;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.samples.homepix.portfolio.calendar.CalendarDay;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 

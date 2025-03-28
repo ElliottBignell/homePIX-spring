@@ -46,13 +46,11 @@ public class SEOController extends PaginationController {
 	protected SEOController(
 		AlbumRepository albums,
 		AlbumContentRepository albumContent,
-		FolderRepository folders,
-		PictureFileRepository pictureFiles,
 		KeywordRepository keyword,
 		KeywordRelationshipsRepository keywordsRelationships,
 		FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.albumContent = albumContent;
 	}
 

@@ -67,15 +67,13 @@ class OrganiseController extends AlbumContentBaseController {
 	@Autowired
 	public OrganiseController(AlbumContentRepository albumContent,
 							  AlbumRepository albums,
-							  FolderRepository folders,
-							  PictureFileRepository pictureFiles,
 							  KeywordRepository keyword,
 							  KeywordRelationshipsRepository keywordsRelationships,
 							  FolderService folderService,
 							  AlbumService albumService,
 							  OrganiseRepository organiseRepository
 	) {
-		super(albumContent, albums, folders, pictureFiles, keyword, keywordsRelationships, folderService, albumService);
+		super(albumContent, albums, keyword, keywordsRelationships, folderService, albumService);
 		this.organiseRepository = organiseRepository;
 	}
 

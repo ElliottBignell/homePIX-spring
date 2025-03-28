@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.folder;
+package org.springframework.samples.homepix.unit.portfolio.folder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -10,13 +10,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

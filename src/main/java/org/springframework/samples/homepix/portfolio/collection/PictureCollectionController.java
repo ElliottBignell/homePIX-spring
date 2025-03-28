@@ -82,10 +82,8 @@ class PictureCollectionController extends PaginationController {
 	@Autowired
 	LocationService locationService;
 
-	public PictureCollectionController(PictureFileRepository pictureFiles,
-									   PictureCollectionRepository pictures,
+	public PictureCollectionController(PictureCollectionRepository pictures,
 									   AlbumRepository albums,
-									   FolderRepository folders,
 									   KeywordRepository keyword,
 									   KeywordRelationshipsRepository keywordsRelationships,
 									   FolderService folderService, PictureFileRepository pictureFiles1,
@@ -93,7 +91,7 @@ class PictureCollectionController extends PaginationController {
 									   PictureElasticSearchService pictureElasticSearchService, AlbumContentRepository albumContent, AlbumService albumService
 	) {
 
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.pictures = pictures;
 		this.pictureFiles = pictureFiles1;
 		this.pictureFileService = pictureFileService;

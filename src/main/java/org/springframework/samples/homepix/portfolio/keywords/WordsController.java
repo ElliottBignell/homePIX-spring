@@ -19,13 +19,11 @@ import java.util.Map;
 public class WordsController extends PaginationController {
 
 	protected WordsController(AlbumRepository albums,
-							  FolderRepository folders,
-							  PictureFileRepository pictureFiles,
 							  KeywordRepository keyword,
 							  KeywordRelationshipsRepository keywordsRelationships,
 							  FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 	}
 
 	@Secured("ROLE_ADMIN")

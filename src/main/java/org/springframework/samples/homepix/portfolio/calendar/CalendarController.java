@@ -52,14 +52,12 @@ class CalendarController extends PaginationController {
 
 	@Autowired
 	CalendarController(AlbumRepository albums,
-					   FolderRepository folders,
-					   PictureFileRepository pictureFiles,
 					   KeywordRepository keyword,
 					   KeywordRelationshipsRepository keywordsRelationships,
 					   FolderService folderService,
 					   YearThumbnailRepository yearThumbnailRepository
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.yearThumbnailRepository = yearThumbnailRepository;
 	}
 

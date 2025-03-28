@@ -66,9 +66,11 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected final AlbumRepository albums;
 
-	protected final FolderRepository folders;
+	@Autowired
+	protected FolderRepository folders;
 
-	protected final PictureFileRepository pictureFiles;
+	@Autowired
+	protected PictureFileRepository pictureFiles;
 
 	@Autowired
 	private PictureFileService pictureFileService;
@@ -121,15 +123,11 @@ public abstract class PaginationController implements AutoCloseable {
 
 	@Autowired
 	protected PaginationController(AlbumRepository albums,
-								   FolderRepository folders,
-								   PictureFileRepository pictureFiles,
 								   KeywordRepository keyword,
 								   KeywordRelationshipsRepository keywordsRelationships,
 								   FolderService folderService
 	) {
 		this.albums = albums;
-		this.folders = folders;
-		this.pictureFiles = pictureFiles;
 		this.keyword = keyword;
 		this.keywordRelationships = keywordsRelationships;
 		this.folderService = folderService;

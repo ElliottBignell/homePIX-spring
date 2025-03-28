@@ -27,6 +27,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.DateParsingService;
+import org.springframework.samples.homepix.DateRange;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
@@ -78,7 +80,7 @@ import java.util.stream.StreamSupport;
  * @author Elliott Bignell
  */
 @Controller
-class BucketController extends PaginationController {
+public class BucketController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "folder/createOrUpdateOwnerForm";
 
@@ -87,10 +89,10 @@ class BucketController extends PaginationController {
 	private AlbumService albumService;
 
 	@Autowired
-	FolderRepository folderRepository;
+	KeywordRelationshipsService keywordRelationshipsService;
 
 	@Autowired
-	KeywordRelationshipsService keywordRelationshipsService;
+	DateParsingService dateParsingService;
 
 	private final PictureFileService pictureFileService;
 
@@ -103,14 +105,13 @@ class BucketController extends PaginationController {
 
 	public BucketController(FolderRepository folders,
 							AlbumRepository albums,
-							PictureFileRepository pictureFiles,
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
 							FolderService folderService,
 							AlbumService albumService,
 							PictureFileService pictureFileService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.albumService = albumService;
 		this.pictureFileService = pictureFileService;
 	}
@@ -302,7 +303,7 @@ class BucketController extends PaginationController {
 	) {
 		name = name.replace("-", "_");
 
-		name = folderRepository.findByNameCaseInsensitive(name).iterator().next().getName();
+		name = folders.findByNameCaseInsensitive(name).iterator().next().getName();
 
 		String userAgent = request.getHeader("User-Agent");
 		logger.info("Request from User-Agent to showFolder: " + userAgent);
@@ -319,54 +320,28 @@ class BucketController extends PaginationController {
 		}
 		else {
 
-			final String format = "yyyy-M-d";
-
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
-
-			String fromDate = requestDTO.getFromDate();
-			String toDate = requestDTO.getToDate();
-
-			if (fromDate.equals("")) {
-				fromDate = "1970-01-01";
-			}
-
-			if (toDate.equals("")) {
-
-				Supplier<String> supplier = () -> {
-					DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
-					LocalDateTime now = LocalDateTime.now();
-					return dtf.format(now);
-				};
-
-				toDate = supplier.get();
-			}
-
-			LocalDate startDate = LocalDate.parse(fromDate, formatter);
-			LocalDate endDate = LocalDate.parse(toDate, formatter).plusDays(1);
-
 			String search = requestDTO.getSearch();
 
+			DateRange dateRange = dateParsingService.parseDateRange(requestDTO.getFromDate(), requestDTO.getToDate());
+
+			List<PictureFile> files = null;
+
 			if (search.equals(":!*")) {
-				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, startDate, endDate);
-				results = listFilesPaged(
-					files,
-					requestDTO,
-					authentication,
-					pageable
-				);
+				files = this.pictureFiles.findByFolderNameAndNoKeywords(name, dateRange.getStartDate(), dateRange.getEndDate());
 			}
 			else {
-				results = listFilteredFilesPaged(
-					this.pictureFiles.findByFolderName(name, search, startDate, endDate),
-					requestDTO,
-					authentication,
-					pageable
-				);
+				files = this.pictureFiles.findByFolderName(name, search, dateRange.getStartDate(), dateRange.getEndDate());
 			}
+
+			results = listFilteredFilesPaged(
+				files,
+				requestDTO,
+				authentication,
+				pageable
+			);
 		}
 
 		int pageSize = results.getSize();
-		int number = results.getNumber();
 		long total = results.getTotalElements();
 		int firstIndex = results.getNumber() * pageSize + 1;
 		long lastIndex = firstIndex + pageSize - 1;
@@ -622,38 +597,14 @@ class BucketController extends PaginationController {
 
 			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
-			final String format = "yyyy-M-d";
-
-			// TODO: Put this repeated fragment dealing with dates into a service
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
-
 			String search = requestDTO.getSearch();
 			List<PictureFile> pictureFiles;
 
-			String fromDate = requestDTO.getFromDate();
-			String toDate = requestDTO.getToDate();
-
-			if (fromDate.equals("")) {
-				fromDate = "1970-01-01";
-			}
-
-			if (toDate.equals("")) {
-
-				Supplier<String> supplier = () -> {
-					DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
-					LocalDateTime now = LocalDateTime.now();
-					return dtf.format(now);
-				};
-
-				toDate = supplier.get();
-			}
-
 			if (search.equals(":!*")) {
 
-				LocalDate startDate = LocalDate.parse(fromDate, formatter);
-				LocalDate endDate = LocalDate.parse(toDate, formatter);
+				DateRange dateRange = dateParsingService.parseDateRange(requestDTO.getFromDate(), requestDTO.getToDate());
 
-				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, startDate, endDate);
+				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, dateRange.getStartDate(), dateRange.getEndDate());
 				pictureFiles = listFiles(
 					files,
 					requestDTO,
@@ -692,13 +643,13 @@ class BucketController extends PaginationController {
 					catch (IndexOutOfBoundsException e2) {
 
 						model.put("errorMessage", "Failed to retrieve picture using backup wrap; index number overflowed end of collection");
-						return "picture/pictureFile";
+						return "error-404";
 					}
 				}
 				else {
 
 					model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
-					return "picture/pictureFile";
+					return "error-404";
 				}
 			}
 

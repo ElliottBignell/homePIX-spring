@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.album;
+package org.springframework.samples.homepix.unit.portfolio.album;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +9,9 @@ import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.samples.homepix.portfolio.album.Album;
+import org.springframework.samples.homepix.portfolio.album.AlbumContent;
+import org.springframework.samples.homepix.portfolio.album.AlbumContentRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -28,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AlbumAddTest {
 
 	@Mock
-	AlbumContentRepository albumContentRepository;
+    AlbumContentRepository albumContentRepository;
 
 	@ParameterizedTest
 	@MethodSource("albumNames")

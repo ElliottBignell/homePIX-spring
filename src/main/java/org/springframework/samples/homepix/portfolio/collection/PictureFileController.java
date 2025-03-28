@@ -42,14 +42,12 @@ public class PictureFileController extends PaginationController {
 
 	private static final String ABOUT_FORM = "picture/about.html";
 
-	public PictureFileController(PictureFileRepository pictureFiles,
-								 AlbumRepository albums,
-								 FolderRepository folders,
+	public PictureFileController(AlbumRepository albums,
 								 KeywordRepository keyword,
 								 KeywordRelationshipsRepository keywordsRelationships,
 								 FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 	}
 
 	@ModelAttribute("types")

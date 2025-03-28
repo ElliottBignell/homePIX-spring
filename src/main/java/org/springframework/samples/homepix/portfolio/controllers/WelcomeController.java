@@ -70,15 +70,13 @@ class WelcomeController extends PaginationController {
 	LocationService locationService;
 
 	@Autowired
-	public WelcomeController(PictureFileRepository pictureFiles,
-							 AlbumRepository albums,
+	public WelcomeController(AlbumRepository albums,
 							 AlbumContentRepository albumContents,
-							 FolderRepository folders,
 							 KeywordRepository keyword,
 							 KeywordRelationshipsRepository keywordsRelationships,
 							 FolderService folderService, ResourceLoaderService resourceLoaderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.resourceLoaderService = resourceLoaderService;
 		this.albumContents = albumContents;
 	}

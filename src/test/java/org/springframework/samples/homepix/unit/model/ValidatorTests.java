@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.homepix.model;
+package org.springframework.samples.homepix.unit.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.samples.homepix.model.Person;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import jakarta.validation.ConstraintViolation;

@@ -23,13 +23,11 @@ public class LicenceController extends PaginationController {
 	private static final String LICENCE_FORM = "picture/licence";
 
 	protected LicenceController(AlbumRepository albums,
-								FolderRepository folders,
-								PictureFileRepository pictureFiles,
 								KeywordRepository keyword,
 								KeywordRelationshipsRepository keywordsRelationships,
 								FolderService folderService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 	}
 
 	@GetMapping("/licence.html")

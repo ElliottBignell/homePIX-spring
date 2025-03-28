@@ -1,6 +1,5 @@
-package org.springframework.samples.homepix.portfolio.calendar;
+package org.springframework.samples.homepix.unit.portfolio.calendar;
 
-import net.bytebuddy.implementation.bind.annotation.Argument;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -12,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.samples.homepix.portfolio.calendar.Calendar;
+import org.springframework.samples.homepix.portfolio.calendar.CalendarYear;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,11 +27,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.security.cert.X509Certificate;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
@@ -60,7 +56,7 @@ public class CalendarPageIntegrationTest {
 	private PictureFileRepository pictureFiles;
 
 	@Autowired
-	private Calendar calendar;
+	private org.springframework.samples.homepix.portfolio.calendar.Calendar calendar;
 
 	private RestTemplate restTemplate;
 
@@ -112,7 +108,7 @@ public class CalendarPageIntegrationTest {
 	@MethodSource("years")
 	public void PopulateYearIntegrationTest(CalendarYear calendarYear) throws Exception {
 
-		Calendar calendar = new Calendar(pictureFiles);
+		org.springframework.samples.homepix.portfolio.calendar.Calendar calendar = new org.springframework.samples.homepix.portfolio.calendar.Calendar(pictureFiles);
 		calendar.populateYear(calendarYear);
 		assertEquals(0, calendar.getCount());
 	}
@@ -153,7 +149,7 @@ public class CalendarPageIntegrationTest {
 
 	private List<String> getAnnualTags() {
 
-		Calendar calendar = new Calendar(this.pictureFiles);
+		org.springframework.samples.homepix.portfolio.calendar.Calendar calendar = new Calendar(this.pictureFiles);
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(calendar.getItems().iterator(), 0), false)
 			.flatMap(yearGroup ->

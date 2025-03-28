@@ -57,15 +57,13 @@ public class FolderController extends PaginationController {
 
 	private AlbumService albumService;
 
-	public FolderController(FolderRepository folders,
-							AlbumRepository albums,
-							PictureFileRepository pictureFiles,
+	public FolderController(AlbumRepository albums,
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
 							FolderService folderService,
 							AlbumService albumService
 	) {
-		super(albums, folders, pictureFiles, keyword, keywordsRelationships, folderService);
+		super(albums, keyword, keywordsRelationships, folderService);
 		this.albumService = albumService;
 	}
 

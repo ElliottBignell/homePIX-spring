@@ -33,14 +33,12 @@ public class AlbumContentController extends AlbumContentBaseController {
 
 	public AlbumContentController(AlbumContentRepository albumContent,
 									  AlbumRepository albums,
-									  FolderRepository folders,
-									  PictureFileRepository pictureFiles,
 									  KeywordRepository keyword,
 									  KeywordRelationshipsRepository keywordsRelationships,
 									  FolderService folderService,
 									  AlbumService albumService
 	) {
-		super(albumContent, albums, folders, pictureFiles, keyword, keywordsRelationships, folderService, albumService);
+		super(albumContent, albums, keyword, keywordsRelationships, folderService, albumService);
 	}
 
 	/**

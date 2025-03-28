@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.homepix.service;
+package org.springframework.samples.homepix.unit.service;
 
 import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.homepix.model.BaseEntity;
