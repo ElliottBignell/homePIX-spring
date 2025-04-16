@@ -416,7 +416,8 @@ public class BucketController extends PaginationController {
 		List<PictureFile> results = listFilteredFiles(
 			this.pictureFiles.findByFolderName(name + "/"),
 			requestDTO,
-			authentication
+			authentication,
+			model
 		);
 
 		Collection<Folder> buckets = this.folders.findByName(name);
@@ -612,7 +613,7 @@ public class BucketController extends PaginationController {
 				);
 			}
 			else {
-				pictureFiles = listFilteredFiles(this.pictureFiles.findByFolderName(name), requestDTO, authentication);
+				pictureFiles = listFilteredFiles(pictureFileService.findByFolderName(name), requestDTO, authentication, model);
 			}
 
 			int count = pictureFiles.size();
@@ -874,7 +875,7 @@ public class BucketController extends PaginationController {
 															  @PathVariable("file") String file) {
 
 		String filepath = directory + '/' + file;
-		String compressedPath = directory + "/200px/" + file;
+		String compressedPath = directory + "/200px/" + file + "_200px";
 
 		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file);
 

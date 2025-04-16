@@ -747,18 +747,32 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected List<PictureFile> listFilteredFiles(List<PictureFile> files,
 												  CollectionRequestDTO requestDTO,
-												  Authentication authentication) {
+												  Authentication authentication,
+												  Map<String, Object> model) {
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		Pattern pattern = Pattern.compile("\\b" + requestDTO.getSearch() + "\\b", Pattern.CASE_INSENSITIVE);
 
 		// Fetch all keyword relationships for the given picture files
-		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+		Map<Integer, Set<String>> keywordMap = keywordService.fetchKeywordMap(files);
+
+		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+		LocalDate endDate = dates.getSecond();
+		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
 		return files.stream()
 			.filter(item -> isAuthorised(item, authentication))
 			.filter(PictureFile::isValid)
+			.filter(
+				item -> item.getTaken_on().toLocalDate().isAfter(dates.getFirst()) ||
+					item.getTaken_on().toLocalDate().isEqual(dates.getFirst())
+			)
+			.filter(
+				item -> item.getTaken_on().toLocalDate().isBefore(dates.getSecond()) ||
+				item.getTaken_on().toLocalDate().isEqual(dates.getSecond())
+			)
+			.filter(item -> item.getTaken_on().isBefore(endOfDay))
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
 			.sorted(orderBy)
 			.collect(Collectors.toList());
@@ -771,7 +785,7 @@ public abstract class PaginationController implements AutoCloseable {
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		// Fetch all keyword relationships for the given picture files
-		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+		Map<Integer, Set<String>> keywordMap = keywordService.fetchKeywordMap(files);
 
 		return files.stream()
 			.filter(item -> isAuthorised(item, authentication))
@@ -788,7 +802,7 @@ public abstract class PaginationController implements AutoCloseable {
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		// Fetch all keyword relationships for the given picture files
-		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+		Map<Integer, Set<String>> keywordMap = keywordService.fetchKeywordMap(files);
 
 		List<PictureFile> filteredFiles = files.stream()
 			.filter(item -> isAuthorised(item, authentication))
@@ -811,7 +825,7 @@ public abstract class PaginationController implements AutoCloseable {
 		Pattern pattern = Pattern.compile("\\b" + requestDTO.getSearch() + "\\b", Pattern.CASE_INSENSITIVE);
 
 		// Fetch all keyword relationships for the given picture files
-		Map<Integer, Set<String>> keywordMap = fetchKeywordMap(files);
+		Map<Integer, Set<String>> keywordMap = keywordService.fetchKeywordMap(files);
 
 		List<PictureFile> filteredFiles = files.stream()
 			.filter(item -> isAuthorised(item, authentication))
@@ -837,21 +851,6 @@ public abstract class PaginationController implements AutoCloseable {
 			int endItem = Math.min(startItem + pageSize, filteredFiles.size());
 			return filteredFiles.subList(startItem, endItem);
 		}
-	}
-
-	private Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
-
-		Set<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toSet());
-
-		// Fetch all keyword relationships for the given picture files
-		Collection<KeywordRelationships> keywordRelationshipsList = keywordRelationships.findByPictureIds(fileIds);
-
-		// Build a map of file IDs to associated keywords
-		return keywordRelationshipsList.stream()
-			.collect(Collectors.groupingBy(
-				KeywordRelationships::getPictureId,
-				Collectors.mapping(relationship -> relationship.getKeyword().getWord(), Collectors.toSet())
-			));
 	}
 
 	private boolean matchesTitleOrKeyword(PictureFile item, Pattern pattern, Map<Integer, Set<String>> keywordMap) {

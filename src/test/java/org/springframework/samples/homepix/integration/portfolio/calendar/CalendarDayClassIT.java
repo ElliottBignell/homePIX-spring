@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.unit.portfolio.calendar;
+package org.springframework.samples.homepix.integration.portfolio.calendar;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.samples.homepix.portfolio.calendar.CalendarDay;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Stream;
 
@@ -21,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ActiveProfiles("test") // Assuming you need the "mysql" profile active for this test
 @AutoConfigureMockMvc
+@Transactional
 @Import(com.example.test.config.TestConfig.class)
-public class CalendarDayClassTest {
+public class CalendarDayClassIT {
 
 	@ParameterizedTest
 	@MethodSource("formattedDates")

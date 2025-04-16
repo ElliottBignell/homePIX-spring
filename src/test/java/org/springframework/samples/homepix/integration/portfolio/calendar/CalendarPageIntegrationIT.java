@@ -1,5 +1,6 @@
-package org.springframework.samples.homepix.unit.portfolio.calendar;
+package org.springframework.samples.homepix.integration.portfolio.calendar;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -47,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @AutoConfigureMockMvc
 @Transactional
 @Import(com.example.test.config.TestConfig.class)
-public class CalendarPageIntegrationTest {
+public class CalendarPageIntegrationIT {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -76,6 +77,11 @@ public class CalendarPageIntegrationTest {
         // Populate test data
         addExamplePictureFiles();
     }
+
+	@AfterAll
+	void Cleanup() {
+		pictureFiles.deleteAll();
+	}
 
 	private void addExamplePictureFiles() {
 

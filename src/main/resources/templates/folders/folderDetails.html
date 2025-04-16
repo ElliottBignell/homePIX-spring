@@ -95,7 +95,7 @@
                     th:id="@{div__${pictureFile.id}__}"
             >
               <a th:id="@{picture__${pictureFile.id}__}"
-                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__/__${arguments}__}"
+                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__/__${arguments}__?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
               >
                 <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
                   <span class="tt_subject">
@@ -111,7 +111,7 @@
                 </section>
               </a>
               <a th:id="@{btn__${pictureFile.id}__}"
-                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__/__${arguments}__}"
+                 th:href="@{/buckets/__${folder.name}__/item/__${iterStat.index + pageSize * pageNumber}__/__${arguments}__?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__#}"
               >
                 <figcaption class="tt_edit">
                   <form id="editprops">

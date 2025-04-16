@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.samples.homepix.CollectionRequestDTO;
@@ -390,5 +391,10 @@ public class PictureFileService {
 		}
 
 		model.put("arguments", arguments);
+	}
+
+	@Cacheable("folderByName")
+	public List<PictureFile> findByFolderName(String name) {
+		return pictureFileRepository.findByFolderName(name);
 	}
 }

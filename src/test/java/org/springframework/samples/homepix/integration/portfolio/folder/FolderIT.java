@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.unit.portfolio.folder;
+package org.springframework.samples.homepix.integration.portfolio.folder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -13,6 +13,7 @@ import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test") // Assuming you need the "mysql" profile active for this test
 @AutoConfigureMockMvc
 @Import(com.example.test.config.TestConfig.class)
-public class FolderTest {
+@Transactional
+public class FolderIT {
 
 	@Autowired
 	ResourceLoader resourceLoader;

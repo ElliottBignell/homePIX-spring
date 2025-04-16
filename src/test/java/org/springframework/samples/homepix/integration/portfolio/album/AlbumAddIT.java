@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.unit.portfolio.album;
+package org.springframework.samples.homepix.integration.portfolio.album;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +15,7 @@ import org.springframework.samples.homepix.portfolio.album.AlbumContentRepositor
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test") // Assuming you need the "mysql" profile active for this test
 @AutoConfigureMockMvc
 @Import(com.example.test.config.TestConfig.class)
-public class AlbumAddTest {
+@Transactional
+public class AlbumAddIT {
 
 	@Mock
     AlbumContentRepository albumContentRepository;

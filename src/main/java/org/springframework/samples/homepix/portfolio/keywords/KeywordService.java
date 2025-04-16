@@ -93,4 +93,20 @@ public class KeywordService {
 	public Collection<KeywordRelationships> findByPictureIds(Set<Integer> pictureIds) {
 		return keywordRelationshipsRepository.findByPictureIds(pictureIds);
 	}
+
+	@Cacheable(value = "fetchKeywordMapByFilesList")
+	public Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
+
+		Set<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toSet());
+
+		// Fetch all keyword relationships for the given picture files
+		Collection<KeywordRelationships> keywordRelationshipsList = keywordRelationshipsRepository.findByPictureIds(fileIds);
+
+		// Build a map of file IDs to associated keywords
+		return keywordRelationshipsList.stream()
+			.collect(Collectors.groupingBy(
+				KeywordRelationships::getPictureId,
+				Collectors.mapping(relationship -> relationship.getKeyword().getWord(), Collectors.toSet())
+			));
+	}
 }
