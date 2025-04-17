@@ -764,6 +764,7 @@ public abstract class PaginationController implements AutoCloseable {
 		return files.stream()
 			.filter(item -> isAuthorised(item, authentication))
 			.filter(PictureFile::isValid)
+			.filter(item->item.getTaken_on() != null)
 			.filter(
 				item -> item.getTaken_on().toLocalDate().isAfter(dates.getFirst()) ||
 					item.getTaken_on().toLocalDate().isEqual(dates.getFirst())
