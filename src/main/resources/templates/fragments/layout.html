@@ -79,7 +79,7 @@
     <meta property="og:description" th:content="${aggregateTitle} + '...' + ${description}"/>
     <meta property="og:url" th:content="@{https://www.homepix.ch/__${fullUrl}__}"/>
     <meta property="og:image" th:content="@{https://www.homepix.ch__${picture?.largeFilename}__}"/>
-    <meta property="og:image-alt" th:content="@{__${picture?.title}__}"/>
+    <meta property="og:image-alt" th:content="|${picture?.title}|"/>
     <meta property="og:type" content="image/jpg"/>
 
     <meta property="article:publisher" content="https://www.homepix.ch/"/>

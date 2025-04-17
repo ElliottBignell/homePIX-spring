@@ -330,7 +330,7 @@ public class BucketController extends PaginationController {
 				files = this.pictureFiles.findByFolderNameAndNoKeywords(name, dateRange.getStartDate(), dateRange.getEndDate());
 			}
 			else {
-				files = this.pictureFiles.findByFolderName(name, search, dateRange.getStartDate(), dateRange.getEndDate());
+				files = this.pictureFileService.folderByNameAndParameters(name, search, dateRange.getStartDate(), dateRange.getEndDate());
 			}
 
 			results = listFilteredFilesPaged(
@@ -382,7 +382,7 @@ public class BucketController extends PaginationController {
 			model.put("picture", pictureFiles.findById(58123).get());
 		}
 
-		pictureFileService.addMapDetails(pictureFiles.findByFolderName(name), model);
+		pictureFileService.addMapDetails(pictureFileService.findByFolderName(name), model);
 
 		setStructuredDataForModel(
 			requestDTO,

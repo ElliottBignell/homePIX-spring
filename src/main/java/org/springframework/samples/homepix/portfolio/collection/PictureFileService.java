@@ -3,6 +3,7 @@ package org.springframework.samples.homepix.portfolio.collection;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
@@ -396,5 +397,10 @@ public class PictureFileService {
 	@Cacheable("folderByName")
 	public List<PictureFile> findByFolderName(String name) {
 		return pictureFileRepository.findByFolderName(name);
+	}
+
+	@Cacheable("folderByNameAndParameters")
+	public List<PictureFile> folderByNameAndParameters( String folder, String searchText, LocalDate startDate, LocalDate endDate ) {
+		return pictureFileRepository.findByFolderName( folder, searchText, startDate, endDate );
 	}
 }
