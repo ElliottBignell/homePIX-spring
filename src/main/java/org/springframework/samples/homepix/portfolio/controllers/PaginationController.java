@@ -35,6 +35,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
@@ -46,6 +47,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -588,6 +590,7 @@ public abstract class PaginationController implements AutoCloseable {
 			filteredObjects.addAll(listObjectsResponse.contents().stream()
 				//.filter(s3Object -> s3Object.lastModified().isAfter(Instant.from(instant)))
 				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> !object.key().startsWith(prefix + "watermark/"))
 				.filter(object -> object.key().endsWith(".jpg"))
 				.collect(Collectors.toList())
 			);
@@ -624,7 +627,12 @@ public abstract class PaginationController implements AutoCloseable {
 
 						Map<String, String> properties = getExifEntries(exifName);
 
-						setDate(picture, properties);
+						try {
+							setDate(picture, properties);
+						}
+						catch (DateTimeParseException dtex) {
+							System.out.println(dtex);
+						}
 
 						picture.setTitle(properties.get("title"));
 						picture.setFilename(name);
@@ -667,6 +675,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 						try {
 
+							picture.setTitle(properties.get("title"));
 							picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
 							picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
 							picture.setCameraModel(properties.get("CameraModel"));
@@ -676,6 +685,35 @@ public abstract class PaginationController implements AutoCloseable {
 							picture.setMeteringMode(properties.get("MeteringMode"));
 							picture.setLightSource(properties.get("LightSource"));
 							picture.setFocalLength(properties.get("FocalLength"));
+
+							String gpsValue = properties.get("GPSPosition");
+							String cleanedValue = gpsValue.toString().replace(" deg", "°");
+							picture.setGps(cleanedValue);
+
+							Pattern pattern = Pattern.compile("(\\d+)° (\\d+)' ([\\d.]+)\" ([NS]), (\\d+)° (\\d+)' ([\\d.]+)\" ([EW])");
+							Matcher matcher = pattern.matcher(cleanedValue);
+
+							if (matcher.find()) {
+
+								double latDeg = Double.parseDouble(matcher.group(1));
+								double latMin = Double.parseDouble(matcher.group(2));
+								double latSec = Double.parseDouble(matcher.group(3));
+								String latDir = matcher.group(4);
+
+								double lonDeg = Double.parseDouble(matcher.group(5));
+								double lonMin = Double.parseDouble(matcher.group(6));
+								double lonSec = Double.parseDouble(matcher.group(7));
+								String lonDir = matcher.group(8);
+
+								float latitude = (float)(latDeg + (latMin / 60.0) + (latSec / 3600.0));
+								if (latDir.equals("S")) latitude *= -1;
+
+								float longitude = (float)(lonDeg + (lonMin / 60.0) + (lonSec / 3600.0));
+								if (lonDir.equals("W")) longitude *= -1;
+
+								picture.setLatitude(latitude);
+								picture.setLongitude(longitude);
+							}
 						}
 						catch (Exception ex) {
 							System.out.println(ex);
@@ -770,10 +808,9 @@ public abstract class PaginationController implements AutoCloseable {
 					item.getTaken_on().toLocalDate().isEqual(dates.getFirst())
 			)
 			.filter(
-				item -> item.getTaken_on().toLocalDate().isBefore(dates.getSecond()) ||
-				item.getTaken_on().toLocalDate().isEqual(dates.getSecond())
+				item -> item.getTaken_on().isBefore(endOfDay) ||
+				item.getTaken_on().isEqual(endOfDay)
 			)
-			.filter(item -> item.getTaken_on().isBefore(endOfDay))
 			.filter(item -> matchesTitleOrKeyword(item, pattern, keywordMap))
 			.sorted(orderBy)
 			.collect(Collectors.toList());
@@ -989,7 +1026,12 @@ public abstract class PaginationController implements AutoCloseable {
 					String key = startElement.getName().getLocalPart();
 					String parent = startElement.getName().getPrefix();
 
-					if (key.equals("ImageDescription")) {
+					if (key.equals("ImageDescription") && !results.containsKey("title")) {
+
+						nextEvent = reader.nextEvent();
+						results.put("title", nextEvent.asCharacters().getData());
+					}
+					else if (key.equals("Comment")) {
 
 						nextEvent = reader.nextEvent();
 						results.put("title", nextEvent.asCharacters().getData());
@@ -1023,6 +1065,29 @@ public abstract class PaginationController implements AutoCloseable {
 
 						nextEvent = reader.nextEvent();
 						results.put("CameraModel", nextEvent.asCharacters().getData());
+					}
+					else if (parent.equals("Composite")) {
+
+						if (key.equals("GPSPosition")) {
+
+							StringBuilder gpsValue = new StringBuilder();
+
+							while (reader.hasNext()) {
+								XMLEvent innerEvent = reader.nextEvent();
+
+								if (innerEvent.isCharacters()) {
+									gpsValue.append(innerEvent.asCharacters().getData());
+								} else if (innerEvent.isEndElement()) {
+									EndElement endElement = innerEvent.asEndElement();
+									if (endElement.getName().getLocalPart().equals("GPSPosition")) {
+										break; // Stop when end of GPSPosition tag is reached
+									}
+								}
+							}
+
+							String cleanedValue = gpsValue.toString().replace(" deg", "°");
+							results.put("GPSPosition", cleanedValue);
+						}
 					}
 					else if (parent.equals("ExifIFD")) {
 

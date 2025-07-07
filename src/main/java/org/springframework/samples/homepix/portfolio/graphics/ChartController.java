@@ -8,6 +8,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +29,11 @@ public class ChartController {
 	@Autowired
 	LocationRelationshipsRepository locationRelationshipsRepository;
 
+	@GetMapping("/chart/bar/location/{name}")
+	public String getBarChartSlash(@PathVariable("name") String name, Map<String, Object> model) {
+		return getBarChart(name, model);
+	}
+
 	@GetMapping("/chart/bar/location/{name}/")
 	public String getBarChart(@PathVariable("name") String name, Map<String, Object> model) {
 
@@ -40,8 +47,10 @@ public class ChartController {
 				.map(LocationHierarchy::getParentLocation)
 				.collect(Collectors.toList());
 
-			if (locations.isEmpty()) {
-				return "redirect:/location/" + name;
+			if (locations.isEmpty() || locations.size() == 1) {
+
+				String encodedName = URLEncoder.encode(name, StandardCharsets.UTF_8);
+				return "redirect:/location/" + encodedName;
 			}
 		}
 

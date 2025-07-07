@@ -111,13 +111,8 @@ public class FolderController extends PaginationController {
 		return processFindForm(folder, result, model);
 	}
 
-	@GetMapping("/folders")
+	@GetMapping({"/folders", "/folder/"})
 	public String processFindForm(Folder folder, BindingResult result, Map<String, Object> model) {
-		return loadFolders(folder, result, model);
-	}
-
-	@GetMapping("/folder/")
-	public String processFindFoldersSlash(Folder folder, BindingResult result, Map<String, Object> model) {
 		return loadFolders(folder, result, model);
 	}
 
@@ -219,7 +214,7 @@ public class FolderController extends PaginationController {
 		return "redirect:/folders/{name}";
 	}
 
-	@GetMapping("/folder/{name}")
+	@GetMapping({"/folder/{name}", "/folder/{name}", "/folders/{name}"})
 	public String showFolder(@PathVariable("name") String name, Map<String, Object> model) {
 
 		Collection<Folder> folders = this.folders.findByName(name);
@@ -235,16 +230,6 @@ public class FolderController extends PaginationController {
 
 			return "folders/folderDetails";
 		}
-	}
-
-	@GetMapping("/folders/{name}")
-	public String showFolders(@PathVariable("name") String name, Map<String, Object> model) {
-		return showFolder(name, model);
-	}
-
-	@GetMapping("/folders/{name}/")
-	public String showFoldersByName(@PathVariable("name") String name, Map<String, Object> model) {
-		return showFolder(name, model);
 	}
 
 	@GetMapping("/folders/{name}/file/{filename}")

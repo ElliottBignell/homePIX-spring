@@ -128,7 +128,7 @@ class PictureCollectionController extends PaginationController {
 		return "collections/collection";
 	}
 
-	@GetMapping("/collection/")
+	@GetMapping({"/collection/", "/collection"})
 	public String processFindCollectionsSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 											  @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
 											  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
@@ -142,20 +142,8 @@ class PictureCollectionController extends PaginationController {
 	}
 
 
-	@GetMapping("/collection")
-	public String processFindCollectionsSlashNoSlash(@ModelAttribute CollectionRequestDTO requestDTO,
-													 @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
-													 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-													 PictureCollection pictureCollection,
-													 BindingResult result,
-													 Map<String, Object> model,
-													 Authentication authentication
-	) {
-		return processFindCollections(requestDTO, redirectedDTO, pageable, pictureCollection, result, model, authentication);
-	}
-
 	// Get all pictures and return as JSON
-	@GetMapping("/location/{name}")
+	@GetMapping({"/location/{name}/", "/location/{name}"})
 	public String getPictureByLocation(@ModelAttribute CollectionRequestDTO requestDTO,
 									   @ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
 									   @PathVariable("name") String name,
@@ -163,19 +151,6 @@ class PictureCollectionController extends PaginationController {
 									   Authentication authentication,
 									   Map<String, Object> model,
 									   HttpServletRequest request
-	) {
-		return processFindByLocation(name, requestDTO, redirectedDTO, pageable, model, authentication);
-	}
-
-	// Get all pictures and return as JSON
-	@GetMapping("/location/{name}/")
-	public String getPictureByLocationSlash(@ModelAttribute CollectionRequestDTO requestDTO,
-											@ModelAttribute("requestDTO") CollectionRequestDTO redirectedDTO,
-											@PathVariable("name") String name,
-											@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-											Authentication authentication,
-											Map<String, Object> model,
-											HttpServletRequest request
 	) {
 		return processFindByLocation(name, requestDTO, redirectedDTO, pageable, model, authentication);
 	}
@@ -211,7 +186,7 @@ class PictureCollectionController extends PaginationController {
 	 * @param id the ID of the collection to display
 	 * @return a ModelMap with the model attributes for the view
 	 */
-	@GetMapping("/collection/{id}")
+	@GetMapping({"/collections/{id}", "/collections/{id}", "/collection/{id}", "/collection/{id}"})
 	public String showFilteredCollection(CollectionRequestDTO requestDTO,
 										 @PathVariable("id") int pictureID,
 										 Map<String, Object> model,
@@ -300,47 +275,7 @@ class PictureCollectionController extends PaginationController {
 		return "picture/pictureFile.html";
 	}
 
-	@GetMapping("/collections/{id}")
-	public String showCollections(CollectionRequestDTO requestDTO,
-								  @PathVariable("id") int pictureID,
-								  Map<String, Object> model,
-								  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-								  Authentication authentication
-	) {
-		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
-	}
-
-	@GetMapping("/collection/{id}/")
-	public String showCollectionsSlash(CollectionRequestDTO requestDTO,
-									   @PathVariable("id") int pictureID,
-									   Map<String, Object> model,
-									   @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-									   Authentication authentication
-	) {
-		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
-	}
-
-	@GetMapping("/collections/{id}/")
-	public String showCollectionssSlash(CollectionRequestDTO requestDTO,
-										@PathVariable("id") int pictureID,
-										Map<String, Object> model,
-										@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-										Authentication authentication
-	) {
-		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
-	}
-
-	@GetMapping("/collection/{dummyId}/item/{id}")
-	public String showCollection(CollectionRequestDTO requestDTO,
-								 @PathVariable("id") int pictureID,
-								 Map<String, Object> model,
-								 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-								 Authentication authentication
-	) {
-		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
-	}
-
-	@GetMapping("/collections/{dummyId}/item/{id}/")
+	@GetMapping({"/collections/{dummyId}/item/{id}/", "/collections/{dummyId}/item/{id}/"})
 	public String showCollectionSlash(CollectionRequestDTO requestDTO,
 									  @PathVariable("id") int pictureID,
 									  Map<String, Object> model,

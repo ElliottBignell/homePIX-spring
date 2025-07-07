@@ -366,13 +366,13 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query(value = "SELECT id, latitude, longitude, " +
 		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
 		"FROM picture_file " +
-		"HAVING distance <= ?3 AND distance > 100", nativeQuery = true)
+		"WHERE ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) <= ?3 AND ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) > 100", nativeQuery = true)
 	List<Object[]> findPositionsWithinRadiusWithoutCrowding(double latitude, double longitude, int radius);
 
 	@Query(value = "SELECT pf.*, " +
 		"ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) AS distance " +
 		"FROM picture_file AS pf " +
-		"HAVING distance <= ?3", nativeQuery = true)
+		"WHERE ST_Distance_Sphere(POINT(latitude, longitude), POINT(?1, ?2)) <= ?3", nativeQuery = true)
 	List<PictureFile> findPicturesWithinRadiusWithoutCrowding(double latitude, double longitude, int radius);
 
 	@Query(value = "SELECT pf.* " +

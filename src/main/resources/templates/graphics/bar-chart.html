@@ -23,7 +23,7 @@
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Photos by Country',
+                        label: 'Photos by location',
                         data: data.data,
                         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                     }]
@@ -32,7 +32,8 @@
                     onClick: (event, elements) => {
                         if (elements.length > 0) {
                             const index = elements[0].index;
-                            window.location.href = '/chart/bar' + data.links[index];
+                            const link = encodeURIComponent(data.links[index]);
+                            window.location.href = '/chart/bar/location/' + link;
                         }
                     }
                 }

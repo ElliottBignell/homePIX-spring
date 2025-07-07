@@ -61,7 +61,7 @@ public class ChartRestController {
 			.collect(Collectors.toList());
 
 		List<String> links = locations.stream()
-			.map(location -> "/location/" + location.getLocation() + "/")
+			.map(Location::getLocation)
 			.collect(Collectors.toList());
 
 		return Map.of(

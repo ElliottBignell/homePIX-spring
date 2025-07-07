@@ -34,7 +34,6 @@ import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumService;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationships;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -57,16 +56,13 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -299,13 +295,22 @@ public class BucketController extends PaginationController {
 		Map<String, Object> model,
 		Authentication authentication,
 		boolean reload,
-		HttpServletRequest request
+		HttpServletRequest request,
+		jakarta.servlet.http.HttpServletResponse response
 	) {
+		String userAgent = request.getHeader("User-Agent");
+
+		// TODO: Maake this AOP
+		if (userAgent != null && userAgent.matches("(?i).*\\b(SemrushBot|AmazonBot|AhrefsBot|DotBot)\\b.*")) {
+			response.setStatus(429); // 429
+			model.clear(); // clear any data you're preparing
+			return "error/429"; // a simple error template (or null to skip rendering)
+		}
+
 		name = name.replace("-", "_");
 
 		name = folders.findByNameCaseInsensitive(name).iterator().next().getName();
 
-		String userAgent = request.getHeader("User-Agent");
 		logger.info("Request from User-Agent to showFolder: " + userAgent);
 
 		model.put("showScary", true);
@@ -441,9 +446,10 @@ public class BucketController extends PaginationController {
 							  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 							  Authentication authentication,
 							  Map<String, Object> model,
-							  HttpServletRequest request
+							  HttpServletRequest request,
+							  jakarta.servlet.http.HttpServletResponse response
 	) {
-		return showFolder(requestDTO, name, pageable, model, authentication,false, request);
+		return showFolder(requestDTO, name, pageable, model, authentication,false, request, response);
 	}
 
 	@GetMapping("/buckets/{name}/")
@@ -452,9 +458,10 @@ public class BucketController extends PaginationController {
 									@PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
 									Authentication authentication,
 									Map<String, Object> model,
-									HttpServletRequest request
+									HttpServletRequest request,
+									jakarta.servlet.http.HttpServletResponse response
 	) {
-		return showFolder(requestDTO, name, pageable, model, authentication, false, request);
+		return showFolder(requestDTO, name, pageable, model, authentication, false, request, response);
 	}
 
 	@GetMapping("/buckets/{name}/slideshow")
@@ -568,9 +575,10 @@ public class BucketController extends PaginationController {
 								  @PathVariable("id") Integer id,
 								  Map<String, Object> model,
 								  Authentication authentication,
-								  HttpServletRequest request
+								  HttpServletRequest request,
+								  jakarta.servlet.http.HttpServletResponse response
 	) {
-		return showPictureFile(requestDTO, name, id, model, authentication, request);
+		return showPictureFile(requestDTO, name, id, model, authentication, request, response);
 	}
 
 	@GetMapping("/buckets/{name}/item/{id}")
@@ -579,9 +587,18 @@ public class BucketController extends PaginationController {
 								  @PathVariable("id") Integer id,
 								  Map<String, Object> model,
 								  Authentication authentication,
-								  HttpServletRequest request
+								  HttpServletRequest request,
+								  jakarta.servlet.http.HttpServletResponse response
 	) {
 		String userAgent = request.getHeader("User-Agent");
+
+		// TODO: Maake this AOP
+		if (userAgent != null && userAgent.matches("(?i).*\\b(SemrushBot|AmazonBot|AhrefsBot|DotBot)\\b.*")) {
+			response.setStatus(429); // 429
+			model.clear(); // clear any data you're preparing
+			return "error/429"; // a simple error template (or null to skip rendering)
+		}
+
 		logger.info("Request from User-Agent to showPictureFile(/buckets/" + name + "/item/"+ id + "): " + userAgent);
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
@@ -622,6 +639,17 @@ public class BucketController extends PaginationController {
 			model.put("link_params", "");
 
 			PictureFile file = null;
+
+			if (id < 0 || id >= pictureFiles.size()) {
+
+				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
+				// Optionally, you can log the value of 'id' as well
+				logger.severe("                                    Attempted bucket: " + name);
+				logger.severe("                                    Attempted index: " + id);
+
+				model.put("errorMessage", "Failed to retrieve picture; index number outside bounds of collection");
+				return "error-404";
+			}
 
 			try {
 				// Attempt to access the element at index 'id'
