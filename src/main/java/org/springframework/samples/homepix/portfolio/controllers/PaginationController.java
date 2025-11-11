@@ -676,8 +676,12 @@ public abstract class PaginationController implements AutoCloseable {
 						try {
 
 							picture.setTitle(properties.get("title"));
-							picture.setWidth(Integer.valueOf(properties.get("ImageWidth")));
-							picture.setHeight(Integer.valueOf(properties.get("ImageHeight")));
+							Optional.ofNullable(properties.get("ImageWidth"))
+								.map(Integer::valueOf)
+								.ifPresent(picture::setWidth);
+							Optional.ofNullable(properties.get("ImageHeight"))
+								.map(Integer::valueOf)
+								.ifPresent(picture::setHeight);
 							picture.setCameraModel(properties.get("CameraModel"));
 							picture.setExposureTime(properties.get("ExposureTime"));
 							picture.setFNumber(properties.get("FNumber"));
@@ -687,7 +691,10 @@ public abstract class PaginationController implements AutoCloseable {
 							picture.setFocalLength(properties.get("FocalLength"));
 
 							String gpsValue = properties.get("GPSPosition");
-							String cleanedValue = gpsValue.toString().replace(" deg", "°");
+							String cleanedValue = Optional.ofNullable(gpsValue)
+								.orElse("")
+								.replace(" deg", "°");
+
 							picture.setGps(cleanedValue);
 
 							Pattern pattern = Pattern.compile("(\\d+)° (\\d+)' ([\\d.]+)\" ([NS]), (\\d+)° (\\d+)' ([\\d.]+)\" ([EW])");
@@ -730,8 +737,10 @@ public abstract class PaginationController implements AutoCloseable {
 					}
 				}
 			}
-			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			catch (Exception ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+				logger.log(Level.SEVERE, "An error occurred: " + ex.getMessage(), ex);
 			}
 		}
 
@@ -967,10 +976,16 @@ public abstract class PaginationController implements AutoCloseable {
 					dateTimeString = parts[0];
 				}
 
-				if (null != dateTimeString) {
+				if (null != dateTimeString && !dateTimeString.equals("0000:00:00 00:00:00")) {
 
 					LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
-					picture.setTaken_on(dateTime);
+
+					try {
+						picture.setTaken_on(dateTime);
+					}
+					catch (Exception ex) {
+						System.out.println(ex);
+					}
 				}
 			}
 		}
@@ -980,7 +995,7 @@ public abstract class PaginationController implements AutoCloseable {
 			System.out.println(ex);
 			ex.printStackTrace();
 
-			final String format = "yyyy-MM-dd";
+			final String format = "yyyy:MM:dd HH:mm:ss";
 
 			Supplier<String> today = () -> {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
