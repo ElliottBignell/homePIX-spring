@@ -628,7 +628,7 @@ public abstract class PaginationController implements AutoCloseable {
 						Map<String, String> properties = getExifEntries(exifName);
 
 						try {
-							setDate(picture, properties);
+							pictureFileService.setDate(picture, properties);
 						}
 						catch (DateTimeParseException dtex) {
 							System.out.println(dtex);
@@ -731,7 +731,7 @@ public abstract class PaginationController implements AutoCloseable {
 							picture.setRoles("ROLE_USER");
 						}
 
-						setDate(picture, properties);
+						pictureFileService.setDate(picture, properties);
 
 						this.pictureFiles.save(picture);
 					}
@@ -944,67 +944,6 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		else {
 			return false;
-		}
-	}
-
-	private void setDate(PictureFile picture, Map<String, String> properties) {
-
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-			"yyyy:MM:dd HH:mm:ss",
-			Locale.ENGLISH
-		);
-
-		try {
-
-			String dateTimeString = properties.get("ProfileDateTime");
-
-			if (null != dateTimeString) {
-
-				final String plus = "[+]";
-
-				if (dateTimeString.contains("+")) {
-
-					String[] parts = dateTimeString.split(plus);
-					dateTimeString = parts[0];
-				}
-
-				final String minus = "[-]";
-
-				if (dateTimeString.contains("+")) {
-
-					String[] parts = dateTimeString.split(minus);
-					dateTimeString = parts[0];
-				}
-
-				if (null != dateTimeString && !dateTimeString.equals("0000:00:00 00:00:00")) {
-
-					LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
-
-					try {
-						picture.setTaken_on(dateTime);
-					}
-					catch (Exception ex) {
-						System.out.println(ex);
-					}
-				}
-			}
-		}
-		catch (Exception ex) {
-
-			// TODO: Duplicate date code
-			System.out.println(ex);
-			ex.printStackTrace();
-
-			final String format = "yyyy:MM:dd HH:mm:ss";
-
-			Supplier<String> today = () -> {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
-				LocalDateTime now = LocalDateTime.now();
-				return dtf.format(now);
-			};
-			LocalDateTime dateTime = LocalDateTime.parse(today.get(), formatter);
-
-			picture.setTaken_on(dateTime);
 		}
 	}
 

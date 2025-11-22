@@ -1,10 +1,12 @@
 package org.springframework.samples.homepix.portfolio.collection;
 
+import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.samples.homepix.CollectionRequestDTO;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
@@ -16,9 +18,12 @@ import org.springframework.samples.homepix.portfolio.filtering.SearchTextSpecifi
 import org.springframework.samples.homepix.portfolio.filtering.SortDirection;
 import org.springframework.data.domain.Sort;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -402,5 +407,156 @@ public class PictureFileService {
 	@Cacheable("folderByNameAndParameters")
 	public List<PictureFile> folderByNameAndParameters( String folder, String searchText, LocalDate startDate, LocalDate endDate ) {
 		return pictureFileRepository.findByFolderName( folder, searchText, startDate, endDate );
+	}
+
+	// existing getExifEntries(...) and setDate(...) live here
+
+	public void setDate(PictureFile picture, Map<String, String> properties) {
+
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+			"yyyy:MM:dd HH:mm:ss",
+			Locale.ENGLISH
+		);
+
+		try {
+
+			String dateTimeString = properties.get("ProfileDateTime");
+
+			if (dateTimeString.equals("0000:00:00 00:00:00")) {
+				dateTimeString = properties.get("DateTimeOriginal");
+			}
+
+			if (null != dateTimeString) {
+
+				final String plus = "[+]";
+
+				if (dateTimeString.contains("+")) {
+
+					String[] parts = dateTimeString.split(plus);
+					dateTimeString = parts[0];
+				}
+
+				final String minus = "[-]";
+
+				if (dateTimeString.contains("+")) {
+
+					String[] parts = dateTimeString.split(minus);
+					dateTimeString = parts[0];
+				}
+
+				if (null != dateTimeString && !dateTimeString.equals("0000:00:00 00:00:00")) {
+
+					LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+
+					try {
+						picture.setTaken_on(dateTime);
+					}
+					catch (Exception ex) {
+						System.out.println(ex);
+					}
+				}
+			}
+		}
+		catch (Exception ex) {
+
+			// TODO: Duplicate date code
+			System.out.println(ex);
+			ex.printStackTrace();
+
+			final String format = "yyyy:MM:dd HH:mm:ss";
+
+			Supplier<String> today = () -> {
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+				LocalDateTime now = LocalDateTime.now();
+				return dtf.format(now);
+			};
+			LocalDateTime dateTime = LocalDateTime.parse(today.get(), formatter);
+
+			picture.setTaken_on(dateTime);
+		}
+	}
+
+	@Transactional
+	public DateUpdateResultDto updateDatesFromExif(PaginationController controller,List<String> pictureIds) throws IOException {
+
+		int totalIdsProvided = pictureIds.size();
+		List<String> updatedIds = new ArrayList<>();
+		List<String> skippedIds = new ArrayList<>();
+		List<String> notFoundIds = new ArrayList<>();
+
+		for (String idString : pictureIds) {
+			Integer id;
+			try {
+				id = Integer.valueOf(idString);
+			} catch (NumberFormatException e) {
+				// ID not parseable -> treat as "not found"
+				notFoundIds.add(idString);
+				continue;
+			}
+
+			Optional<PictureFile> optPicture = pictureFileRepository.findById(id);
+
+			if (optPicture.isEmpty()) {
+				notFoundIds.add(idString);
+				continue;
+			}
+
+			PictureFile picture = optPicture.get();
+
+			if (!needsDateUpdate(picture)) {
+				skippedIds.add(idString);
+				continue;
+			}
+
+			// Get EXIF key / name from the picture
+			String exifName = getExifNameForPicture(picture);
+
+			Map<String, String> properties = controller.getExifEntries(exifName);
+
+			// This function already exists per your description
+			setDate(picture, properties);
+
+			pictureFileRepository.save(picture);
+
+			updatedIds.add(idString);
+		}
+
+		int picturesFound = totalIdsProvided - notFoundIds.size();
+		int updatedCount = updatedIds.size();
+		int skippedCount = skippedIds.size();
+
+		return new DateUpdateResultDto(
+			totalIdsProvided,
+			picturesFound,
+			updatedCount,
+			skippedCount,
+			updatedIds,
+			skippedIds,
+			notFoundIds
+		);
+	}
+
+	/**
+	 * Decide whether the picture needs its date updated.
+	 * Adjust this if dateTaken is not a String in your model.
+	 */
+	private boolean needsDateUpdate(PictureFile picture) {
+
+		String dateTaken = picture.getTaken_on().toString(); // adjust getter as needed
+
+		return dateTaken == null
+			|| "0000:00:00 000:00:00".equals(dateTaken)
+			|| "1970:01:01 00:00:00".equals(dateTaken);
+	}
+
+	/**
+	 * How to derive the EXIF object key from a PictureFile.
+	 * Adapt this to your actual model (s3Key, path, etc.).
+	 */
+	private String getExifNameForPicture(PictureFile picture) {
+		// Example – change to match your entity fields:
+		return picture.getFolderName();
+		// or picture.getS3Key() + ".exif.xml"
+		// or whatever you already use when calling getExifEntries(...)
 	}
 }

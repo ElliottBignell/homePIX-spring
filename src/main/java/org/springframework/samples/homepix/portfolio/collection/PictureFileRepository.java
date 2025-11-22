@@ -22,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,6 +76,10 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	@Query("SELECT pf FROM PictureFile pf JOIN pf.folder f WHERE f.name = :filename")
 	@Transactional(readOnly = true)
 	List<PictureFile> findByFolderName(@Param("filename") String filename);
+
+	@Query("SELECT pf FROM PictureFile pf JOIN pf.folder f")
+	@Transactional(readOnly = true)
+	List<PictureFile> findByFolderNameIn(@Param("filenames") Collection<String> filename);
 
 	List<PictureFile> findAllById(Iterable<Integer> ids);
 
