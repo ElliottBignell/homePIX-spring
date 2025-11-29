@@ -1,8 +1,10 @@
 package org.springframework.samples.homepix.portfolio.keywords;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.Collection;
@@ -108,5 +110,13 @@ public class KeywordService {
 				KeywordRelationships::getPictureId,
 				Collectors.mapping(relationship -> relationship.getKeyword().getWord(), Collectors.toSet())
 			));
+	}
+
+	@CacheEvict(value = { "keywordRelationshipsCache", "fetchKeywordMapByFilesList" }, allEntries = true)
+	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
+	public void resetCache() {
+		// This will clear the "folders" cache.
+		// Optionally re-fetch or do nothing here;
+		// next call to getSortedFolders() will reload.
 	}
 }

@@ -17,6 +17,7 @@
 package org.springframework.samples.homepix.portfolio.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.samples.homepix.CanonicalRedirectFilter;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.ResourceLoaderService;
@@ -32,6 +33,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.samples.homepix.portfolio.locations.LocationService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -214,5 +216,13 @@ class WelcomeController extends PaginationController {
 		names.add("Calendar");
 
 		return names;
+	}
+
+	@CacheEvict(value = { "css_resources", "keywords" }, allEntries = true)
+	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
+	public void resetCache() {
+		// This will clear the "folders" cache.
+		// Optionally re-fetch or do nothing here;
+		// next call to getSortedFolders() will reload.
 	}
 }

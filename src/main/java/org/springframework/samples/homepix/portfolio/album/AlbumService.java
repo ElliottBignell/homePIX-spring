@@ -1,13 +1,13 @@
 package org.springframework.samples.homepix.portfolio.album;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
-import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -160,6 +160,14 @@ public class AlbumService {
 				.map(PictureFile::getId)
 				.collect(Collectors.toList())
 		);
+	}
+
+	@CacheEvict(value = { "importedAlbums", "slides", "slidesThumbnails" }, allEntries = true)
+	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
+	public void resetCache() {
+		// This will clear the "folders" cache.
+		// Optionally re-fetch or do nothing here;
+		// next call to getSortedFolders() will reload.
 	}
 
 	public int getSortOrder(AlbumContentRepository albumContent, Album album, PictureFile item) {

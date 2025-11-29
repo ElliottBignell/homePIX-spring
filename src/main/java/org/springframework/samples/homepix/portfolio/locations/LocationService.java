@@ -1,8 +1,10 @@
 package org.springframework.samples.homepix.portfolio.locations;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -85,4 +87,11 @@ public class LocationService {
 		return this.locationRelationshipsRepository.findAll();
 	}
 
+	@CacheEvict(value = { "allLocations" }, allEntries = true)
+	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
+	public void resetCache() {
+		// This will clear the "folders" cache.
+		// Optionally re-fetch or do nothing here;
+		// next call to getSortedFolders() will reload.
+	}
 }

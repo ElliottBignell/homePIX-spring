@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
@@ -21,6 +22,7 @@ import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -237,6 +239,14 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 
 		return table;
+	}
+
+	@CacheEvict(value = { "yearNames" }, allEntries = true)
+	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
+	public void resetCache() {
+		// This will clear the "folders" cache.
+		// Optionally re-fetch or do nothing here;
+		// next call to getSortedFolders() will reload.
 	}
 
 	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
