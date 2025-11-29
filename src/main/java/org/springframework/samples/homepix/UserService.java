@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -31,14 +32,14 @@ public class UserService {
 
 	public boolean changeUserPassword(String username, String newPassword) {
 		// Retrieve the user (this part depends on your user management implementation)
-		Collection<User> users = userRepository.findByName(username);
+		Optional<User> users = userRepository.findByUsername(username);
 
 		if (!users.isEmpty()) {
 
 			// Encode the new password
 			String encodedPassword = passwordEncoder.encode(newPassword);
 
-			User user = users.iterator().next();
+			User user = users.get();
 
 			// Update the user's password
 			user.setPassword(encodedPassword);

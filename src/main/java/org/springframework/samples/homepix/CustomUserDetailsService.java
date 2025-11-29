@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -25,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// Retrieve user details from the database
 		// Example using a UserRepository
-		Collection<User> users = userRepository.findByName(username);
+		Optional<User> users = userRepository.findByUsername(username);
 
 		// If user not found, throw UsernameNotFoundException
 		if (users == null || users.isEmpty()) {
@@ -35,9 +36,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 		// Ensure that your User entity implements UserDetails or create a UserDetails
 		// adapter
 		// Example assuming User implements UserDetails
-		User user = users.iterator().next();
+		User user = users.get();
 
-		if (user.getUsername().equals("elliottcb")) {
+		if (user.getRole() == Role.ADMIN) {
 			return org.springframework.security.core.userdetails.User.builder().username(user.getUsername())
 				.password(user.getPassword()).roles("ADMIN", "USER") // TODO: Replace with the actual roles
 				.build();

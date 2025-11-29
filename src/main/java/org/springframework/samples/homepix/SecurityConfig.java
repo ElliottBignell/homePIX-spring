@@ -77,6 +77,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/",
 					"/error",
 					"/error-404",
+					"/error-403",
 					"/error/**",
 					"/index.xml",
 					"/licence.html",
@@ -108,6 +109,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/albums",
 					"/api/albums/**",
 					"/api/folders",
+					"/api/folders/**",
 					"/api/chart-data/**",
 					"/api/folders/**",
 					"/api/locations/",
@@ -118,6 +120,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/actuator/**",
 					"/maps/**",
 					"/chart/**",
+					"/admin/**",
 					"/words",
 					"/debug/mappings"
 				)
@@ -139,7 +142,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				})
 				// Handle 404 Not Found errors by directing to the error page
 				.authenticationEntryPoint((request, response, authException) -> {
-					response.sendRedirect("/error-404"); // Redirect all errors to your custom 404 page
+					response.sendRedirect("/error-403"); // Redirect all errors to your custom 404 page
 				})
 			.and()
 			.csrf()

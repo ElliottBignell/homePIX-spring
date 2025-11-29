@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"th:replace="~{fragments/layout :: layout (~{::body},'error')}">
+
+  <body>
+    <style>
+      body { text-align: center; padding: 50px; font-family: Arial, sans-serif; }
+      h1 { font-size: 50px; }
+      body { font: 20px Helvetica, sans-serif; color: #333; }
+      article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+      a { color: #dc8100; text-decoration: none; }
+      a:hover { color: #333; text-decoration: none; }
+    </style>
+    <div class="error-page">
+      <h1>Oops! 403 - Not authorised</h1>
+      <p>You are not logged in or do not have access to this page</p>
+      <img class="lazyload error-img" src="/web-images/Sargans/200px/DSC_3771_200px.webp" data-src="/web-images/Sargans/200px/DSC_3771_max.webp"/>
+      <p>Please enjoy our cat by way of compensation</p>
+      <p><a href="/">Go to Homepage</a></p>
+    </div>
+  </body>
+
+</html>

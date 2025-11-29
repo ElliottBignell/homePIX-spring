@@ -1,5 +1,5 @@
 # Stage 1: Build and install dependencies
-FROM openjdk:17-jdk-slim as builder
+FROM eclipse-temurin:17-jdk as builder
 WORKDIR /application
 ADD maven/spring-homepix-2.4.0.BUILD-SNAPSHOT.jar ./
 RUN apt-get update && \

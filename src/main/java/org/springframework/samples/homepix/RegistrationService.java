@@ -26,4 +26,8 @@ public class RegistrationService {
 
 		userRepository.save(user);
 	}
+
+	public boolean userExists(String username) {
+		return !userRepository.findByUsername(username).isEmpty();
+	}
 }

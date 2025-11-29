@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Repository class for <code>User</code> domain objects All method names are compliant
@@ -19,8 +20,5 @@ import java.util.Collection;
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
 
-	@Query("SELECT DISTINCT user FROM User user WHERE user.username LIKE :name%")
-	@Transactional(readOnly = true)
-	Collection<User> findByName(@Param("name") String name);
-
+	Optional<User> findByUsername(String username);
 }

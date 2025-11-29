@@ -34,8 +34,16 @@ public class User implements UserDetails, CredentialsContainer {
 	@NotEmpty
 	private String password;
 
+	@Column(name = "email")
+	@NotBlank(message = "E-Mail is mandatory")
+	@NotEmpty
+	private String email;
+
 	@Column(name = "enabled")
 	private boolean enabled;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 	@Override
 	public void eraseCredentials() {

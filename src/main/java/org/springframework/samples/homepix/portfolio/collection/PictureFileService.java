@@ -422,7 +422,7 @@ public class PictureFileService {
 
 			String dateTimeString = properties.get("ProfileDateTime");
 
-			if (dateTimeString.equals("0000:00:00 00:00:00")) {
+			if (null != dateTimeString || dateTimeString.equals("0000:00:00 00:00:00")) {
 				dateTimeString = properties.get("DateTimeOriginal");
 			}
 
@@ -477,34 +477,86 @@ public class PictureFileService {
 	}
 
 	@Transactional
-	public DateUpdateResultDto updateDatesFromExif(PaginationController controller,List<String> pictureIds) throws IOException {
+	public DateUpdateResultDto updateDates(PaginationController controller,List<PictureInfoDto> pictureIds) throws IOException {
 
 		int totalIdsProvided = pictureIds.size();
 		List<String> updatedIds = new ArrayList<>();
 		List<String> skippedIds = new ArrayList<>();
 		List<String> notFoundIds = new ArrayList<>();
 
-		for (String idString : pictureIds) {
-			Integer id;
-			try {
-				id = Integer.valueOf(idString);
-			} catch (NumberFormatException e) {
-				// ID not parseable -> treat as "not found"
-				notFoundIds.add(idString);
-				continue;
-			}
+		for (PictureInfoDto dto : pictureIds) {
+
+			Integer id = dto.getId();
 
 			Optional<PictureFile> optPicture = pictureFileRepository.findById(id);
 
 			if (optPicture.isEmpty()) {
-				notFoundIds.add(idString);
+				notFoundIds.add(id.toString());
 				continue;
 			}
 
 			PictureFile picture = optPicture.get();
 
 			if (!needsDateUpdate(picture)) {
-				skippedIds.add(idString);
+				skippedIds.add(id.toString());
+				continue;
+			}
+
+			LocalDateTime dateTaken = dto.getTaken_on();
+
+			if (dateTaken == null
+				|| "0000:00:00 000:00:00".equals(dateTaken)
+				|| "1970-01-01T00:00".equals(dateTaken)) {
+
+				skippedIds.add(id.toString());
+				continue;
+			}
+
+			picture.setTaken_on(dateTaken);
+
+			pictureFileRepository.save(picture);
+
+			updatedIds.add(id.toString());
+		}
+
+		int picturesFound = totalIdsProvided - notFoundIds.size();
+		int updatedCount = updatedIds.size();
+		int skippedCount = skippedIds.size();
+
+		return new DateUpdateResultDto(
+			totalIdsProvided,
+			picturesFound,
+			updatedCount,
+			skippedCount,
+			updatedIds,
+			skippedIds,
+			notFoundIds
+		);
+	}
+
+	@Transactional
+	public DateUpdateResultDto updateDatesFromExif(PaginationController controller,List<PictureInfoDto> pictureIds) throws IOException {
+
+		int totalIdsProvided = pictureIds.size();
+		List<String> updatedIds = new ArrayList<>();
+		List<String> skippedIds = new ArrayList<>();
+		List<String> notFoundIds = new ArrayList<>();
+
+		for (PictureInfoDto dto : pictureIds) {
+
+			Integer id = dto.getId();
+
+			Optional<PictureFile> optPicture = pictureFileRepository.findById(id);
+
+			if (optPicture.isEmpty()) {
+				notFoundIds.add(id.toString());
+				continue;
+			}
+
+			PictureFile picture = optPicture.get();
+
+			if (!needsDateUpdate(picture)) {
+				skippedIds.add(id.toString());
 				continue;
 			}
 
@@ -518,7 +570,7 @@ public class PictureFileService {
 
 			pictureFileRepository.save(picture);
 
-			updatedIds.add(idString);
+			updatedIds.add(id.toString());
 		}
 
 		int picturesFound = totalIdsProvided - notFoundIds.size();
@@ -546,7 +598,7 @@ public class PictureFileService {
 
 		return dateTaken == null
 			|| "0000:00:00 000:00:00".equals(dateTaken)
-			|| "1970:01:01 00:00:00".equals(dateTaken);
+			|| "1970-01-01T00:00".equals(dateTaken);
 	}
 
 	/**

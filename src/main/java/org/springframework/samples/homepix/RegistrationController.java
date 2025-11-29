@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
 
 @Controller
 public class RegistrationController {
@@ -22,8 +23,24 @@ public class RegistrationController {
 	}
 
 	@PostMapping("/register")
-	public String registerUser(@RequestParam String username, @RequestParam String email, @RequestParam String password) {
-		registrationService.registerUser(username, email, password);
-		return "redirect:/login"; // Redirect to the login page after registration
+    public String registerUser(
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam String confirmPassword,
+            Model model) {
+
+		       if (!password.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match.");
+            return "register";
+        }
+
+        if (registrationService.userExists(username)) {
+            model.addAttribute("error", "Username already exists.");
+            return "register";
+        }
+
+		registrationService.registerUser(username, "", password);
+
+        return "redirect:/login?registered"; // Optional: show a "registration successful" message
 	}
 }

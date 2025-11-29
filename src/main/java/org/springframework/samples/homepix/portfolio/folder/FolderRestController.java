@@ -2,11 +2,8 @@ package org.springframework.samples.homepix.portfolio.folder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.homepix.portfolio.collection.DateUpdateResultDto;
-import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
+import org.springframework.samples.homepix.portfolio.collection.*;
 import org.springframework.samples.homepix.portfolio.folder.*;
-import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -107,7 +104,7 @@ public class FolderRestController {
 		List<PictureFile> allPictures =
 			pictureFileRepository.findByFolderNameIn(folderNames);
 
-		Map<String, List<String>> folderToIds = allPictures.stream()
+		List<PictureFile> datelessPictures = allPictures.stream()
 			.filter(picture-> {
 
 				LocalDateTime dateTime = picture.getTaken_on();
@@ -116,25 +113,43 @@ public class FolderRestController {
 					|| "2025-11-18".equals(dateTime.toString().substring(0, 10))
 					|| "1970-01-01T00:00".equals(dateTime.toString());
 			})
+			.collect(Collectors.toList());
+
+		Map<String, List<String>> folderToIds = datelessPictures.stream()
 			.collect(Collectors.groupingBy(
 				PictureFile::getFolderName,
 				Collectors.mapping(PictureFile::getFilename, Collectors.toList())
 			));
 
+		// Group PictureFile -> folder name
+		Map<String, List<PictureFile>> folderToPictures = datelessPictures.stream()
+			.collect(Collectors.groupingBy(PictureFile::getFolderName));
+
+		// Build DTOs, skipping folders with no pictures
 		return folders.stream()
-			.map(folder -> new FolderPicturesDto(
-				folder.getName(),
-				folderToIds.getOrDefault(folder.getName(), List.of())
-			))
-			.filter(dto -> !dto.pictureFilenames.isEmpty())
+			.map(folder -> {
+				List<PictureFile> picturesForFolder =
+					folderToPictures.getOrDefault(folder.getName(), List.of());
+
+				List<PictureInfoDto> pictureDtos = picturesForFolder.stream()
+					.map(p -> new PictureInfoDto(
+						p.getId(),
+						p.getFilename(),
+						p.getTaken_on()
+					))
+					.collect(Collectors.toList());
+
+				return new FolderPicturesDto(folder.getName(), pictureDtos);
+			})
+			.filter(dto -> !dto.pictureFilenames.isEmpty())   // omit empty folders
 			.collect(Collectors.toList());
 	}
 
-	@GetMapping("/folders-with-picture-ids")
-	public List<FolderPicturesDto> getFoldersWithPictureIds() {
+	@GetMapping("/folders-with-pictures-without-dates")
+	public List<FolderPicturesDto> getFoldersWithPictures() {
 
-		List<Folder> folders = folderRepository.findAll()
-			.stream().sorted(Comparator.comparing(Folder::getName))
+		List<Folder> folders = folderRepository.findAll().stream()
+			.sorted(Comparator.comparing(Folder::getName))
 			.collect(Collectors.toList());
 
 		List<String> folderNames = folders.stream()
@@ -144,17 +159,35 @@ public class FolderRestController {
 		List<PictureFile> allPictures =
 			pictureFileRepository.findByFolderNameIn(folderNames);
 
-		Map<String, List<String>> folderToIds = allPictures.stream()
-			.collect(Collectors.groupingBy(
-				PictureFile::getFolderName,
-				Collectors.mapping(p -> p.getId().toString(), Collectors.toList())
-			));
+		// Group PictureFile -> folder name
+		Map<String, List<PictureFile>> folderToPictures = allPictures.stream()
+			.collect(Collectors.groupingBy(PictureFile::getFolderName));
 
+		// Build DTOs, skipping folders with no pictures
 		return folders.stream()
-			.map(folder -> new FolderPicturesDto(
-				folder.getName(),
-				folderToIds.getOrDefault(folder.getName(), List.of())
-			))
+			.map(folder -> {
+				List<PictureFile> picturesForFolder =
+					folderToPictures.getOrDefault(folder.getName(), List.of());
+
+				List<PictureInfoDto> pictureDtos = picturesForFolder.stream()
+					.filter(p-> {
+
+						LocalDateTime dateTime = p.getTaken_on();
+
+						return dateTime == null
+							|| "2025-11-18".equals(dateTime.toString().substring(0, 10))
+							|| "1970-01-01T00:00".equals(dateTime.toString());
+					})
+					.map(p -> new PictureInfoDto(
+						p.getId(),
+						p.getFilename(),
+						p.getTaken_on()
+					))
+					.collect(Collectors.toList());
+
+				return new FolderPicturesDto(folder.getName(), pictureDtos);
+			})
+			.filter(dto -> !dto.pictureFilenames.isEmpty())   // omit empty folders
 			.collect(Collectors.toList());
 	}
 
@@ -162,10 +195,10 @@ public class FolderRestController {
 	public DateUpdateResultDto updateDatesFromExif(@RequestBody List<FolderPicturesDto> foldersWithPictureIds) throws IOException {
 
         // Flatten all picture IDs from the JSON we just generated
-        List<String> pictureIds = foldersWithPictureIds.stream()
+        List<PictureInfoDto> pictureIds = foldersWithPictureIds.stream()
             .flatMap(folderDto -> folderDto.pictureFilenames.stream())
 			.collect(Collectors.toList());
 
-        return pictureFileService.updateDatesFromExif(folderController, pictureIds);
+        return pictureFileService.updateDates(folderController, pictureIds);
     }
 }

@@ -35,6 +35,11 @@ public class CustomErrorController implements ErrorController {
 		return "error"; // Generic error page for other errors
 	}
 
+	@GetMapping("/error-403")
+	public String handleError403(HttpServletRequest request) {
+		return "error-403"; // Generic error page for other errors
+	}
+
 	@GetMapping("/error-404")
 	public String handleError404(HttpServletRequest request) {
 		return "error-404"; // Generic error page for other errors
