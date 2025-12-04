@@ -66,7 +66,7 @@
                       th:height="${pictureFile.displayHeight}"
               >
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__/__${arguments}__}"
+                   th:href="@{/collection/__${pictureFile.id}__?__${arguments}__}"
                 >
                   <section class="wrapper" th:id=" @{file-number-__${pictureFile.id}__}">
                     <span class="tt_subject">
@@ -82,7 +82,7 @@
                   </section>
                 </a>
                 <a th:id="@{picture__${pictureFile.id}__}"
-                   th:href="@{/collection/__${pictureFile.id}__/__${arguments}__}"
+                   th:href="@{/collection/__${pictureFile.id}__?__${arguments}__}"
                 >
                   <figcaption class="tt_edit">
                     <form id="editprops">

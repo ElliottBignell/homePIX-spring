@@ -387,7 +387,7 @@ public abstract class PaginationController implements AutoCloseable {
 		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
 		Page<PictureFile> files = this.pictureFileService.getComplexSearchPageByLocation(
-			name,
+			name.replace('+', ' '),
 			dates.getFirst(),
 			endOfDay,
 			isAdmin(authentication),
