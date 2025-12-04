@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -17,10 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +25,15 @@ import org.slf4j.LoggerFactory;
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
+    private final UserDetailsService userDetailsService;
+
 	UserRepository userRepository;
 	private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
 	@Autowired
-	SecurityConfig(UserRepository userRepository) {
+	SecurityConfig(UserRepository userRepository, UserDetailsService userDetailsService) {
 		this.userRepository = userRepository;
+		this.userDetailsService = userDetailsService;
 	}
 
 	@Bean
@@ -132,6 +132,11 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				.defaultSuccessUrl("/", true) // Redirect to home after login
 				.permitAll()
 			)
+            .rememberMe(remember -> remember
+                .key("aSecureAndPrivateKey")
+                .tokenValiditySeconds(7 * 24 * 60 * 60)
+                .userDetailsService(userDetailsService) // ✅ CRUCIAL
+            )
 			.logout()
 			.permitAll()
 			.and()

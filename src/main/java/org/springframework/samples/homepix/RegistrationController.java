@@ -27,10 +27,12 @@ public class RegistrationController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam String confirmPassword,
-            Model model) {
+			@RequestParam String email,
+            Model model
+	) {
 
-		       if (!password.equals(confirmPassword)) {
-            model.addAttribute("error", "Passwords do not match.");
+		   if (!password.equals(confirmPassword)) {
+				model.addAttribute("error", "Passwords do not match.");
             return "register";
         }
 
@@ -39,7 +41,7 @@ public class RegistrationController {
             return "register";
         }
 
-		registrationService.registerUser(username, "", password);
+		registrationService.registerUser(username, email, password);
 
         return "redirect:/login?registered"; // Optional: show a "registration successful" message
 	}
