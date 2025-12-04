@@ -3,6 +3,7 @@ package org.springframework.samples.homepix.portfolio.album;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.samples.homepix.Role;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
@@ -28,9 +29,12 @@ public class AlbumService {
 
 	public Map<Integer, PictureFile> getThumbnailsMap(Iterable<Album> albums) {
 
-		List<Integer> thumbnailIds = StreamSupport.stream(albums.spliterator(), false) // Convert Iterable to Stream
-			.map(Album::getThumbnail) // Map each Album to its PictureFile thumbnail
-			.map(PictureFile::getId)
+		List<Integer> thumbnailIds =
+        StreamSupport.stream(albums.spliterator(), false)
+            .map(Album::getThumbnail)
+            .map(t -> Optional.ofNullable(t)
+                             .map(PictureFile::getId)
+                             .orElse(62509)) //TODO: Eliminate magic number
 			.collect(Collectors.toList()); // Collect the results into a List
 
 		// Create a map of thumbnail ID to PictureFile
@@ -187,6 +191,7 @@ public class AlbumService {
 	@Cacheable("importedAlbums")
 	public List<Album> getSortedAlbums() {
 		return StreamSupport.stream(albumRepository.findAll().spliterator(), false)
+			.filter(album -> album.getUser().getRole() == Role.ADMIN)
 			.collect(Collectors.toList());
 	}
 }

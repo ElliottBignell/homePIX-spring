@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/albums")
-@Secured("ROLE_ADMIN")
+@Secured({"ROLE_ADMIN", "ROLE_USER"})
 public class AlbumRestController {
 
 	@Autowired

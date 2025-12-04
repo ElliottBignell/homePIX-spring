@@ -69,7 +69,12 @@
               <section class="wrapper" id="file-number__">
                 <span class="tt_subject">
                   <img th:id="@{picture-__${album.id}__}"
-                       th:style="'--aspect-ratio: ' + (${thumbnails[album.thumbnail.id]?.width ?: 3} / ${thumbnails[album.thumbnail.id]?.height ?: 2}) + ';'"
+                       th:style="'--aspect-ratio: '
+                           + (${#maps.containsKey(thumbnails, album.thumbnail?.id)}
+                                ? (${thumbnails[album.thumbnail.id].width} + ' / '
+                                   + ${thumbnails[album.thumbnail.id].height})
+                                : '3 / 2')
+                           + ';'"
                        class="lazyloaded variable_aspect responsive-image-mobile"
                        th:src="${album.thumbnail?.mediumFilename}"
                        th:data-src="${album.thumbnail?.mediumFilename}"

@@ -49,4 +49,7 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 	@Transactional(readOnly = true)
 	Collection<Album> findLastAlbum();
 
+	@Query("SELECT DISTINCT album FROM Album album WHERE album.user.id = :user")
+	@Transactional(readOnly = true)
+	Collection<Album> findByUserId(@Param("user") long user);
 }

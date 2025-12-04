@@ -17,11 +17,10 @@ package org.springframework.samples.homepix.portfolio.album;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
+import org.springframework.samples.homepix.UserRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
@@ -36,6 +35,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.samples.homepix.User;
+
 /**
  * @author Elliott Bignell
  */
@@ -46,6 +49,9 @@ class AlbumController extends PaginationController {
 
 	private final AlbumContentRepository albumContent;
 	private AlbumService albumService;
+
+	@Autowired
+	UserRepository userRepository;
 
 	@Autowired
 	public AlbumController(AlbumRepository albums,
@@ -65,13 +71,19 @@ class AlbumController extends PaginationController {
 		dataBinder.setDisallowedFields("id");
 	}
 
-	@Secured("ROLE_ADMIN")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	@GetMapping("/albums/new/")
 	public String initCreationForm(Map<String, Object> model) {
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String username = auth.getName();
+
+		Optional<User> user = userRepository.findByUsername(username);
 
 		Album album = new Album();
 		album.setCount(0);
 		album.setName("Test");
+		album.setUser(user.get());
 		this.albums.save(album);
 
 		model.put("album", album);
@@ -79,7 +91,7 @@ class AlbumController extends PaginationController {
 		return "redirect:/albums/" + album.getId();
 	}
 
-	@Secured("ROLE_ADMIN")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	@PostMapping("/albums/new/")
 	public String processCreationForm(@Valid Album album, BindingResult result, Model model) {
 
@@ -89,6 +101,15 @@ class AlbumController extends PaginationController {
 		else {
 
 			try {
+
+				Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+				String username = auth.getName();
+
+				Optional<User> user = userRepository.findByUsername(username);
+				album.setCount(0);
+				album.setUser(user.get());
+				album.setThumbnail_id(62509); //TODO: Eliminate magic number
+
 				this.albums.save(album);
 			}
 			catch (Exception ex) {
