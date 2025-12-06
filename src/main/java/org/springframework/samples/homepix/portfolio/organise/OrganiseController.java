@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.homepix.portfolio.organise;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
+import org.springframework.samples.homepix.portfolio.comments.CommentRepository;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -63,6 +65,9 @@ class OrganiseController extends AlbumContentBaseController {
 
 	@Autowired
 	PictureFileService pictureFileService;
+
+	@Autowired
+	CommentRepository commentRepository;
 
 	@Autowired
 	public OrganiseController(AlbumContentRepository albumContent,
@@ -232,33 +237,37 @@ class OrganiseController extends AlbumContentBaseController {
 	public String showElementById(@ModelAttribute CollectionRequestDTO requestDTO,
 								  @PathVariable("id") long id,
 								  @PathVariable("pictureId") int pictureId,
+								  HttpServletRequest request,
 								  Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, model);
+		return showElement(requestDTO, id, pictureId, request, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}/")
 	public String showElementSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 								   @PathVariable("id") long id,
 								   @PathVariable("pictureId") int pictureId,
+								   HttpServletRequest request,
 								   Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, model);
+		return showElement(requestDTO, id, pictureId, request, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}/")
 	public String showElementByIdSlash(@ModelAttribute CollectionRequestDTO requestDTO,
 									   @PathVariable("id") long id,
 									   @PathVariable("pictureId") int pictureId,
+									   HttpServletRequest request,
 									   Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, model);
+		return showElement(requestDTO, id, pictureId, request, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}")
 	public String showElement(@ModelAttribute CollectionRequestDTO requestDTO,
 							  @PathVariable("id") long id,
 							  @PathVariable("pictureId") int pictureId,
+							  HttpServletRequest request,
 							  Map<String, Object> model
 	) {
 
@@ -303,6 +312,9 @@ class OrganiseController extends AlbumContentBaseController {
 				.collect(Collectors.toList())
 			);
 		}
+
+		model.put("comments", commentRepository.findAll());
+		model.put("currentUrl", request.getRequestURI());
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 

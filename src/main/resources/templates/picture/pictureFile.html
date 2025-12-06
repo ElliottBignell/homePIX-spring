@@ -722,7 +722,7 @@ function remove_keyword( keyword, pic_id ) {
 <link rel="stylesheet" th:href="@{/resources/css/clearall.css}" />
 <link rel="stylesheet" th:href="@{/resources/css/dropdown.css}" />
 
-<div class="techfont" style="position:absolute;left:0px;width:100vw;height:100vh;">
+<div class="techfont" style="position:absolute;left:0px;top:1vh;width:100vw;height:100vh;">
   <div id="details" style="position:absolute;left:0px;width:100vw;height:100vh;">
     <c th:if="${errorMessage != null}">
       <div style="position:absolute;top:10em;left:10em;">
@@ -752,7 +752,7 @@ function remove_keyword( keyword, pic_id ) {
               <span class="glyphicon glyphicon-chevron-left"></span>
             </a>
           </td>
-          <td id="picframe" style="position:relative;top:0em;height:calc(100vw - 9em);width:calc(100vh - 15em);vertical-align:top;">
+          <td id="picframe" style="position:relative;top:0em;height:calc(100vw - 9em);width:calc(100vh - 15em);vertical-align:top;overflow-y:scroll;">
             <img th:id="@{picture-__${picture.id}__}"
                  class="lazyload imageinlist imageresponsive"
                  th:src="${picture.mediumFilename}"
@@ -818,6 +818,46 @@ function remove_keyword( keyword, pic_id ) {
 
                 <input type="hidden" name="next" th:value="${ next }" />
               </form>
+            </div>
+            <div style="font-size:0.5em;position:absolute;top:95vh;">
+              Comments
+              <form id="submit_comment"
+                   action="/submit_comment"
+                   method="post"
+                   th:if="${#authorization.expression('isAuthenticated')}"
+                   style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+
+                <input name="description_id" type="hidden" id="description_id_comment" th:value="${picture.id}">
+                <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
+                <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
+
+                <label for="send_comment" class="titletext propertyfont" style="font-size:0.8em;">My thoughts:</label>
+
+                <textarea name="send_comment"
+                          id="send_comment"
+                          maxlength="1024"
+                          placeholder="Type your comment here..."
+                          style="font-size:0.8em;width:30vw;height:10vh;"></textarea>
+
+                <button type="submit" style="font-size:0.8em;height:10vh;">
+                  Submit
+                </button>
+              </form>
+              <hr>
+              <span th:each="comment : ${comments}">
+                <p th:text="${comment.text}" style="font-size:1em;">
+                  A comment
+                </p>
+                <i>
+                  <p th:text="${comment.user.username}" style="font-size:0.8em;">
+                    Fred Bloggs
+                  </p>
+                </i>
+                <p th:text="${comment.date}" style="font-size:0.8em;">
+                  01/01/1970
+                </p>
+               <hr>
+              </span>
             </div>
           </td>
           <td style="width:1em;vertical-align:middle;">
@@ -1046,7 +1086,7 @@ function remove_keyword( keyword, pic_id ) {
 
               <div id="keywords_and_copyright" class="techfont homepix-keywords">
                 <div th:if="${#authorization.expression('isAuthenticated')}">
-                  <div id="panel1" style="display:inline">
+                  <div id="panel1" style="display:inline" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                     <span class="titletext propertyfont">
                         Keywords:
                     </span>
@@ -1084,14 +1124,14 @@ function remove_keyword( keyword, pic_id ) {
                       <input name="album_id"      type="hidden" id="album_id"     th:value="${picture.id}">
                     </form>
                   </div>
-                  <div id="move_to_folder" style="display:inline">
+                  <div id="move_to_folder" style="display:inline" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                     <form id="move_item_to_folder" action="" method="get" style="font-size:0.3em;padding-top:10px;">
                       <input name="move_picture_to_folder"  type="text"   id="move_picture_to_folder" placeholder="Move to folder...">
                       <div id="folder-dropdownFolders" class="dropdown-content"></div>
                       <input name="folder_id"      type="hidden" id="folder_id"     th:value="${picture.id}">
                     </form>
                   </div>
-                  <div id="set_location" style="display:inline">
+                  <div id="set_location" style="display:inline" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                     <div th:if="${#authorization.expression('isAuthenticated')}">
                       <form id="submit_location" action="" method="get" style="font-size:0.3em;padding-top:10px;">
                         <input name="latitude"  type="text"   id="latitude" th:placeholder="${picture.latitude}">
