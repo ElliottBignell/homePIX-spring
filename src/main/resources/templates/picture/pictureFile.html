@@ -858,6 +858,19 @@ function remove_keyword( keyword, pic_id ) {
                 <p th:text="${comment.text}" style="font-size:1em;">
                   A comment
                 </p>
+                <form id="delete_comment"
+                      action="/delete_comment"
+                      method="post"
+                      th:if="${#authentication.name == comment.user.username}"
+                      style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+                  <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
+                  <input type="hidden" name="commentId" th:value="${comment.id}" />
+                  <input type="hidden" name="userId" th:value="${comment.user.username}" />
+                  <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
+                  <button type="submit" style="font-size:0.8em;">
+                    Delete
+                  </button>
+                </form>
                <hr>
               </span>
             </div>
