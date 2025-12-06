@@ -831,7 +831,7 @@ function remove_keyword( keyword, pic_id ) {
                 <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
                 <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
 
-                <label for="send_comment" class="titletext propertyfont" style="font-size:0.8em;">My thoughts:</label>
+                <label for="send_comment" class="titletext propertyfont" style="font-size:0.8em;" th:text="|${#authentication.name}'s thoughts:|">>My thoughts:</label>
 
                 <textarea name="send_comment"
                           id="send_comment"
@@ -845,16 +845,18 @@ function remove_keyword( keyword, pic_id ) {
               </form>
               <hr>
               <span th:each="comment : ${comments}">
+                <i>
+                  <b>
+                    <span th:text="${comment.user.username}" style="font-size:0.8em;">
+                      Fred Bloggs
+                    </span>
+                  </b>
+                </i>
+                <span th:text="${comment.date}" style="font-size:0.8em;">
+                  01/01/1970
+                </span>
                 <p th:text="${comment.text}" style="font-size:1em;">
                   A comment
-                </p>
-                <i>
-                  <p th:text="${comment.user.username}" style="font-size:0.8em;">
-                    Fred Bloggs
-                  </p>
-                </i>
-                <p th:text="${comment.date}" style="font-size:0.8em;">
-                  01/01/1970
                 </p>
                <hr>
               </span>
