@@ -18,13 +18,20 @@ package org.springframework.samples.homepix.portfolio.organise;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileService;
+import org.springframework.samples.homepix.portfolio.comments.Comment;
 import org.springframework.samples.homepix.portfolio.comments.CommentRepository;
+import org.springframework.samples.homepix.portfolio.filtering.DateRangeSpecification;
+import org.springframework.samples.homepix.portfolio.filtering.PictureFileSpecification;
+import org.springframework.samples.homepix.portfolio.filtering.SearchTextSpecification;
+import org.springframework.samples.homepix.portfolio.filtering.SortDirection;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
 import org.springframework.samples.homepix.portfolio.folder.FolderRepository;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
@@ -313,7 +320,14 @@ class OrganiseController extends AlbumContentBaseController {
 			);
 		}
 
-		model.put("comments", commentRepository.findAll());
+		// Reverse date-order
+		Comparator<Comment> orderBy = (item1, item2 ) -> { return item2.getDate().compareTo(item1.getDate()); };
+
+		List<Comment> comments = StreamSupport.stream(commentRepository.findAll().spliterator(), false)
+			.sorted(orderBy)
+			.collect(Collectors.toList());
+
+		model.put("comments", comments);
 		model.put("currentUrl", request.getRequestURI());
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
