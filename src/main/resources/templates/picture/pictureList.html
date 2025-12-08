@@ -137,7 +137,7 @@
                   <span class="tt_subject">
                     <img th:id="@{picture__${pictureFile.id}__}"
                          class="lazyload imageinlist responsive-image-mobile"
-                         th:style="'--aspect-ratio: ' + (${pictureFile?.width ?: 3} / ${pictureFile?.height ?: 2}) + ';'"
+                         th:style="'--aspect-ratio:(' + (${pictureFile?.width ?: 3}/${pictureFile?.height ?: 2}) + ');'"
                          th:src="${pictureFile.mediumFilename}"
                          th:data-src="${pictureFile.mediumFilename}"
                          th:alt="${pictureFile.title}"
