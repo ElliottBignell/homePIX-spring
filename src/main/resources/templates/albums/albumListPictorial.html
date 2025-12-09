@@ -49,7 +49,7 @@
             </div>
             <div class="col-md-6">
             <span class="pull-right">
-              <form action="#" th:action="@{/albums/new/}" th:object="${album}" method="post">
+              <form action="#" th:if="${#authorization.expression('isAuthenticated')}" th:action="@{/albums/new/}" th:object="${album}" method="post">
                 <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
                 <input id="name" th:field="*{name}" name="name" type="text" placeholder="Add new...">
                 <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>

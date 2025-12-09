@@ -1100,6 +1100,7 @@ public class BucketController extends PaginationController {
 
 
 	// web-images/Milano/dse_020208-dse_020209_6066523_2023_08_05_09_23_52_66_02_00.jpg
+	@Secured("ROLE_ADMIN")
 	@GetMapping(value = "web-images/{directory}/{file}")
 	public ResponseEntity<byte[]> getFileFromBucket(@PathVariable("directory") String directory,
 			@PathVariable("file") String file) {

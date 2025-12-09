@@ -29,7 +29,7 @@
     <a class="btn btn-primary" th:href="@{/owners/new}">Add Owner</a>
 
   <br />
-  <a class="btn btn-default" th:href="@{/albums/new}">Add Albums</a>
+  <a class="btn btn-default" th:if="${#authorization.expression('isAuthenticated')}" th:href="@{/albums/new}">Add Albums</a>
 
 </body>
 </html>
