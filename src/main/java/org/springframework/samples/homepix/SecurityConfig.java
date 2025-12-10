@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import org.slf4j.Logger;
@@ -30,10 +32,19 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 	UserRepository userRepository;
 	private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
+    private final RedirectLogoutSuccessHandler logoutSuccessHandler;
+	private final CustomLoginSuccessHandler customLoginSuccessHandler;
+
 	@Autowired
-	SecurityConfig(UserRepository userRepository, UserDetailsService userDetailsService) {
+	SecurityConfig(UserRepository userRepository,
+				   UserDetailsService userDetailsService,
+				   CustomLoginSuccessHandler customLoginSuccessHandler,
+				   RedirectLogoutSuccessHandler logoutSuccessHandler
+				   ) {
 		this.userRepository = userRepository;
 		this.userDetailsService = userDetailsService;
+		this.customLoginSuccessHandler = customLoginSuccessHandler;
+		this.logoutSuccessHandler = logoutSuccessHandler;
 	}
 
 	@Bean
@@ -55,6 +66,14 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 	}
 
 	@Bean
+	public CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler() {
+		CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+		handler.setCsrfRequestAttributeName("_csrf");
+		return handler;
+	}
+
+
+	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		http
@@ -73,7 +92,6 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 						}
 					}).permitAll()
 			.requestMatchers(
-				"/login",
 					"/",
 					"/error",
 					"/error-404",
@@ -123,6 +141,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/admin/**",
 					"/words",
 					"/submit_purchase",
+					"/prelogin",
 					"/debug/mappings"
 				)
 				.permitAll()
@@ -130,9 +149,15 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.and()
 			.formLogin(form -> form
 				.loginPage("/login")  // Ensure login page is registered
-				.defaultSuccessUrl("/", true) // Redirect to home after login
+				.loginProcessingUrl("/login")
+				.successHandler(customLoginSuccessHandler)
 				.permitAll()
 			)
+            .logout(logout -> logout
+                .logoutUrl("/logout")   // must match your form POST
+                .logoutSuccessHandler(logoutSuccessHandler)
+                .permitAll()
+            )
             .rememberMe(remember -> remember
                 .key("aSecureAndPrivateKey")
                 .tokenValiditySeconds(7 * 24 * 60 * 60)
@@ -149,21 +174,17 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				// Handle 404 Not Found errors by directing to the error page
 				.authenticationEntryPoint((request, response, authException) -> {
 					response.sendRedirect("/error-403"); // Redirect all errors to your custom 404 page
-				})
-			.and()
-			.csrf()
-				.disable(); // For simplicity; handle CSRF properly in a production environment
-
+				});
 
 		logger.info("Form login configured with custom login page at /login");
 		logger.info("Default success URL after login is set to /api/keywords");
 		logger.info("Logout URL configured at /logout");
 
-		// Adding handlers to capture the request processing and debug further if necessary
-		http.formLogin().successHandler((request, response, authentication) -> {
-			logger.info("User {} successfully authenticated", authentication.getName());
-			response.sendRedirect("/");  // Redirect after successful login
-		});
+		http.csrf(csrf -> csrf
+			.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+			.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler())
+			.ignoringRequestMatchers("/prelogin", "/logout")
+		);
 
 		http.formLogin().failureHandler((request, response, exception) -> {
 			logger.warn("Authentication failed: {}", exception.getMessage());

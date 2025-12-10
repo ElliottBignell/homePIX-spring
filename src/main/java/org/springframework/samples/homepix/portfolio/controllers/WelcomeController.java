@@ -16,6 +16,7 @@
 
 package org.springframework.samples.homepix.portfolio.controllers;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.samples.homepix.CanonicalRedirectFilter;
@@ -35,9 +36,12 @@ import org.springframework.samples.homepix.portfolio.locations.LocationRelations
 import org.springframework.samples.homepix.portfolio.locations.LocationService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -174,7 +178,20 @@ class WelcomeController extends PaginationController {
 
 	}
 
-	@GetMapping("/logout")
+	@GetMapping("/prelogin")
+	public String showPrelogin(@RequestParam(required = false) String redirectTo,
+							   HttpSession session) {
+		session.setAttribute("currentUrl", redirectTo);
+		return "login"; // your login page
+	}
+
+	@PostMapping("/prelogin")
+	public String handlePrelogin(@RequestParam(required = false) String redirectTo,
+							   HttpSession session) {
+		session.setAttribute("currentUrl", redirectTo);
+		return "login"; // your login page
+	}
+
 	public String logout(Album album, BindingResult result, Map<String, Object> model) {
 		return "redirect:/welcome";
 	}
