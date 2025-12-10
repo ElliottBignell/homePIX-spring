@@ -28,8 +28,8 @@ public class Comment {
 	private PictureFile picture_id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user")
-	private User user;
+	@JoinColumn(name = "user_id")
+	private User user_id;
 
 	@Column(name = "text")
 	@Size(max=1023)

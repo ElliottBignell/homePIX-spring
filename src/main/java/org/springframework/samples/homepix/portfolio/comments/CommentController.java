@@ -60,7 +60,7 @@ public class CommentController {
 
 		User user = userRepository.findByUsername(principal.getName())
 			.orElseThrow(() -> new RuntimeException("User not found"));
-		comment.setUser(user);
+		comment.setUser_id(user);
 
 		commentRepository.save(comment);
 

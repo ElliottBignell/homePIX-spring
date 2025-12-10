@@ -57,8 +57,8 @@ public class Album {
 	private String description;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user", referencedColumnName = "user_id")
-	private User user;
+	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
+	private User user_id;
 
 	private PictureFile thumbnail;
 

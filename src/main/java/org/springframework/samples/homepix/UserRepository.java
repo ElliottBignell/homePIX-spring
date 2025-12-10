@@ -1,10 +1,10 @@
 package org.springframework.samples.homepix;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -21,4 +21,7 @@ import java.util.Optional;
 public interface UserRepository extends CrudRepository<User, Long> {
 
 	Optional<User> findByUsername(String username);
+
+	@Query("SELECT DISTINCT User FROM User user WHERE user.user_id = :user_id")
+	Collection<User> findByUserId(@Param("user_id") Integer user_id);
 }

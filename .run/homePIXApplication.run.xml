@@ -26,7 +26,7 @@
     <option name="VM_PARAMETERS" value="-Dspring.profiles.active=mysql-debug " />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="org.springframework.samples.homepix.*" />
+        <option name="PATTERN" value="org.springframework.samples.homepix.CatrStatus" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

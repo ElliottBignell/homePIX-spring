@@ -40,6 +40,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
+import org.springframework.samples.homepix.sales.CartItemRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -75,6 +76,9 @@ class OrganiseController extends AlbumContentBaseController {
 
 	@Autowired
 	CommentRepository commentRepository;
+
+	@Autowired
+	CartItemRepository cartItemRepository;
 
 	@Autowired
 	public OrganiseController(AlbumContentRepository albumContent,
@@ -329,6 +333,7 @@ class OrganiseController extends AlbumContentBaseController {
 
 		model.put("comments", comments);
 		model.put("currentUrl", request.getRequestURI());
+		model.put("cart_count", cartItemRepository.count());
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 

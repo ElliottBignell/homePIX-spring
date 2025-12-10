@@ -122,6 +122,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/chart/**",
 					"/admin/**",
 					"/words",
+					"/submit_purchase",
 					"/debug/mappings"
 				)
 				.permitAll()

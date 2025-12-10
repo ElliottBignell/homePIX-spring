@@ -83,7 +83,7 @@ class AlbumController extends PaginationController {
 		Album album = new Album();
 		album.setCount(0);
 		album.setName("Test");
-		album.setUser(user.get());
+		album.setUser_id(user.get());
 		this.albums.save(album);
 
 		model.put("album", album);
@@ -107,7 +107,7 @@ class AlbumController extends PaginationController {
 
 				Optional<User> user = userRepository.findByUsername(username);
 				album.setCount(0);
-				album.setUser(user.get());
+				album.setUser_id(user.get());
 				album.setThumbnail_id(62509); //TODO: Eliminate magic number
 
 				this.albums.save(album);
