@@ -29,6 +29,7 @@ public class CartItem {
     @JoinColumn(name = "picture_id", nullable = false)
     private PictureFile picture;
 
+	@Enumerated(EnumType.STRING)
     @Column(name = "size", nullable = false)
     private SizeForSale size = SizeForSale.MEDIUM;
 

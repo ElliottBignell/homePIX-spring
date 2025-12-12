@@ -129,7 +129,7 @@ public class AlbumService {
 			getSortOrder(this.albumContentRepository, album, item1) - getSortOrder(this.albumContentRepository, album, item2);
 		};
 
-		return contents.stream().map(item -> item.getPictureFile())
+		return contents.stream().map(AlbumContent::getPictureFile)
 			.sorted(defaultSort)
 			.collect(Collectors.toList());
 	}
