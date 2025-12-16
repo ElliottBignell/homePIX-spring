@@ -1,0 +1,55 @@
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<head>
+</head>
+<body>
+
+<div class="album-main">
+
+  <div class="centerstage">
+    <div class="techfont stage" id="div_centrestage">
+      <div class="row">
+        <div class="col-md-6">
+          <a th:href="${currentUrl}" style="color:blue;">
+            <h3><- Return to shopping</h3>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <h1>Add to Cart</h1>
+        </div>
+        <div class="figure">
+          <section class="wrapper" th:id=" @{file-number_${picture.id}}">
+            <span class="tt_subject">
+              <img th:id="@{picture__${picture.id}__}"
+                   class="lazyload imageinlist album"
+                   th:width="${picture.displayWidth}"
+                   th:height="${picture.displayHeight}"
+                   th:src="${picture.mediumFilename}"
+                   th:data-src="${picture.mediumFilename}"
+                   th:alt="${picture.title}"
+              >
+            </span>
+            <form id="submit_purchase"
+                  th:action="@{/cart/addToCart/__${picture.id}__}"
+                  method="post"
+                  th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                  style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <input type="hidden" name="pictureID" th:value="${picture.id}" />
+              <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
+              <button class="mdc-button mdc-button--raised" type="submit">
+                <span class="mdc-button__label">Add</span>
+              </button>
+              <hr>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+</html>

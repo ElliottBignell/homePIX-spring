@@ -2,11 +2,9 @@ package org.springframework.samples.homepix.sales;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.CollectionRequestDTO;
 import org.springframework.samples.homepix.SizeForSale;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
-import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
@@ -14,12 +12,10 @@ import org.springframework.samples.homepix.portfolio.controllers.PaginationContr
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.sales.EmailService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.*;
@@ -37,38 +33,30 @@ public class CartItemController extends PaginationController
 	@Autowired
 	PictureFileRepository pictureFileRepository;
 
+	@Autowired
+	EmailService emailService;
+
 	protected CartItemController(AlbumRepository albums, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService) {
 		super(albums, keyword, keywordsRelationships, folderService);
 	}
 
-	@PostMapping("/submit_purchase")
+	@PostMapping("/cart/choose/{pictureId}")
 	@Secured("ROLE_ADMIN")
-	public String submitComment(@RequestParam("pictureID") Integer pictureID,
+	public String submitComment(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
-								Principal principal,
-								RedirectAttributes redirectAttributes,
-								Model model
+								Map<String, Object> model,
+								Principal principal
 	)
 	{
-		if (!redirectTo.startsWith("/")) {
-			redirectTo = "/"; // fallback to home
-		}
-
 		Optional<User> user = userRepository.findByUsername(principal.getName());
-		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureID);
+		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
 
 		if (user.isPresent() && pictureFile.isPresent()) {
-
-			CartItem cartItem = new CartItem();
-
-			cartItem.setSize(SizeForSale.MEDIUM);
-			cartItem.setPicture(pictureFile.get());
-			cartItem.setUser(user.get());
-
-			cartItemRepository.save(cartItem);
+			model.put("picture", pictureFile.get());
+			model.put("currentUrl", redirectTo);
 		}
 
-		return "redirect:" + redirectTo;
+		return "/cart/addToCart.html";
 	}
 
 	@PostMapping("/cart/delete")
@@ -85,6 +73,40 @@ public class CartItemController extends PaginationController
 			cartItemRepository.delete(cartItem.get());
 		}
 
+		return "redirect:/cart";
+	}
+
+	@PostMapping("/cart/addToCart/{pictureId}")
+	@Secured("ROLE_ADMIN")
+	public String showAddToCart(@PathVariable("pictureId") int pictureId,
+								@RequestParam("redirectTo") String redirectTo,
+								Map<String, Object> model,
+								Principal principal)
+	{
+		Optional<User> user = userRepository.findByUsername(principal.getName());
+		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
+
+		if (user.isPresent() && pictureFile.isPresent()) {
+
+			CartItem cartItem = new CartItem();
+
+			cartItem.setSize(SizeForSale.MEDIUM);
+			cartItem.setPicture(pictureFile.get());
+			cartItem.setUser(user.get());
+
+			cartItemRepository.save(cartItem);
+		}
+
+		model.put("currentUrl", redirectTo);
+
+		return "redirect:/cart";
+	}
+
+	@PostMapping("/cart/buy")
+	@Secured("ROLE_ADMIN")
+	public String buyFromCart( Map<String, Object> model,
+							Principal principal)
+	{
 		return "redirect:/cart";
 	}
 
@@ -108,4 +130,12 @@ public class CartItemController extends PaginationController
 		model.put("items", items);
 		return "cart/cart.html";
 	}
+
+    @GetMapping("/test-mail")
+    public String testMail() {
+        emailService.sendEmail("elliott.bignell@gmail.com",
+                "Test from HomePIX",
+                "If you see this, email sending works.");
+		return "cart/cart.html";
+    }
 }

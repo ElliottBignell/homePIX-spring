@@ -140,10 +140,13 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/chart/**",
 					"/admin/**",
 					"/words",
-					"/submit_purchase",
 					"/prelogin",
+					"/cart/buy",
 					"/cart",
 					"/cart/delete",
+					"/cart/choose/*",
+					"/cart/add/*",
+				"/test-mail",
 					"/debug/mappings"
 				)
 				.permitAll()

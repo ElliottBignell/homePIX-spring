@@ -10,10 +10,14 @@
   <div class="centerstage">
     <div class="techfont stage" id="div_centrestage">
       <div class="row">
-        <div class="col-md-6">
-          <h1>Cart</h1>
-        </div>
-        <div class="figure">
+        <a th:href="${currentUrl}" style="color:blue;">
+          <h3><- Return to shopping</h3>
+        </a>
+        <div class="col-md-16">
+          <p>
+          <h1>
+            Cart
+          </h1>
           <figure th:each="item : ${items}">
             <hr>
             <span th:text="${item.picture.id}">
@@ -29,18 +33,32 @@
                 Size
             </span>
             <span>
-              <form action="/cart/delete" method="post">
+              <form action="/cart/delete" method="post" style="display:inline">
                 <button type="submit" style="background-color:rgba(0,0,0,0); border:none;">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
                   <input type="hidden" name="orderNo" th:value="${item.id}" />
-                  <svg width="32" height="32" class="bo" style="background-color:rgba(0,0,0,0);">
-                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                   <svg xmlns="http://www.w3.org/2000/svg"
+                        height="32" width="32"
+                        viewBox="0 96 960 960"
+                        fill="var(--homepix-br-darkest)">
+                    <path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM400 776h80V416h-80v360Zm160 0h80V416h-80v360Z"/>
                   </svg>
                 </button>
               </form>
             </span>
+          </figure>
         </div>
+        <div class="col-md-6">
+          <p>Totel:</p>
+          <p>100,000 CHF</p>
+        </div>
+        <form action="/cart/buy" method="post">
+          <button class="mdc-button mdc-button--raised" type="submit">
+            <span class="mdc-button__label">Buy</span>
+          </button>
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
       </div>
     </div>
   </div>

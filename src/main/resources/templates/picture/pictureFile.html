@@ -890,13 +890,12 @@ function remove_keyword( keyword, pic_id ) {
               <div id="picture_details" class="techfont" style="2em;vertical-align:top;width:5em;line-height:0.2em;padding:0px;">
 
                 <form id="submit_purchase"
-                      action="/submit_purchase"
+                      th:action="@{/cart/choose/__${picture.id}__}"
                       method="post"
                       th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
                       style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-                  <input type="hidden" name="csrfmiddlewaretoken" value="IsXqXf7JrHOkB6B6gDVOvkvfs74ExZuDa4Z11tRTR6GPhnGstbSpHAaduxxEMuqQ">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
-                  <input type="hidden" name="pictureID" th:value="${picture.id}" />
                   <button class="mdc-button mdc-button--raised" type="submit">
                     <span class="mdc-button__label">Buy</span>
                   </button>
