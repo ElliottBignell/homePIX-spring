@@ -19,3 +19,4 @@ _site/
 **/*.bak
 images/**
 src/main/resources/static/resources/images/**
+.run/homePIXApplication.run.xml
