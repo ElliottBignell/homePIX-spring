@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.folder.FolderController;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -22,7 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArchiveService {
 
-    private final S3Client s3Client;
+	@Autowired
+	FolderController folderController;
 
     @Value("${homepix.s3.bucket}")
     private String bucket;
@@ -39,23 +42,27 @@ public class ArchiveService {
                 .contentType("application/gzip")
                 .build();
 
-        s3Client.putObject(put, RequestBody.fromBytes(tarGzBytes));
+		S3Client s3Client = folderController.getS3Clent();
+
+		s3Client.putObject(put, RequestBody.fromBytes(tarGzBytes));
 
         return key; // caller converts to a download URL
     }
 
-    private byte[] createTarGzArchive(List<PictureFile> pictures) throws IOException {
+    private byte[] createTarGzArchive(List<PictureFile> pictures) throws IOException
+	{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         GzipCompressorOutputStream gzipOut = new GzipCompressorOutputStream(baos);
         TarArchiveOutputStream tarOut = new TarArchiveOutputStream(gzipOut);
         tarOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
         for (PictureFile p : pictures) {
+
             String s3Key = getPathFromPictureFile(p);
 
             // Download file bytes from S3
             byte[] fileBytes = downloadFromS3(s3Key);
-            String fileName = ""; //p.getFileName(); // or however you name them
+            String fileName = p.getFilename(); // TODO: Make size-dependent
 
             TarArchiveEntry entry = new TarArchiveEntry(fileName);
             entry.setSize(fileBytes.length);
@@ -71,20 +78,28 @@ public class ArchiveService {
         return baos.toByteArray();
     }
 
-    private byte[] downloadFromS3(String key) {
+    public byte[] downloadFromS3(String key) {
         GetObjectRequest get = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
                 .build();
 
-        ResponseBytes<GetObjectResponse> bytes =
+		folderController.initialiseS3Client();
+
+		S3Client s3Client = folderController.getS3Clent();
+
+		ResponseBytes<GetObjectResponse> bytes =
                 s3Client.getObjectAsBytes(get);
 
         return bytes.asByteArray();
     }
 
     private String getPathFromPictureFile(PictureFile p) {
+
+		String filename = p.getFilename();
+		String folder = p.getFolderName();
+
         // Your existing function
-        return ""; //p.getS3Path();
+        return "jpegs/" + folder + "/watermark/" + filename; //p.getS3Path();
     }
 }

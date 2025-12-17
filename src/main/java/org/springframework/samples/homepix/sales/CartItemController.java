@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.sales;
 
 import jakarta.servlet.http.HttpSession;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.SizeForSale;
 import org.springframework.samples.homepix.User;
@@ -9,14 +10,19 @@ import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
+import org.springframework.samples.homepix.portfolio.folder.BucketController;
+import org.springframework.samples.homepix.portfolio.folder.FolderController;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
+import org.springframework.samples.homepix.portfolio.sales.ArchiveService;
 import org.springframework.samples.homepix.portfolio.sales.EmailService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.S3Client;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +41,15 @@ public class CartItemController extends PaginationController
 
 	@Autowired
 	EmailService emailService;
+
+	@Autowired
+	ArchiveService archiveService;
+
+	@Autowired
+	BucketController bucketController;
+
+	@Autowired
+	FolderController folderController;
 
 	protected CartItemController(AlbumRepository albums, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService) {
 		super(albums, keyword, keywordsRelationships, folderService);
@@ -106,17 +121,34 @@ public class CartItemController extends PaginationController
 	@Secured("ROLE_ADMIN")
 	public String buyFromCart( Map<String, Object> model,
 							Principal principal)
+		throws IOException
 	{
+		Optional<User> user = userRepository.findByUsername(principal.getName());
+		List<PictureFile> items = new ArrayList<>();
+
+		if (user.isPresent()) {
+
+			long id = user.get().getUser_id();
+
+			items = cartItemRepository.findAll().stream()
+				.filter(item -> item.getUser().getUser_id() == id)
+				.map(item -> item.getPicture())
+				.collect(Collectors.toList());
+
+			archiveService.createAndUploadArchive("elliottcb", items);
+		}
+
 		return "redirect:/cart";
 	}
 
 	@GetMapping("/cart")
 	@Secured("ROLE_ADMIN")
-	public String showCart( Map<String, Object> model,
-							Principal principal)
+	public String showCart(Map<String, Object> model,
+						   @NonNull Principal principal)
 	{
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
+		List<String> files = new ArrayList<>();
 
 		if (user.isPresent()) {
 
@@ -125,9 +157,32 @@ public class CartItemController extends PaginationController
 			items = cartItemRepository.findAll().stream()
 				.filter(item -> item.getUser().getUser_id() == id)
 				.collect(Collectors.toList());
+
+			folderController.initialiseS3Client();
+
+			S3Client s3Client = folderController.getS3Clent();
+
+			files = bucketController.listUserDownloads(user.get().getUsername());
+
+			// Sort newest first (descending by filename)
+			files.sort((a, b) -> {
+				String fileA = a.substring(a.lastIndexOf('/') + 1);
+				String fileB = b.substring(b.lastIndexOf('/') + 1);
+
+				return fileB.compareTo(fileA);  // reverse order
+			});
+
+			// Convert into download URLs
+			files = files.stream()
+				.map(key -> "/downloads/" + user.get().getUsername() + "/" +
+					key.substring(("downloads/" + user.get().getUsername() + "/").length()))
+				.collect(Collectors.toList());
 		}
 
+		// TODO Add dates created for use in a tool-tip
+		model.put("downloads", files);
 		model.put("items", items);
+
 		return "cart/cart.html";
 	}
 

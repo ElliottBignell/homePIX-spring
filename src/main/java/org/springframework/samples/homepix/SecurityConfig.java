@@ -107,6 +107,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/collection/**",
 					"/calendar/**",
 					"/web-images/**",
+					"/downloads/*/*.tar.gz",
 					"/resources/**",
 					"/fonts/**",
 					"/css/**",

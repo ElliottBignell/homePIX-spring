@@ -1111,7 +1111,7 @@ public abstract class PaginationController implements AutoCloseable {
 		return data;
 	}
 
-	protected void initialiseS3Client() {
+	public void initialiseS3Client() {
 
 		if (s3Client == null) {
 

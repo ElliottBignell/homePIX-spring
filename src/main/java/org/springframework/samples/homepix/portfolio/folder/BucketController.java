@@ -23,6 +23,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,9 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.sales.ArchiveService;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -89,6 +92,9 @@ public class BucketController extends PaginationController {
 
 	@Autowired
 	DateParsingService dateParsingService;
+
+	@Autowired
+	ArchiveService archiveService;
 
 	private final PictureFileService pictureFileService;
 
@@ -914,6 +920,43 @@ public class BucketController extends PaginationController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+
+	@GetMapping("/downloads/{user}/{filename:.+}")
+	@PreAuthorize("hasRole('ADMIN') or #user == authentication.name")
+	public ResponseEntity<byte[]> downloadArchive(
+			@PathVariable String user,
+			@PathVariable String filename) {
+
+		String key = "downloads/" + user + "/" + filename;
+
+		// Load file from S3
+		byte[] data = archiveService.downloadFromS3(key);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType("application/gzip"));
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+		headers.setContentLength(data.length);
+
+		return new ResponseEntity<>(data, headers, HttpStatus.OK);
+	}
+
+	public List<String> listUserDownloads(String username) {
+
+		String prefix = "downloads/" + username + "/";
+
+		ListObjectsV2Request request = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+
+		ListObjectsV2Response response = s3Client.listObjectsV2(request);
+
+		return response.contents().stream()
+			.map(S3Object::key)
+			.map(path -> "/downloads/" + path.replace("downloads/", ""))
+			.collect(Collectors.toList());
+	}
+
 
 	@GetMapping(value = "web-images/{directory}/200px/{file}_max.webp")
 	public ResponseEntity<byte[]> getCompressedFileFromBucket(@PathVariable("directory") String directory,
