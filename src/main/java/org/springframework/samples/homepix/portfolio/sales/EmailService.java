@@ -17,7 +17,10 @@ public class EmailService {
     @Value("${homepix.owner.email:owner@homepix.ch}")
     private String ownerEmail;
 
-    public EmailService(JavaMailSender mailSender) {
+	@Value("${homepix.url}")
+	private String homePIXURL;
+
+	public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
@@ -32,7 +35,7 @@ public class EmailService {
     public void sendOwnerPurchaseNotification(String buyerEmail,
                                               String productDescription,
                                               String downloadUrl) {
-        String subject = "[HomePIX] New purchase";
+        String subject = "[homePIX] New purchase";
         String text = """
                 A new purchase has been completed.
 
@@ -40,8 +43,8 @@ public class EmailService {
                 Item: %s
 
                 Download URL for buyer:
-                %s
-                """.formatted(buyerEmail, productDescription, downloadUrl);
+                %s%s
+                """.formatted(buyerEmail, productDescription, homePIXURL, downloadUrl);
 
         sendEmail(ownerEmail, subject, text);
     }
@@ -52,22 +55,22 @@ public class EmailService {
     public void sendBuyerDownloadLink(String buyerEmail,
                                       String productDescription,
                                       String downloadUrl) {
-        String subject = "[HomePIX] Your download is ready";
+        String subject = "[homePIX] Your download is ready";
         String text = """
                 Hi,
 
-                Thank you for your purchase from HomePIX.
+                Thank you for your purchase from homePIX.
 
                 Item: %s
 
                 You can download your photos here:
-                %s
+                %s%s
 
                 This link may expire after a period of time, so please download and back up your files.
 
                 Best regards,
-                HomePIX
-                """.formatted(productDescription, downloadUrl);
+                homePIX
+                """.formatted(productDescription, homePIXURL, downloadUrl);
 
         sendEmail(buyerEmail, subject, text);
     }

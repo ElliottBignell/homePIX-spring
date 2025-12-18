@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -58,6 +59,9 @@ public class CalendarPageIntegrationIT {
 
 	@Autowired
 	private org.springframework.samples.homepix.portfolio.calendar.Calendar calendar;
+
+	@Value("${homepix.url}")
+	String baseUrl;
 
 	private RestTemplate restTemplate;
 
@@ -197,7 +201,7 @@ public class CalendarPageIntegrationIT {
 	@MethodSource("calendarEndpoints")
 	public void testCalendarEndpoint(String endpoint) throws Exception {
 
-		String url = "http://localhost:8443/calendar/" + endpoint;
+		String url = baseUrl + "calendar/" + endpoint;
 
 		MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders.get(url))
 			.andExpect(MockMvcResultMatchers.status().isOk())
@@ -213,7 +217,7 @@ public class CalendarPageIntegrationIT {
 	@MethodSource("calendarDayEndpoints")
 	public void testCalendarDayEndpoint(String endpoint) throws Exception {
 
-		String url = "http://localhost:8443/collection/?fromDate=" + endpoint + "&toDate=" + endpoint + "&ID=&Key=&search=&sort=";
+		String url = baseUrl + "collection/?fromDate=" + endpoint + "&toDate=" + endpoint + "&ID=&Key=&search=&sort=";
 
 		MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders.get(url))
 			.andExpect(MockMvcResultMatchers.status().isOk())

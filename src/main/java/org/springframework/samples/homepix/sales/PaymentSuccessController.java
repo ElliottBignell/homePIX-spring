@@ -2,7 +2,6 @@ package org.springframework.samples.homepix.sales;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Customer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;

@@ -44,6 +44,7 @@ import org.springframework.samples.homepix.portfolio.locations.LocationRelations
 import org.springframework.samples.homepix.portfolio.sales.ArchiveService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -64,6 +65,8 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
@@ -922,10 +925,34 @@ public class BucketController extends PaginationController {
 	}
 
 	@GetMapping("/downloads/{user}/{filename:.+}")
-	@PreAuthorize("hasRole('ADMIN') or #user == authentication.name")
 	public ResponseEntity<byte[]> downloadArchive(
 			@PathVariable String user,
-			@PathVariable String filename) {
+			@PathVariable String filename,
+			Authentication authentication,
+			HttpServletRequest request) {
+
+		// Not logged in → redirect to prelogin
+		if (authentication == null
+			|| !authentication.isAuthenticated()
+			|| authentication instanceof AnonymousAuthenticationToken) {
+
+			String target = request.getRequestURI();
+
+			request.getSession(true).setAttribute("currentUrl", target);
+
+			return ResponseEntity
+				.status(HttpStatus.FOUND)
+				.header(HttpHeaders.LOCATION, "/prelogin")
+				.build();
+		}
+
+		String currentUser = authentication.getName();
+		boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+		if (!isAdmin && !currentUser.equals(user)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
 
 		String key = "downloads/" + user + "/" + filename;
 

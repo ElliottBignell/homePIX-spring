@@ -122,11 +122,24 @@ public class CartItemController extends PaginationController
 		throws IOException
 	{
 		Optional<User> user = userRepository.findByUsername(principal.getName());
-		List<PictureFile> items = new ArrayList<>();
+		List<CartItem> items = new ArrayList<>();
 
 		if (user.isPresent()) {
+
+			S3Client s3Client = folderController.getS3Clent();
+
+			long id = user.get().getUserId();
+
+			items = cartItemRepository.findAll().stream()
+				.filter(item -> item.getUser().getUserId() == id)
+				.collect(Collectors.toList());
+
+			model.put("files", items);
+
 			return "cart/buy.html";
 		}
+
+		model.put("files", items);
 
 		return "redirect:/cart";
 	}

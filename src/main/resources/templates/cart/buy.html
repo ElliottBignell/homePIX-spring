@@ -14,6 +14,16 @@
           <h3><- Return to shopping</h3>
         </a>
 
+        <span th:each="item : ${files}" class="tt_subject">
+          <img th:id="@{item.picture${picture.id}__}"
+               class="lazyload imageinlist album"
+               th:width="${item.picture.displayWidth}"
+               th:height="${item.picture.displayHeight}"
+               th:src="${item.picture.mediumFilename}"
+               th:data-src="${item.picture.mediumFilename}"
+               th:alt="${item.picture.title}"
+          >
+        </span>
         <div class="col-md-6">
           <p>Totel:</p>
           <p>100,000 CHF</p>
