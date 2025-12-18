@@ -22,6 +22,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -147,7 +148,11 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/cart/delete",
 					"/cart/choose/*",
 					"/cart/add/*",
-				"/test-mail",
+					"/payment/success/*",
+					"/webhooks/stripe",
+					"/webhooks/paypal",
+					"/test-mail",
+					"/create-checkout-session",
 					"/debug/mappings"
 				)
 				.permitAll()

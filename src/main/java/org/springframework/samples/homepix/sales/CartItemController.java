@@ -3,6 +3,7 @@ package org.springframework.samples.homepix.sales;
 import jakarta.servlet.http.HttpSession;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.SizeForSale;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
@@ -41,9 +42,6 @@ public class CartItemController extends PaginationController
 
 	@Autowired
 	EmailService emailService;
-
-	@Autowired
-	ArchiveService archiveService;
 
 	@Autowired
 	BucketController bucketController;
@@ -127,15 +125,7 @@ public class CartItemController extends PaginationController
 		List<PictureFile> items = new ArrayList<>();
 
 		if (user.isPresent()) {
-
-			long id = user.get().getUser_id();
-
-			items = cartItemRepository.findAll().stream()
-				.filter(item -> item.getUser().getUser_id() == id)
-				.map(item -> item.getPicture())
-				.collect(Collectors.toList());
-
-			archiveService.createAndUploadArchive("elliottcb", items);
+			return "cart/buy.html";
 		}
 
 		return "redirect:/cart";
@@ -152,10 +142,10 @@ public class CartItemController extends PaginationController
 
 		if (user.isPresent()) {
 
-			long id = user.get().getUser_id();
+			long id = user.get().getUserId();
 
 			items = cartItemRepository.findAll().stream()
-				.filter(item -> item.getUser().getUser_id() == id)
+				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
 
 			folderController.initialiseS3Client();
@@ -193,4 +183,18 @@ public class CartItemController extends PaginationController
                 "If you see this, email sending works.");
 		return "cart/cart.html";
     }
+
+	@PostMapping("/webhooks/stripe")
+	public ResponseEntity<String> stripeWebhook(@RequestBody String payload,
+												@RequestHeader("Stripe-Signature") String sigHeader) {
+		// verify signature
+		// update order status
+		return ResponseEntity.ok("success");
+	}
+
+	@PostMapping("/webhooks/paypal")
+	public ResponseEntity<String> paypalWebhook(@RequestBody String payload) {
+		// validate, update order
+		return ResponseEntity.ok("OK");
+	}
 }

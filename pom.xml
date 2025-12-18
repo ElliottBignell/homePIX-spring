@@ -218,6 +218,19 @@
       <artifactId>commons-compress</artifactId>
       <version>1.26.1</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.stripe</groupId>
+      <artifactId>stripe-java</artifactId>
+      <version>20.130.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.paypal.sdk</groupId>
+      <artifactId>checkout-sdk</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -414,8 +427,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <source>15</source>
-          <target>15</target>
+          <source>16</source>
+          <target>16</target>
         </configuration>
       </plugin>
       <!-- Surefire (Unit Tests) -->

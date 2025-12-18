@@ -22,7 +22,7 @@ public class User implements UserDetails, CredentialsContainer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
-	private long user_id;
+	private long userId;
 
 	@Column(name = "username")
 	@NotBlank(message = "User name is mandatory")

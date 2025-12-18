@@ -75,7 +75,7 @@ public class NavbarAspect {
 
             String username = authentication.getName();
             Optional<User> user = userRepository.findByUsername(username);
-			model.addAttribute("ownAlbums", albumRepository.findByUserId(user.get().getUser_id()));
+			model.addAttribute("ownAlbums", albumRepository.findByUserId(user.get().getUserId()));
         }
         else {
 			model.addAttribute("ownAlbums", List.of());

@@ -22,6 +22,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
 	Optional<User> findByUsername(String username);
 
-	@Query("SELECT DISTINCT User FROM User user WHERE user.user_id = :user_id")
-	Collection<User> findByUserId(@Param("user_id") Integer user_id);
+	@Query("SELECT DISTINCT User FROM User user WHERE user.userId = :userId")
+	Collection<User> findByUserId(@Param("userId") Integer userId);
 }
