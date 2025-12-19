@@ -1,38 +1,43 @@
 package org.springframework.samples.homepix.sales;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.util.EnumMap;
+import java.util.Map;
 
-@ConfigurationProperties(prefix = "pricing.base")
+@ConfigurationProperties(prefix = "pricing")
 @Component
 @Getter
 @Setter
 public class PricingProperties {
 
-	private int width;
-	private int height;
+    private Map<PricingTier, TierConfig> tiers = new EnumMap<>(PricingTier.class);
 
-	// Use @ConfigurationPropertiesBinding or proper setter
-	private BigDecimal priceChf;
+	@Getter
+    @Setter
+    public static class TierConfig {
 
-	public long basePixelCount() {
-		return (long) width * height;
-	}
+        private int width;
+        private int height;
+        private BigDecimal priceChf;
+
+        public long pixelCount() {
+            return (long) width * height;
+        }
+
+		public long basePixelCount() {
+			return (long) width * height;
+		}
+    }
 
 	@PostConstruct
-	public void debug() {
-		//System.out.println("Base price CHF = " + getPriceChf());
-		System.out.println("Width: " + width + ", Height: " + height);
+	void debug() {
+		System.out.println("Pricing tiers loaded: " + tiers.keySet());
 	}
 }
 

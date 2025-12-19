@@ -47,11 +47,14 @@
                 </button>
               </form>
             </span>
+            <span th:text="${#numbers.formatDecimal(item?.getTotalPrice() ?: 0, 1, 2) + ' CHF'}">
+              10.00
+            </span>
           </figure>
         </div>
         <div class="col-md-6">
           <p>Totel:</p>
-          <p>100,000 CHF</p>
+          <p th:text="${#numbers.formatDecimal(price, 1, 2)}">100,000 CHF</p>
           <hr>
           <form action="/cart/buy" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

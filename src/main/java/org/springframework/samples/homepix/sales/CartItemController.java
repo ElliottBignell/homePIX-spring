@@ -1,9 +1,11 @@
 package org.springframework.samples.homepix.sales;
 
+import com.stripe.param.terminal.ReaderSetReaderDisplayParams;
 import jakarta.servlet.http.HttpSession;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.samples.homepix.CartStatus;
 import org.springframework.samples.homepix.SizeForSale;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +50,9 @@ public class CartItemController extends PaginationController
 
 	@Autowired
 	FolderController folderController;
+
+	@Autowired
+	PricingService pricingService;
 
 	protected CartItemController(AlbumRepository albums, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService) {
 		super(albums, keyword, keywordsRelationships, folderService);
@@ -121,8 +128,11 @@ public class CartItemController extends PaginationController
 	{
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
+		BigDecimal price = BigDecimal.valueOf(10);
 
 		if (user.isPresent()) {
+
+			PricingTier tier = PricingTier.THUMBNAIL;
 
 			S3Client s3Client = folderController.getS3Clent();
 
@@ -132,12 +142,26 @@ public class CartItemController extends PaginationController
 				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
 
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
+
+			items.forEach(item -> item.setPricingTier(tier));
+
+			price = order.stream()
+				.map(item -> pricingService.calculatePrice(
+					item.getPricingTier(),
+					item.getPicture().getWidth(),
+					item.getPicture().getHeight()
+				))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 			model.put("files", items);
+			model.put("price", price);
 
 			return "cart/buy.html";
 		}
 
 		model.put("files", items);
+		model.put("price", price);
 
 		return "redirect:/cart";
 	}
@@ -150,14 +174,28 @@ public class CartItemController extends PaginationController
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
 		List<String> files = new ArrayList<>();
+		BigDecimal price = BigDecimal.valueOf(10);
+		PricingTier tier = PricingTier.THUMBNAIL;
 
 		if (user.isPresent()) {
 
 			long id = user.get().getUserId();
 
-			items = cartItemRepository.findAll().stream()
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
+
+			items = order.stream()
 				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
+
+			items.forEach(item -> item.setPricingTier(tier));
+
+			price = order.stream()
+				.map(item -> pricingService.calculatePrice(
+					item.getPricingTier(),
+					item.getPicture().getWidth(),
+					item.getPicture().getHeight()
+				))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			folderController.initialiseS3Client();
 
@@ -180,9 +218,15 @@ public class CartItemController extends PaginationController
 				.collect(Collectors.toList());
 		}
 
+		long amountInCents = price
+			.multiply(BigDecimal.valueOf(100))
+			.setScale(0, RoundingMode.HALF_UP)
+			.longValueExact();
+
 		// TODO Add dates created for use in a tool-tip
 		model.put("downloads", files);
 		model.put("items", items);
+		model.put("price", price);
 
 		return "cart/cart.html";
 	}

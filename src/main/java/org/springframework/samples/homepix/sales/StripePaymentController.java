@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.samples.homepix.CartStatus;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
-import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,7 +22,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Controller
 public class StripePaymentController {
@@ -40,7 +39,7 @@ public class StripePaymentController {
 	UserRepository userRepository;
 
 	@Autowired
-	CartPricingService cartPricingService;
+	PricingService pricingService;
 
 	@Value("${homepix.url}")
 	String baseUrl;
@@ -50,7 +49,8 @@ public class StripePaymentController {
     public ResponseEntity<String> createCheckoutSession(Principal principal) throws StripeException, IOException {
 
 		Optional<User> user = userRepository.findByUsername(principal.getName());
-		List<PictureFile> items = new ArrayList<>();
+		List<CartItem> items = new ArrayList<>();
+		BigDecimal price = BigDecimal.valueOf(10);
 
 		if (user.isEmpty()) {
 			// If no user, redirect to /cart
@@ -62,14 +62,27 @@ public class StripePaymentController {
 
 		long id = user.get().getUserId();
 
-		items = cartItemRepository.findAll().stream()
-			.filter(item -> item.getUser().getUserId() == id)
-			.map(CartItem::getPicture)
-			.collect(Collectors.toList());
+		PricingTier tier = PricingTier.THUMBNAIL;
 
-		BigDecimal total = cartPricingService.calculateCartTotal(cartItemRepository.findAll());
-		long amountInCents = total
-			.multiply(BigDecimal.valueOf(100))
+		List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
+
+		items = order.stream()
+			.filter(item -> item.getUser().getUserId() == id)
+			.toList();
+
+		items.forEach(item -> item.setPricingTier(tier));
+
+		price = order.stream()
+			.map(item -> pricingService.calculatePrice(
+				item.getPricingTier(),
+				item.getPicture().getWidth(),
+				item.getPicture().getHeight()
+			))
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		long amountInCents = price
+			.movePointRight(2)                // CHF → cents
+			.setScale(0, RoundingMode.HALF_UP)
 			.longValueExact();
 
 		Stripe.apiKey = stripeSecretKey;

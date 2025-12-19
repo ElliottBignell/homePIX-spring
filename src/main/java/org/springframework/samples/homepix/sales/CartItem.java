@@ -46,6 +46,8 @@ public class CartItem {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+	PricingTier pricingTier;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -58,4 +60,8 @@ public class CartItem {
     }
 
 	public ImageResolution getResolution() { return ImageResolution.ORIGINAL; }
+
+	public BigDecimal getTotalPrice() {
+		return pricingTier.calculatePrice(picture.getWidth(), picture.getHeight());
+	}
 }

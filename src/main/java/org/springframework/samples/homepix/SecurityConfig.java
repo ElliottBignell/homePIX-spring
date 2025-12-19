@@ -134,6 +134,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/api/folders/**",
 					"/api/locations/",
 					"/api/locations/**",
+					"/api/config-check",
 					"/logs/docker/homepix",
 					"/containers/**",
 					"/actuator",

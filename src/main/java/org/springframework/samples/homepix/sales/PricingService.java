@@ -1,10 +1,7 @@
 package org.springframework.samples.homepix.sales;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.stereotype.Service;
 
@@ -20,21 +17,6 @@ public class PricingService {
 
     private static final int SCALE = 2; // cents precision
 
-	public BigDecimal priceForImage(PictureFile picture, ImageResolution resolution) {
-
-        long deliveredPixels = calculateDeliveredPixels(picture, resolution);
-        BigDecimal pricePerPixel = pricingProperties.getPriceChf()
-                .divide(
-                        BigDecimal.valueOf(pricingProperties.basePixelCount()),
-                        10,
-                        RoundingMode.HALF_UP
-                );
-
-        return pricePerPixel
-                .multiply(BigDecimal.valueOf(deliveredPixels))
-                .setScale(SCALE, RoundingMode.HALF_UP);
-    }
-
     private long calculateDeliveredPixels(PictureFile picture, ImageResolution resolution) {
 
         int originalWidth = picture.getWidth();
@@ -49,5 +31,26 @@ public class PricingService {
         int targetHeight = (int) Math.round(originalHeight * scale);
 
         return (long) targetWidth * targetHeight;
+    }
+
+    public BigDecimal calculatePrice(
+            PricingTier tier,
+            long width,
+            long height
+    ) {
+		PricingProperties.TierConfig config =
+			pricingProperties.getTiers().get(tier);
+
+		if (config == null) {
+			throw new IllegalArgumentException("Unknown pricing tier: " + tier);
+		}
+
+		long pixels = width * height;
+
+		BigDecimal megapixels = BigDecimal.valueOf(pixels)
+			.divide(BigDecimal.valueOf(1_000_000), 4, RoundingMode.HALF_UP);
+
+		// Flat price per tier (as you requested)
+		return config.getPriceChf();
     }
 }
