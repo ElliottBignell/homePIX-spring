@@ -1,7 +1,6 @@
-package org.springframework.samples.homepix.portfolio.sales;
+package org.springframework.samples.homepix.sales;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.homepix.portfolio.sales.EmailService;
 import org.springframework.stereotype.Service;
 
 @Service

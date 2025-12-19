@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.sales;
+package org.springframework.samples.homepix.sales;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -11,13 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.sales.CartItem;
-import org.springframework.samples.homepix.sales.CartItemRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +38,9 @@ public class StripePaymentController {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Autowired
+	CartPricingService cartPricingService;
 
 	@Value("${homepix.url}")
 	String baseUrl;
@@ -64,6 +67,11 @@ public class StripePaymentController {
 			.map(CartItem::getPicture)
 			.collect(Collectors.toList());
 
+		BigDecimal total = cartPricingService.calculateCartTotal(cartItemRepository.findAll());
+		long amountInCents = total
+			.multiply(BigDecimal.valueOf(100))
+			.longValueExact();
+
 		Stripe.apiKey = stripeSecretKey;
 
 		SessionCreateParams params =
@@ -78,7 +86,7 @@ public class StripePaymentController {
 						.setPriceData(
 							SessionCreateParams.LineItem.PriceData.builder()
 								.setCurrency("chf")
-								.setUnitAmount(1000L) // CHF 10.00
+								.setUnitAmount(amountInCents) // CHF 10.00
 								.setProductData(
 									SessionCreateParams.LineItem.PriceData.ProductData.builder()
 										.setName("HomePIX Photo Package")

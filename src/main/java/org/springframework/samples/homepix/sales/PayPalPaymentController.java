@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.sales;
+package org.springframework.samples.homepix.sales;
 
 import com.paypal.http.HttpResponse;
 import com.paypal.orders.*;

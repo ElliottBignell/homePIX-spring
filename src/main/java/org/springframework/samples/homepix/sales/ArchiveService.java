@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.sales;
+package org.springframework.samples.homepix.sales;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;

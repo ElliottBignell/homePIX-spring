@@ -153,6 +153,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/webhooks/paypal",
 					"/test-mail",
 					"/create-checkout-session",
+				"/debug-config",
+				"/check-resources",
 					"/debug/mappings"
 				)
 				.permitAll()

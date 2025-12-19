@@ -16,8 +16,6 @@ import org.springframework.samples.homepix.portfolio.folder.FolderController;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
-import org.springframework.samples.homepix.portfolio.sales.ArchiveService;
-import org.springframework.samples.homepix.portfolio.sales.EmailService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

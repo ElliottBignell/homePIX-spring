@@ -1,4 +1,4 @@
-package org.springframework.samples.homepix.portfolio.sales;
+package org.springframework.samples.homepix.sales;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;

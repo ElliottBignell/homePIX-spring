@@ -1,0 +1,5 @@
+spring:
+  config:
+    import:
+      - application-mysql-debug.yml
+      - application-mysql-debug.properties

@@ -56,4 +56,6 @@ public class CartItem {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+	public ImageResolution getResolution() { return ImageResolution.ORIGINAL; }
 }
