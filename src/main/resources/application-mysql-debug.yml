@@ -1,9 +1,13 @@
 pricing:
   tiers:
-    BASE:
+    ORIGINAL:
       width: 4320
       height: 2868
       price-chf: 10.00
+    MEDIUM:
+      width: 300
+      height: 200
+      price-chf: 1.00
     THUMBNAIL:
       width: 300
       height: 200

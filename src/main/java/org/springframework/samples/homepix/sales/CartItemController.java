@@ -72,6 +72,7 @@ public class CartItemController extends PaginationController
 		if (user.isPresent() && pictureFile.isPresent()) {
 			model.put("picture", pictureFile.get());
 			model.put("currentUrl", redirectTo);
+			model.put("resolutions", PricingTier.values());
 		}
 
 		return "/cart/addToCart.html";
@@ -98,6 +99,7 @@ public class CartItemController extends PaginationController
 	@Secured("ROLE_ADMIN")
 	public String showAddToCart(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
+								@RequestParam("tier") PricingTier tier,
 								Map<String, Object> model,
 								Principal principal)
 	{
@@ -108,7 +110,7 @@ public class CartItemController extends PaginationController
 
 			CartItem cartItem = new CartItem();
 
-			cartItem.setSize(SizeForSale.MEDIUM);
+			cartItem.setPricingTier(tier);
 			cartItem.setPicture(pictureFile.get());
 			cartItem.setUser(user.get());
 
@@ -122,8 +124,9 @@ public class CartItemController extends PaginationController
 
 	@PostMapping("/cart/buy")
 	@Secured("ROLE_ADMIN")
-	public String buyFromCart( Map<String, Object> model,
-							Principal principal)
+	public String buyFromCart(ImageResolution resolution,
+							  Map<String, Object> model,
+							  Principal principal)
 		throws IOException
 	{
 		Optional<User> user = userRepository.findByUsername(principal.getName());
@@ -131,10 +134,6 @@ public class CartItemController extends PaginationController
 		BigDecimal price = BigDecimal.valueOf(10);
 
 		if (user.isPresent()) {
-
-			PricingTier tier = PricingTier.THUMBNAIL;
-
-			S3Client s3Client = folderController.getS3Clent();
 
 			long id = user.get().getUserId();
 
@@ -144,14 +143,8 @@ public class CartItemController extends PaginationController
 
 			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
 
-			items.forEach(item -> item.setPricingTier(tier));
-
 			price = order.stream()
-				.map(item -> pricingService.calculatePrice(
-					item.getPricingTier(),
-					item.getPicture().getWidth(),
-					item.getPicture().getHeight()
-				))
+				.map(CartItem::getTotalPrice)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			model.put("files", items);
@@ -175,7 +168,6 @@ public class CartItemController extends PaginationController
 		List<CartItem> items = new ArrayList<>();
 		List<String> files = new ArrayList<>();
 		BigDecimal price = BigDecimal.valueOf(10);
-		PricingTier tier = PricingTier.THUMBNAIL;
 
 		if (user.isPresent()) {
 
@@ -187,14 +179,8 @@ public class CartItemController extends PaginationController
 				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
 
-			items.forEach(item -> item.setPricingTier(tier));
-
 			price = order.stream()
-				.map(item -> pricingService.calculatePrice(
-					item.getPricingTier(),
-					item.getPicture().getWidth(),
-					item.getPicture().getHeight()
-				))
+				.map(CartItem::getTotalPrice)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			folderController.initialiseS3Client();
@@ -218,15 +204,11 @@ public class CartItemController extends PaginationController
 				.collect(Collectors.toList());
 		}
 
-		long amountInCents = price
-			.multiply(BigDecimal.valueOf(100))
-			.setScale(0, RoundingMode.HALF_UP)
-			.longValueExact();
-
 		// TODO Add dates created for use in a tool-tip
 		model.put("downloads", files);
 		model.put("items", items);
 		model.put("price", price);
+		model.put("resolutions", ImageResolution.values());
 
 		return "cart/cart.html";
 	}

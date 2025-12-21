@@ -26,7 +26,7 @@ public class PricingService {
             return (long) originalWidth * originalHeight;
         }
 
-        int targetWidth = Math.min(resolution.getMaxWidth(), originalWidth);
+        int targetWidth = Math.min(resolution.getWidth(), originalWidth);
         double scale = (double) targetWidth / originalWidth;
         int targetHeight = (int) Math.round(originalHeight * scale);
 

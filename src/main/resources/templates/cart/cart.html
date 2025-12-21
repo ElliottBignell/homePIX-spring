@@ -7,53 +7,70 @@
 
 <div class="album-main">
 
+  <a th:href="${currentUrl}" style="color:blue;">
+    <h3><- Return to shopping</h3>
+  </a>
   <div class="centerstage">
     <div class="techfont stage" id="div_centrestage">
-      <div class="row">
-        <a th:href="${currentUrl}" style="color:blue;">
-          <h3><- Return to shopping</h3>
-        </a>
-        <div class="col-md-16">
-          <p>
-          <h1>
-            Cart
-          </h1>
-          <figure th:each="item : ${items}">
-            <hr>
-            <span th:text="${item.picture.id}">
-                Item
-            </span>
-            <img th:width="${item.picture.displayWidth}"
-                 th:height="${item.picture.displayHeight}"
-                 th:src="${item.picture.mediumFilename}"
-                 th:data-src="${item.picture.mediumFilename}"
-                 th:alt="${item.picture.title}"
-            >
-            <span th:text="${item.size}">
-                Size
-            </span>
-            <span>
-              <form action="/cart/delete" method="post" style="display:inline">
-                <button type="submit" style="background-color:rgba(0,0,0,0); border:none;">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                  <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
-                  <input type="hidden" name="orderNo" th:value="${item.id}" />
-                   <svg xmlns="http://www.w3.org/2000/svg"
-                        height="32" width="32"
-                        viewBox="0 96 960 960"
-                        fill="var(--homepix-br-darkest)">
-                    <path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM400 776h80V416h-80v360Zm160 0h80V416h-80v360Z"/>
-                  </svg>
-                </button>
-              </form>
-            </span>
-            <span th:text="${#numbers.formatDecimal(item?.getTotalPrice() ?: 0, 1, 2) + ' CHF'}">
-              10.00
-            </span>
-          </figure>
-        </div>
-        <div class="col-md-6">
-          <p>Totel:</p>
+      <div class="row" style="display:flex; justify-content:center; vertical-align:middle;">
+        <p>
+        <h1>
+          Cart
+        </h1>
+        <table><tr><td>
+          <table>
+            <tr th:each="item : ${items}">
+              <td th:text="${item.picture.id}" style="padding:5px;">
+                  Item
+              </td>
+              <td style="padding:5px;">
+                <a th:href="@{/collection/__${item.picture.id}__}">
+                  <img th:width="${item.picture.displayWidth / 2}"
+                       th:height="${item.picture.displayHeight / 2}"
+                       th:src="${item.picture.mediumFilename}"
+                       th:data-src="${item.picture.mediumFilename}"
+                       th:alt="${item.picture.title}"
+                  >
+                </a>
+              </td>
+              <td th:for="${item.pricingTier.name()}"
+                     th:if="${item.pricingTier.height} != -1"
+                     th:text="${item.pricingTier.name() + ' (' +
+                 #numbers.formatDecimal(
+                     (item.pricingTier.height * (item.picture.aspectRatio ?: 0)),
+                     1, 0
+                 ) +
+                 ' x ' + item.pricingTier.height + ') '}"
+                  style="padding:5px;">
+              </td>
+              <td th:for="${item.pricingTier.name()}"
+                     th:if="${item.pricingTier.height} == -1"
+                     th:text="${item.pricingTier.name() + ' (' + item.picture.width +  ' x ' + item.picture.height + ') '}"
+                  style="padding:5px;">
+              </td>
+              <td style="padding:5px;">
+                <form action="/cart/delete" method="post" style="display:inline">
+                  <button type="submit" style="background-color:rgba(0,0,0,0); border:none;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
+                    <input type="hidden" name="orderNo" th:value="${item.id}" />
+                     <svg xmlns="http://www.w3.org/2000/svg"
+                          height="32" width="32"
+                          viewBox="0 96 960 960"
+                          fill="var(--homepix-br-darkest)">
+                      <path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM400 776h80V416h-80v360Zm160 0h80V416h-80v360Z"/>
+                    </svg>
+                  </button>
+                </form>
+              </td>
+              <td th:text="${#numbers.formatDecimal(item?.getTotalPrice() ?: 0, 1, 2) + ' CHF'}" style="padding:5px;">
+                10.00
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td style="padding-left:25px;">
+          <p>Total:</p>
           <p th:text="${#numbers.formatDecimal(price, 1, 2)}">100,000 CHF</p>
           <hr>
           <form action="/cart/buy" method="post">
@@ -63,6 +80,7 @@
             </button>
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
           </form>
+          <p>Downloads available:</p>
           <th:block th:each="download : ${downloads}">
             <a th:href="${download}">
               <button class="mdc-button mdc-button--raised" type="button">
@@ -79,8 +97,7 @@
             <br>
             <br>
           </th:block>
-        </div>
-      </div>
+      </td></tr></table>
     </div>
   </div>
 </div>

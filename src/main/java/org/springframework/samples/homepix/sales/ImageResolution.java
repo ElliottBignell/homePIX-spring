@@ -2,17 +2,18 @@ package org.springframework.samples.homepix.sales;
 
 public enum ImageResolution {
 
-    THUMBNAIL(200),
-    MEDIUM(1000),
-    ORIGINAL(-1); // original size
+    THUMBNAIL(300,200),
+    MEDIUM(1500,1000),
+    ORIGINAL(-1, -1); // original size
 
-    private final int maxWidth;
+    private final int width;
+    private final int height;
 
-    ImageResolution(int maxWidth) {
-        this.maxWidth = maxWidth;
+    ImageResolution(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
-    public int getMaxWidth() {
-        return maxWidth;
-    }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
 }

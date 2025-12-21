@@ -43,9 +43,14 @@ public class CartItem {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 
+    @Column(name = "downloaded_at")
+    private LocalDateTime downloadedAt;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "pricing_tier")
 	PricingTier pricingTier;
 
     @PrePersist
@@ -62,6 +67,11 @@ public class CartItem {
 	public ImageResolution getResolution() { return ImageResolution.ORIGINAL; }
 
 	public BigDecimal getTotalPrice() {
-		return pricingTier.calculatePrice(picture.getWidth(), picture.getHeight());
+
+		double ratio = pricingTier.getHeight() == -1 ? 1.0 : (double)pricingTier.getHeight() / (double)picture.getHeight();
+		return pricingTier.calculatePrice(
+			(long)(picture.getWidth() * ratio),
+			(long)(picture.getHeight() * ratio)
+		);
 	}
 }

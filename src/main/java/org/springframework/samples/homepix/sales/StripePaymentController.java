@@ -62,7 +62,6 @@ public class StripePaymentController {
 
 		long id = user.get().getUserId();
 
-		PricingTier tier = PricingTier.THUMBNAIL;
 
 		List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
 
@@ -70,14 +69,8 @@ public class StripePaymentController {
 			.filter(item -> item.getUser().getUserId() == id)
 			.toList();
 
-		items.forEach(item -> item.setPricingTier(tier));
-
 		price = order.stream()
-			.map(item -> pricingService.calculatePrice(
-				item.getPricingTier(),
-				item.getPicture().getWidth(),
-				item.getPicture().getHeight()
-			))
+			.map(CartItem::getTotalPrice)
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		long amountInCents = price

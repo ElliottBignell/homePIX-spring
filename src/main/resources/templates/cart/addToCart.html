@@ -38,6 +38,31 @@
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
               <input type="hidden" name="pictureID" th:value="${picture.id}" />
               <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
+              <fieldset>
+                <legend>Select a resolution:</legend>
+
+                <div th:each="res : ${resolutions}">
+                  <input type="radio"
+                         th:id="${res.name()}"
+                         name="tier"
+                         th:value="${res.name()}"
+                         th:checked="${res.name() == 'THUMBNAIL'}" />
+
+                  <label th:for="${res.name()}"
+                         th:if="${res.height} != -1"
+                         th:text="${res.name() + ' (' +
+                 #numbers.formatDecimal(
+                     (res.height * (picture.aspectRatio ?: 0)),
+                     1, 0
+                 ) +
+                 ' x ' + res.height + ') ' + '10.00' + ' CHF'}">
+                  </label>
+                  <label th:for="${res.name()}"
+                         th:if="${res.height} == -1"
+                         th:text="${res.name() + ' (' + picture.width +  ' x ' + picture.height + ') ' + '10.00' + ' CHF'}"
+                  > </label>
+                </div>
+              </fieldset>
               <button class="mdc-button mdc-button--raised" type="submit">
                 <span class="mdc-button__label">Add</span>
               </button>

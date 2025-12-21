@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.organise;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -240,9 +241,10 @@ class OrganiseController extends AlbumContentBaseController {
 								  @PathVariable("id") long id,
 								  @PathVariable("pictureId") int pictureId,
 								  HttpServletRequest request,
+								  HttpServletResponse response,
 								  Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, request, model);
+		return showElement(requestDTO, id, pictureId, request, response, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}/")
@@ -250,9 +252,10 @@ class OrganiseController extends AlbumContentBaseController {
 								   @PathVariable("id") long id,
 								   @PathVariable("pictureId") int pictureId,
 								   HttpServletRequest request,
+								   HttpServletResponse response,
 								   Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, request, model);
+		return showElement(requestDTO, id, pictureId, request, response, model);
 	}
 
 	@GetMapping("/album/{id}/item/{pictureId}/")
@@ -260,9 +263,10 @@ class OrganiseController extends AlbumContentBaseController {
 									   @PathVariable("id") long id,
 									   @PathVariable("pictureId") int pictureId,
 									   HttpServletRequest request,
+									   HttpServletResponse response,
 									   Map<String, Object> model
 	) {
-		return showElement(requestDTO, id, pictureId, request, model);
+		return showElement(requestDTO, id, pictureId, request, response, model);
 	}
 
 	@GetMapping("/albums/{id}/item/{pictureId}")
@@ -270,6 +274,7 @@ class OrganiseController extends AlbumContentBaseController {
 							  @PathVariable("id") long id,
 							  @PathVariable("pictureId") int pictureId,
 							  HttpServletRequest request,
+							  HttpServletResponse response,
 							  Map<String, Object> model
 	) {
 
@@ -325,6 +330,9 @@ class OrganiseController extends AlbumContentBaseController {
 		model.put("comments", comments);
 		model.put("currentUrl", request.getRequestURI());
 		model.put("cart_count", cartItemRepository.count());
+
+		response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+		response.setHeader("Pragma", "no-cache");
 
 		Optional<PictureFile> picture = pictureFiles.findById(pictureId);
 
