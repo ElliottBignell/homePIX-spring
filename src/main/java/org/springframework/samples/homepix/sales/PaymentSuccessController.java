@@ -2,6 +2,7 @@ package org.springframework.samples.homepix.sales;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
@@ -15,6 +16,7 @@ import com.stripe.model.checkout.Session;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,9 @@ public class PaymentSuccessController {
 
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
+
+	@Autowired
+	CartItemDownloadRepository cartItemDownloadRepository;
 
     private final CartItemRepository cartItemRepository;
     private final ArchiveService archiveService;
@@ -97,6 +102,11 @@ public class PaymentSuccessController {
 
 		// Clear cart (optional but recommended)
 		cartItemRepository.deleteByUser_UserId(user.getUserId());
+
+		String[] parts = archiveUrl.split("/");
+
+		String username = user.getUsername();
+		String filename = parts[2];
 
 		// ====================================
 		// 3) Send emails (buyer + admin)

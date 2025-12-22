@@ -1,12 +1,10 @@
 package org.springframework.samples.homepix.sales;
 
-import com.stripe.param.terminal.ReaderSetReaderDisplayParams;
 import jakarta.servlet.http.HttpSession;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CartStatus;
-import org.springframework.samples.homepix.SizeForSale;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
@@ -21,13 +19,12 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.security.Principal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
@@ -37,6 +34,9 @@ public class CartItemController extends PaginationController
 	CartItemRepository cartItemRepository;
 
 	@Autowired
+	CartItemDownloadRepository cartItemDownloadRepository;
+
+	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
@@ -44,9 +44,6 @@ public class CartItemController extends PaginationController
 
 	@Autowired
 	EmailService emailService;
-
-	@Autowired
-	BucketController bucketController;
 
 	@Autowired
 	FolderController folderController;
@@ -166,7 +163,6 @@ public class CartItemController extends PaginationController
 	{
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
-		List<String> files = new ArrayList<>();
 		BigDecimal price = BigDecimal.valueOf(10);
 
 		if (user.isPresent()) {
@@ -183,29 +179,22 @@ public class CartItemController extends PaginationController
 				.map(CartItem::getTotalPrice)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			folderController.initialiseS3Client();
+			Map<Long, CartItem> itemsById = items.stream()
+				.collect(Collectors.toMap(CartItem::getId, Function.identity()));
 
-			S3Client s3Client = folderController.getS3Clent();
+			Comparator<CartDownload> orderBy = (item1, item2 ) -> { return Math.toIntExact(item2.getOrderNo() - item1.getOrderNo()); };
 
-			files = bucketController.listUserDownloads(user.get().getUsername());
-
-			// Sort newest first (descending by filename)
-			files.sort((a, b) -> {
-				String fileA = a.substring(a.lastIndexOf('/') + 1);
-				String fileB = b.substring(b.lastIndexOf('/') + 1);
-
-				return fileB.compareTo(fileA);  // reverse order
-			});
-
-			// Convert into download URLs
-			files = files.stream()
-				.map(key -> "/downloads/" + user.get().getUsername() + "/" +
-					key.substring(("downloads/" + user.get().getUsername() + "/").length()))
+			List<CartDownload> downloads = cartItemDownloadRepository.findByUsername(principal.getName()).stream()
+				.map(url -> {
+					return new CartDownload(url.getId(), url.getFilename(), url.getDownloadedAt());
+				})
+				.sorted(orderBy)
 				.collect(Collectors.toList());
+
+			model.put("downloads", downloads);
 		}
 
 		// TODO Add dates created for use in a tool-tip
-		model.put("downloads", files);
 		model.put("items", items);
 		model.put("price", price);
 		model.put("resolutions", ImageResolution.values());

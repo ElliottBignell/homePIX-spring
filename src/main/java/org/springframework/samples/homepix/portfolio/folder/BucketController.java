@@ -41,7 +41,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
-import org.springframework.samples.homepix.sales.ArchiveService;
+import org.springframework.samples.homepix.sales.*;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -63,6 +63,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
@@ -94,6 +95,9 @@ public class BucketController extends PaginationController {
 
 	@Autowired
 	ArchiveService archiveService;
+
+	@Autowired
+	CartItemDownloadRepository cartItemDownloadRepository;
 
 	private final PictureFileService pictureFileService;
 
@@ -924,6 +928,7 @@ public class BucketController extends PaginationController {
 	public ResponseEntity<byte[]> downloadArchive(
 			@PathVariable String user,
 			@PathVariable String filename,
+			@RequestParam("orderNo") Long orderNo,
 			Authentication authentication,
 			HttpServletRequest request) {
 
@@ -959,6 +964,11 @@ public class BucketController extends PaginationController {
 		headers.setContentType(MediaType.parseMediaType("application/gzip"));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 		headers.setContentLength(data.length);
+
+		Optional<CartItemDownload> cartItem = cartItemDownloadRepository.findById(orderNo);
+
+		cartItem.ifPresent(item -> item.setDownloadedAt(LocalDateTime.now()));
+		cartItem.ifPresent(cartItemDownload -> cartItemDownloadRepository.save(cartItemDownload));
 
 		return new ResponseEntity<>(data, headers, HttpStatus.OK);
 	}

@@ -31,6 +31,7 @@ public class ArchiveService {
     private String bucket;
 
     public String createAndUploadArchive(String username, List<PictureFile> pictures) throws IOException {
+
         String key = "downloads/" + username + "/" + System.currentTimeMillis() + ".tar.gz";
 
         byte[] tarGzBytes = createTarGzArchive(pictures);
