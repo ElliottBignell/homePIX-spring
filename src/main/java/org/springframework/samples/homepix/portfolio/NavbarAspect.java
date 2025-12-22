@@ -80,9 +80,6 @@ public class NavbarAspect {
         else {
 			model.addAttribute("ownAlbums", List.of());
         }
-
-		model.addAttribute("albums", albums);
-		model.addAttribute("folders", folders);
 	}
 
 	private void putInMap(Map<String, Object> model, List<Album> albums, List<Folder> folders) {

@@ -1,15 +1,12 @@
 package org.springframework.samples.homepix;
 
-import org.springframework.ui.Model;
 import jakarta.servlet.RequestDispatcher;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class CustomErrorController implements ErrorController {

@@ -2,7 +2,6 @@ package org.springframework.samples.homepix.portfolio.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
@@ -216,29 +215,6 @@ public abstract class PaginationController implements AutoCloseable {
 
 	Iterable<Album> findAllAlbums() {
 		return this.albums.findAll();
-	}
-
-	@Cacheable("yearNames")
-	@ModelAttribute("yearNames")
-	protected List<List<String>> populateDates() {
-
-		List<String> years = this.pictureFiles.findYears();
-
-		int width = 4;
-
-		List<List<String>> table = new ArrayList<List<String>>() ;
-
-		for (int n = 0; n < 4; n++) {
-			table.add(new ArrayList<>());
-		}
-
-		int count = 0;
-
-		for (String year : years) {
-			table.get(count++ % 4).add(year);
-		}
-
-		return table;
 	}
 
 	@CacheEvict(value = { "yearNames" }, allEntries = true)
