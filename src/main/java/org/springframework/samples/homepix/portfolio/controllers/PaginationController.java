@@ -217,14 +217,6 @@ public abstract class PaginationController implements AutoCloseable {
 		return this.albums.findAll();
 	}
 
-	@CacheEvict(value = { "yearNames" }, allEntries = true)
-	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
-	public void resetCache() {
-		// This will clear the "folders" cache.
-		// Optionally re-fetch or do nothing here;
-		// next call to getSortedFolders() will reload.
-	}
-
 	protected String loadFolders(Folder folder, BindingResult result, Map<String, Object> model) {
 
 		// allow parameterless GET request for /folders to return all records
