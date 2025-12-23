@@ -2,6 +2,7 @@ package org.springframework.samples.homepix.sales;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.User;
@@ -16,7 +17,6 @@ import com.stripe.model.checkout.Session;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +47,7 @@ public class PaymentSuccessController {
     }
 
 	@GetMapping("/success")
+	@PermitAll
 	public String paymentSuccess(
 		@RequestParam("session_id") String sessionId,
 		Principal principal,
@@ -107,6 +108,9 @@ public class PaymentSuccessController {
 
 		String username = user.getUsername();
 		String filename = parts[2];
+
+		CartItemDownload cartItemDownload = new CartItemDownload("downloads/" + username + "/" + filename, username);
+		cartItemDownloadRepository.save(cartItemDownload);
 
 		// ====================================
 		// 3) Send emails (buyer + admin)

@@ -38,7 +38,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 		// Example assuming User implements UserDetails
 		User user = users.get();
 
-		if (user.getRole() == Role.ADMIN) {
+		if (user.getRole() == Role.ROLE_ADMIN) {
 			return org.springframework.security.core.userdetails.User.builder().username(user.getUsername())
 				.password(user.getPassword()).roles("ADMIN", "USER") // TODO: Replace with the actual roles
 				.build();

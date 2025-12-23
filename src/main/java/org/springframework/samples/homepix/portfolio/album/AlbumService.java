@@ -191,7 +191,7 @@ public class AlbumService {
 	@Cacheable("importedAlbums")
 	public List<Album> getSortedAlbums() {
 		return StreamSupport.stream(albumRepository.findAll().spliterator(), false)
-			.filter(album -> album.getUser_id().getRole() == Role.ADMIN)
+			.filter(album -> album.getUser_id().getRole() == Role.ROLE_ADMIN)
 			.collect(Collectors.toList());
 	}
 }

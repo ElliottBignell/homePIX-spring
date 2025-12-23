@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix.sales;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpSession;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
-import org.springframework.samples.homepix.portfolio.folder.BucketController;
 import org.springframework.samples.homepix.portfolio.folder.FolderController;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
+@Secured({"ROLE_ADMIN", "ROLE_USER"})
 public class CartItemController extends PaginationController
 {
 	@Autowired
@@ -56,8 +57,7 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/cart/choose/{pictureId}")
-	@Secured("ROLE_ADMIN")
-	public String submitComment(@PathVariable("pictureId") int pictureId,
+	public String choosePicture(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
 								Map<String, Object> model,
 								Principal principal
@@ -76,7 +76,6 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/cart/delete")
-	@Secured("ROLE_ADMIN")
 	public String showCart(@RequestParam(required = false) String redirectTo,
 						   @RequestParam(required = true) Long orderNo,
 						   Map<String, Object> model,
@@ -93,7 +92,6 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/cart/addToCart/{pictureId}")
-	@Secured("ROLE_ADMIN")
 	public String showAddToCart(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
 								@RequestParam("tier") PricingTier tier,
@@ -120,7 +118,6 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/cart/buy")
-	@Secured("ROLE_ADMIN")
 	public String buyFromCart(ImageResolution resolution,
 							  Map<String, Object> model,
 							  Principal principal)
@@ -157,7 +154,6 @@ public class CartItemController extends PaginationController
 	}
 
 	@GetMapping("/cart")
-	@Secured("ROLE_ADMIN")
 	public String showCart(Map<String, Object> model,
 						   @NonNull Principal principal)
 	{
@@ -211,6 +207,7 @@ public class CartItemController extends PaginationController
     }
 
 	@PostMapping("/webhooks/stripe")
+	@PermitAll
 	public ResponseEntity<String> stripeWebhook(@RequestBody String payload,
 												@RequestHeader("Stripe-Signature") String sigHeader) {
 		// verify signature
@@ -219,6 +216,7 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/webhooks/paypal")
+	@PermitAll
 	public ResponseEntity<String> paypalWebhook(@RequestBody String payload) {
 		// validate, update order
 		return ResponseEntity.ok("OK");

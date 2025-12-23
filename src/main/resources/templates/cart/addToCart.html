@@ -33,7 +33,7 @@
             <form id="submit_purchase"
                   th:action="@{/cart/addToCart/__${picture.id}__}"
                   method="post"
-                  th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                  th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}"
                   style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
               <input type="hidden" name="pictureID" th:value="${picture.id}" />

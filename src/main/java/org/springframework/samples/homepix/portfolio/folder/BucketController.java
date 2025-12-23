@@ -928,7 +928,6 @@ public class BucketController extends PaginationController {
 	public ResponseEntity<byte[]> downloadArchive(
 			@PathVariable String user,
 			@PathVariable String filename,
-			@RequestParam("orderNo") Long orderNo,
 			Authentication authentication,
 			HttpServletRequest request) {
 
@@ -965,10 +964,13 @@ public class BucketController extends PaginationController {
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 		headers.setContentLength(data.length);
 
-		Optional<CartItemDownload> cartItem = cartItemDownloadRepository.findById(orderNo);
+		List<CartItemDownload> cartItem = cartItemDownloadRepository.findByUsernameAndFliename(user, "downloads/" + user + "/" + filename);
 
-		cartItem.ifPresent(item -> item.setDownloadedAt(LocalDateTime.now()));
-		cartItem.ifPresent(cartItemDownload -> cartItemDownloadRepository.save(cartItemDownload));
+		if (!cartItem.isEmpty()) {
+
+			cartItem.get(0).setDownloadedAt(LocalDateTime.now());
+			cartItemDownloadRepository.save(cartItem.get(0));
+		}
 
 		return new ResponseEntity<>(data, headers, HttpStatus.OK);
 	}

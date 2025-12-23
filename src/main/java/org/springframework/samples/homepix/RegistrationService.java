@@ -24,6 +24,7 @@ public class RegistrationService {
 		user.setEnabled(true);
 		user.setPassword(passwordEncoder.encode(password));
 		user.setEmail(email);
+		user.setRole(Role.ROLE_USER);
 
 		userRepository.save(user);
 	}
