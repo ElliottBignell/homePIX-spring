@@ -231,7 +231,7 @@ public class PictureRestController {
 	public List<String> getAllPictures() throws Exception {
 
 		String bucketName = "picture-files";
-		S3Client s3Client = folderController.getS3Clent();
+		S3Client s3Client = folderService.getS3Client();
 
 		Collection<Folder> folders = this.folderRepository.findAll();
 

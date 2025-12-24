@@ -1,7 +1,6 @@
 package org.springframework.samples.homepix.portfolio.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
@@ -21,7 +20,7 @@ import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationService;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.samples.homepix.sales.ArchiveService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -84,6 +83,9 @@ public abstract class PaginationController implements AutoCloseable {
 	@Autowired
 	KeywordService keywordService;
 
+	@Autowired
+	ArchiveService archiveService;
+
 	protected final KeywordRepository keyword;
 
 	protected final KeywordRelationshipsRepository keywordRelationships;
@@ -95,10 +97,6 @@ public abstract class PaginationController implements AutoCloseable {
 	protected static final String region = "ch-dk-2";
 
 	protected Collection<Folder> folderCache = null;
-
-	protected static S3Client s3Client = null;
-
-	private AwsCredentials awsCredentials;
 
 	protected String filepath;
 
@@ -139,12 +137,7 @@ public abstract class PaginationController implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-
-		if (s3Client != null) {
-
-			s3Client.close();
-			s3Client = null;
-		}
+		folderService.close();;
 	}
 
 	protected void addParams(int pictureId, String filename, Iterable<PictureFile> pictureFiles,
@@ -199,6 +192,9 @@ public abstract class PaginationController implements AutoCloseable {
 				next = first;
 			}
 
+			boolean available = archiveService.s3ObjectExists("jpegs/" + picture.getFolderName() + "/" + picture.getFilename());
+
+			model.put("availableForPurchase", available);
 			model.put("picture", picture);
 			model.put("next", next.getId());
 			model.put("previous", previous.getId());
@@ -283,14 +279,14 @@ public abstract class PaginationController implements AutoCloseable {
 
 		try {
 
-			initialiseS3Client();
+			folderService.initialiseS3Client();
 
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
 			String bucketName = "picture-files";
 
 			if (null == folderCache) {
-				folderCache = folderService.listSubFolders( s3Client, "jpegs");
+				folderCache = folderService.listSubFolders( "jpegs");
 			}
 
 			if (folderCache.isEmpty()) {
@@ -1068,28 +1064,15 @@ public abstract class PaginationController implements AutoCloseable {
 
 	protected byte[] downloadFile(String objectKey) throws IOException {
 
-		initialiseS3Client();
+		folderService.initialiseS3Client();
 
 		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
-		ResponseBytes<GetObjectResponse> responseResponseBytes = s3Client.getObjectAsBytes(objectRequest);
+		ResponseBytes<GetObjectResponse> responseResponseBytes = folderService.getS3Client().getObjectAsBytes(objectRequest);
 
 		byte[] data = responseResponseBytes.asByteArray();
 
 		return data;
-	}
-
-	public void initialiseS3Client() {
-
-		if (s3Client == null) {
-
-			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-					CredentialsRunner.getSecretKey());
-
-			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-					.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
-
-		}
 	}
 
 	protected Comparator<PictureFile> getOrderComparator(

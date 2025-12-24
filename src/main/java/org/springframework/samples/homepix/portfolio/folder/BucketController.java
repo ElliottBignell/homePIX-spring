@@ -51,6 +51,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -98,6 +99,9 @@ public class BucketController extends PaginationController {
 
 	@Autowired
 	CartItemDownloadRepository cartItemDownloadRepository;
+
+	@Autowired
+	EmailService emailService;
 
 	private final PictureFileService pictureFileService;
 
@@ -328,9 +332,9 @@ public class BucketController extends PaginationController {
 
 		if (reload) {
 
-			initialiseS3Client();
+			folderService.initialiseS3Client();
 
-			results = listFilteredFilesPaged(listFiles(s3Client, "jpegs/" + name), requestDTO, authentication, pageable);
+			results = listFilteredFilesPaged(listFiles(folderService.getS3Client(), "jpegs/" + name), requestDTO, authentication, pageable);
 		}
 		else {
 
@@ -423,7 +427,7 @@ public class BucketController extends PaginationController {
 		String userAgent = request.getHeader("User-Agent");
 		logger.info("Request from User-Agent to showFolderSlideshow: " + userAgent);
 
-		initialiseS3Client();
+		folderService.initialiseS3Client();
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
@@ -499,9 +503,9 @@ public class BucketController extends PaginationController {
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
 										   Map<String, Object> model) {
 
-		initialiseS3Client();
+		folderService.initialiseS3Client();
 
-		List<PictureFile> files = listFiles(s3Client, "jpegs/" + name);
+		List<PictureFile> files = listFiles(folderService.getS3Client(), "jpegs/" + name);
 
 		Collection<Folder> existingFolder = this.folders.findByName(folder.getName());
 
@@ -692,7 +696,9 @@ public class BucketController extends PaginationController {
 			}
 
 			int pictureID = file.getId();
+			boolean available = archiveService.s3ObjectExists("jpegs/" + file.getFolderName() + "/" + file.getFilename());
 
+			model.put("availableForPurchase", available);
 			model.put("picture", file);
 			model.put("current", id);
 			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
@@ -742,7 +748,7 @@ public class BucketController extends PaginationController {
 
 	public String movePictureToFolder(String sourceFolder, String targetFolder, PictureFile file) {
 
-		initialiseS3Client();
+		folderService.initialiseS3Client();
 
 		String sourcePrefix = "jpegs/" + (sourceFolder.endsWith("/") ? sourceFolder : sourceFolder + "/");
 		String targetPrefix = "jpegs/" + (targetFolder.endsWith("/") ? targetFolder : targetFolder + "/");
@@ -768,7 +774,7 @@ public class BucketController extends PaginationController {
 					.destinationKey(targetKey)
 					.build();
 
-				s3Client.copyObject(copyReq);
+				folderService.getS3Client().copyObject(copyReq);
 
 				// Delete the original object from the source folder
 				DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
@@ -776,7 +782,7 @@ public class BucketController extends PaginationController {
 					.key(sourceKey)
 					.build();
 
-				s3Client.deleteObject(deleteReq);
+				folderService.getS3Client().deleteObject(deleteReq);
 
 				System.out.println("Moved file: " + sourceKey + " to " + targetKey);
 			} catch (Exception e) {
@@ -836,12 +842,12 @@ public class BucketController extends PaginationController {
 
 	private byte[] hitBucket(BucketOp<S3Client, String, String, byte[]> op, String arg1, String arg2) {
 
-		initialiseS3Client();
+		folderService.initialiseS3Client();
 
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
 		try {
-			return op.apply(s3Client, arg1, arg2);
+			return op.apply(folderService.getS3Client(), arg1, arg2);
 		}
 		catch (Exception e) {
 			System.err.println("Error accessing bucket: " + e.getMessage());
@@ -897,7 +903,7 @@ public class BucketController extends PaginationController {
 					.key("jpegs/" + compressedPath + ".webp")
 					.build();
 
-				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
+				folderService.getS3Client().putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
 			}
 			else {
 				System.out.println("");
@@ -956,6 +962,16 @@ public class BucketController extends PaginationController {
 
 		String key = "downloads/" + user + "/" + filename;
 
+		// Check that te file is actually in the S3 archive
+		if (!archiveService.s3ObjectExists(key)) {
+
+			emailService.alertMissingOriginal(key, currentUser); // TODO: Create flie when possible
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"File unavailable"
+			);
+		}
+
 		// Load file from S3
 		byte[] data = archiveService.downloadFromS3(key);
 
@@ -984,7 +1000,7 @@ public class BucketController extends PaginationController {
 			.prefix(prefix)
 			.build();
 
-		ListObjectsV2Response response = s3Client.listObjectsV2(request);
+		ListObjectsV2Response response = folderService.getS3Client().listObjectsV2(request);
 
 		return response.contents().stream()
 			.map(S3Object::key)
@@ -1038,7 +1054,7 @@ public class BucketController extends PaginationController {
 					.key("jpegs/" + compressedPath + ".webp")
 					.build();
 
-				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
+				folderService.getS3Client().putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedImage));
 			}
 		}
 
@@ -1088,7 +1104,7 @@ public class BucketController extends PaginationController {
 					.key("webp/" + watermarkedPath)
 					.build();
 
-				s3Client.putObject(putObjectRequest,
+				folderService.getS3Client().putObject(putObjectRequest,
 					software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
 			}
 		}
@@ -1221,7 +1237,7 @@ public class BucketController extends PaginationController {
 					.key("jpegs/" + watermarkedPath)
 					.build();
 
-				s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
+				folderService.getS3Client().putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(watermarkedImage));
 			}
 		}
 
@@ -1604,7 +1620,7 @@ public class BucketController extends PaginationController {
 
 		String dir = imagePath + name;
 
-		List<String> jpegNames = folderService.listFileNames(s3Client, bucketName, "jpegs/" + name);
+		List<String> jpegNames = folderService.listFileNames(folderService.getS3Client(), bucketName, "jpegs/" + name);
 
 		int index = 0;
 
@@ -1638,7 +1654,7 @@ public class BucketController extends PaginationController {
 
 		String dir = imagePath + name;
 
-		String jpeg = getFileName(s3Client, "jpegs/" + name, id);
+		String jpeg = getFileName(folderService.getS3Client(), "jpegs/" + name, id);
 
 		int index = 0;
 
@@ -1666,8 +1682,8 @@ public class BucketController extends PaginationController {
 	@PostMapping("/moveFile")
 	public ResponseEntity<?> moveFile(@RequestBody MoveFileRequest request) {
 
-		initialiseS3Client();
-		S3FileMover s3FileMover = new S3FileMover(s3Client);
+		folderService.initialiseS3Client();
+		S3FileMover s3FileMover = new S3FileMover(folderService.getS3Client());
 
 		String[] idStrings = request.getFileName().split(",");
 		List<Integer> ids = Arrays.stream(idStrings)

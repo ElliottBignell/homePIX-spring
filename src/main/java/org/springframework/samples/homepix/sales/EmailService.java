@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.samples.homepix.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -87,4 +88,19 @@ public class EmailService {
 
         mailSender.send(msg);
     }
+
+	public void alertMissingOriginal(String filename, String user) {
+
+		sendEmail(
+			"you@yourdomain",
+			"Missing S3 original detected",
+			"""
+			User: %s
+			Expected S3 key: %s
+			""".formatted(
+				user,
+				filename
+			)
+		);
+	}
 }

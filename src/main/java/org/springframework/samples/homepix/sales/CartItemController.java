@@ -12,7 +12,6 @@ import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
-import org.springframework.samples.homepix.portfolio.folder.FolderController;
 import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
@@ -47,10 +46,7 @@ public class CartItemController extends PaginationController
 	EmailService emailService;
 
 	@Autowired
-	FolderController folderController;
-
-	@Autowired
-	PricingService pricingService;
+	ArchiveService archiveService;
 
 	protected CartItemController(AlbumRepository albums, KeywordRepository keyword, KeywordRelationshipsRepository keywordsRelationships, FolderService folderService) {
 		super(albums, keyword, keywordsRelationships, folderService);
@@ -63,11 +59,24 @@ public class CartItemController extends PaginationController
 								Principal principal
 	)
 	{
-		Optional<User> user = userRepository.findByUsername(principal.getName());
-		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
+		Optional<PictureFile> file =  pictureFileRepository.findById(pictureId);
 
-		if (user.isPresent() && pictureFile.isPresent()) {
-			model.put("picture", pictureFile.get());
+		if (file.isEmpty()) {
+			return "redirect:/error-404";
+		}
+
+		String filename = "jpegs/" + file.get().getFolderName() + "/" + file.get().getFilename();
+		boolean available = archiveService.s3ObjectExists(filename);
+
+		if (!available) {
+			return "redirect:/error-404";
+		}
+
+		Optional<User> user = userRepository.findByUsername(principal.getName());
+
+		if (user.isPresent()) {
+
+			model.put("picture", file.get());
 			model.put("currentUrl", redirectTo);
 			model.put("resolutions", PricingTier.values());
 		}
@@ -169,6 +178,14 @@ public class CartItemController extends PaginationController
 
 			items = order.stream()
 				.filter(item -> item.getUser().getUserId() == id)
+				.filter(item -> {
+					return archiveService.s3ObjectExists(
+						"jpegs/" +
+							item.getPicture().getFolderName() +
+							"/" +
+							item.getPicture().getFilename()
+					);
+				})
 				.collect(Collectors.toList());
 
 			price = order.stream()

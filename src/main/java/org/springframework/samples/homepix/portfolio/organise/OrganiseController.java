@@ -424,7 +424,7 @@ class OrganiseController extends AlbumContentBaseController {
 			model.put("album", album);// album.get().getName());
 			model.put("folder", firstFolder);// album.get().getName());
 
-			List<PictureFile> results = listFiles(s3Client, "jpegs/" + firstFolder.getName());
+			List<PictureFile> results = listFiles(folderService.getS3Client(), "jpegs/" + firstFolder.getName());
 
 			Collection<Folder> buckets = this.folders.findByName(firstFolder.getName());
 

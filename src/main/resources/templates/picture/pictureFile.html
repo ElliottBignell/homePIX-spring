@@ -892,7 +892,7 @@ function remove_keyword( keyword, pic_id ) {
                 <form id="submit_purchase"
                       th:action="@{/cart/choose/__${picture.id}__}"
                       method="post"
-                      th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}"
+                      th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')') and availableForPurchase}"
                       style="padding-top:10px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="redirectTo" th:value="${currentUrl}" />
@@ -911,6 +911,10 @@ function remove_keyword( keyword, pic_id ) {
                   </a>
                   <hr>
                 </form>
+                <span class="titlecontent propertyfont warning" th:unless="${availableForPurchase}">
+                  Not available for purchase
+                </span>
+                <br>
 
                 <span class="titletext propertyfont">
                        ID:

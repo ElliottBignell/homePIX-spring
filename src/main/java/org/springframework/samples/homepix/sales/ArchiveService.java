@@ -7,14 +7,12 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
-import org.springframework.samples.homepix.portfolio.folder.FolderController;
+import org.springframework.samples.homepix.portfolio.folder.FolderService;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,9 +23,9 @@ import java.util.List;
 public class ArchiveService {
 
 	@Autowired
-	FolderController folderController;
+	FolderService folderService;
 
-    @Value("${homepix.s3.bucket}")
+	@Value("${homepix.s3.bucket}")
     private String bucket;
 
     public String createAndUploadArchive(String username, List<PictureFile> pictures) throws IOException {
@@ -43,7 +41,7 @@ public class ArchiveService {
                 .contentType("application/gzip")
                 .build();
 
-		S3Client s3Client = folderController.getS3Clent();
+		S3Client s3Client = folderService.getS3Client();
 
 		s3Client.putObject(put, RequestBody.fromBytes(tarGzBytes));
 
@@ -85,15 +83,35 @@ public class ArchiveService {
                 .key(key)
                 .build();
 
-		folderController.initialiseS3Client();
+		folderService.initialiseS3Client();
 
-		S3Client s3Client = folderController.getS3Clent();
+		S3Client s3Client = folderService.getS3Client();
 
 		ResponseBytes<GetObjectResponse> bytes =
                 s3Client.getObjectAsBytes(get);
 
         return bytes.asByteArray();
     }
+
+	public boolean s3ObjectExists(String key) {
+
+		try {
+			HeadObjectRequest request = HeadObjectRequest.builder()
+				.bucket(bucket)
+				.key(key)
+				.build();
+
+			S3Client s3Client = folderService.getS3Client();
+
+			s3Client.headObject(request);
+			return true;
+
+		} catch (NoSuchKeyException e) {
+			return false;
+		} catch (S3Exception e) {
+			return false;
+		}
+	}
 
     private String getPathFromPictureFile(PictureFile p) {
 

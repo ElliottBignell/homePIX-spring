@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.folder;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.album.AlbumRepository;
@@ -57,6 +58,9 @@ public class FolderController extends PaginationController {
 
 	private AlbumService albumService;
 
+	@Autowired
+	FolderService folderService;
+
 	public FolderController(AlbumRepository albums,
 							KeywordRepository keyword,
 							KeywordRelationshipsRepository keywordsRelationships,
@@ -70,15 +74,6 @@ public class FolderController extends PaginationController {
 	@InitBinder
 	public void setAllowedFields(WebDataBinder dataBinder) {
 		dataBinder.setDisallowedFields("id");
-	}
-
-	public S3Client getS3Clent() {
-
-		if (null == s3Client){
-			initialiseS3Client();
-		}
-
-		return s3Client;
 	}
 
 	@Secured("ROLE_ADMIN")

@@ -33,6 +33,9 @@ public class FolderRestController {
 	@Autowired
 	BucketController bucketController;
 
+	@Autowired
+	FolderService folderService;
+
 	@PostMapping("/move/{id}")
 	public ResponseEntity<?> addKeywords(@RequestBody Map<String, Object> updates, @PathVariable("id") Integer id) {
 
@@ -77,7 +80,7 @@ public class FolderRestController {
 	public List<String> getPictureIdsForFolder(@PathVariable("name") String name) throws Exception {
 
 		String bucketName = "picture-files";
-		S3Client s3Client = folderController.getS3Clent();
+		S3Client s3Client = folderService.getS3Client();
 
 		Collection<Folder> folders = this.folderRepository.findByName(name);
 

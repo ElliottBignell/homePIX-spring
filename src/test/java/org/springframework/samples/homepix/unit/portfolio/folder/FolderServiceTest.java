@@ -74,7 +74,7 @@ class FolderServiceTest {
 		when(folderRepository.findByName("Toscana")).thenReturn(List.of(existingFolder));
 
 		// when
-		List<Folder> result = folderService.listSubFolders(s3Client, parentFolder);
+		List<Folder> result = folderService.listSubFolders(parentFolder);
 
 		// then
 		assertEquals(2, result.size());
