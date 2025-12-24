@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Repository
 public interface LocationRelationshipsRepository extends CrudRepository<LocationRelationship, Integer> {
@@ -49,4 +50,11 @@ public interface LocationRelationshipsRepository extends CrudRepository<Location
 	@Transactional(readOnly = true)
 	Collection<LocationRelationship> findByBothIds(@Param("picture_id") Integer picture_id,
 												   @Param("location_id") Integer location_id);
+
+	@Query(
+		value = "select distinct location from location_relationships lr join location l on lr.location_id = l.id",
+		nativeQuery = true
+	)
+	List<String> findDistinctLocationNames();
 }
+

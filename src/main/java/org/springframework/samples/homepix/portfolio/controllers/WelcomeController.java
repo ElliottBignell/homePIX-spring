@@ -33,6 +33,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.Location;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationshipsRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -74,6 +75,9 @@ class WelcomeController extends PaginationController {
 
 	@Autowired
 	LocationService locationService;
+
+	@Autowired
+	LocationRelationshipsRepository locationRelationshipsRepository;
 
 	@Autowired
 	public WelcomeController(AlbumRepository albums,
@@ -168,7 +172,11 @@ class WelcomeController extends PaginationController {
 		model.put("canonical", "https://www.homepix.ch/");
 		model.put("root", "true");
 
-		model.put("keywords", getKeywords());
+		Iterable<Album> albumIterable = albums.findAll();
+		Iterable<Folder> folderIterable = folderService.getSortedFolders();
+		List<String> locationIterable = locationRelationshipsRepository.findDistinctLocationNames();
+
+		model.put("keywords", keywordService.getKeywords(albumIterable, folderIterable, locationIterable));
 		// 1 album found
 		return "welcome";
 	}
@@ -211,36 +219,6 @@ class WelcomeController extends PaginationController {
 	@Cacheable(value = "css_resources", key = "'css_resources'")
 	private Map<String, String> getResources() throws IOException {
 		return this.resourceLoaderService.getStandardResources();
-	}
-
-	@Cacheable(value = "keywords", key = "'keywords'")
-	private List<String> getKeywords() {
-
-		Iterable<Album> albumIterable = this.albums.findAll();
-		Iterable<Folder> folderIterable = folderService.getSortedFolders();
-		Iterable<LocationRelationship> locationIterable = this.locationService.findAll();
-
-		List<String> names = Stream.of(
-				StreamSupport.stream(albumIterable.spliterator(), false).map(Album::getName),
-				StreamSupport.stream(folderIterable.spliterator(), false).map(Folder::getName),
-				StreamSupport.stream(locationIterable.spliterator(), false)
-					.map(LocationRelationship::getLocation) // Get Location object
-					.map(Location::getLocation) // Get name from Location
-			).flatMap(s -> s) // Flatten into a single stream
-			.distinct()
-			.collect(Collectors.toList());
-
-		names.add("homePIX");
-		names.add("Stock");
-		names.add("Licenseable");
-		names.add("Photography");
-		names.add("Nature");
-		names.add("Landscape");
-		names.add("Urban");
-		names.add("Macro");
-		names.add("Calendar");
-
-		return names;
 	}
 
 	@CacheEvict(value = { "css_resources", "keywords" }, allEntries = true)

@@ -3,7 +3,11 @@ package org.springframework.samples.homepix.portfolio.keywords;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.folder.Folder;
+import org.springframework.samples.homepix.portfolio.locations.Location;
+import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -118,5 +123,31 @@ public class KeywordService {
 		// This will clear the "folders" cache.
 		// Optionally re-fetch or do nothing here;
 		// next call to getSortedFolders() will reload.
+	}
+
+	@Cacheable(value = "keywords", key = "'keywords'")
+	public List<String> getKeywords(Iterable<Album> albumIterable,
+									 Iterable<Folder> folderIterable,
+									 List<String> locationIterable) {
+
+		List<String> names = Stream.of(
+				StreamSupport.stream(albumIterable.spliterator(), false).map(Album::getName),
+				StreamSupport.stream(folderIterable.spliterator(), false).map(Folder::getName),
+				locationIterable.stream()
+			).flatMap(s -> s) // Flatten into a single stream
+			.distinct()
+			.collect(Collectors.toList());
+
+		names.add("homePIX");
+		names.add("Stock");
+		names.add("Licenseable");
+		names.add("Photography");
+		names.add("Nature");
+		names.add("Landscape");
+		names.add("Urban");
+		names.add("Macro");
+		names.add("Calendar");
+
+		return names;
 	}
 }
