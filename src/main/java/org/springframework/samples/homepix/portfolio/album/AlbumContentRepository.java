@@ -68,11 +68,9 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Lon
 	 */
 	@Query("SELECT albumcontent FROM AlbumContent albumcontent WHERE albumcontent.album.id=:album_id AND albumcontent.sortOrder =:sortOrder")
 	@Transactional(readOnly = true)
-	Collection<AlbumContent> findByAlbumAndSortOrder(@Param("album_id") Long album_id, @Param("sortOrder") Long sortOrder);
+	Collection<AlbumContent> findByAlbumIdAndSortOrder(@Param("album_id") Long album_id, @Param("sortOrder") Integer sortOrder);
 
 	@Query("SELECT pictureFile FROM AlbumContent albumcontent WHERE albumcontent.album.id =:album_id")
 	@Transactional(readOnly = true)
 	Collection<PictureFile> findPictures(@Param("album_id") Long album_id);
-
-	Collection<AlbumContent> findByAlbumIdAndSortOrder(Long albumId, Integer sortOrder);
 }

@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.homepix.Role;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.collection.PictureFileRepository;
+import org.springframework.samples.homepix.portfolio.keywords.Keyword;
 import org.springframework.samples.homepix.portfolio.maps.MapUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -121,8 +122,9 @@ public class AlbumService {
 			.orElseThrow();
 
 		return albumContentRepository
-			.findByAlbumIdAndSortOrder(album.getId(), 1)
+			.findByAlbumId(album.getId())
 			.stream()
+			.sorted(Comparator.comparing(AlbumContent::getSortOrder))
 			.map(AlbumContent::getPictureFile)
 			.toList();
 	}

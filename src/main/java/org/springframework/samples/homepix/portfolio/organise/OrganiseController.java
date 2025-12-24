@@ -490,7 +490,7 @@ class OrganiseController extends AlbumContentBaseController {
 
 			AlbumContent entry1 = content1.iterator().next();
 
-			Long otherIndex = 0L;
+			Integer otherIndex = 0;
 
 			switch (index) {
 				case 0:
@@ -508,10 +508,10 @@ class OrganiseController extends AlbumContentBaseController {
 					return "success";
 
 				case -1:
-					otherIndex = (long) (entry1.getSortOrder() - 1);
+					otherIndex = (entry1.getSortOrder() - 1);
 					break;
 				case 1:
-					otherIndex = (long) (entry1.getSortOrder() + 1);
+					otherIndex = (entry1.getSortOrder() + 1);
 					break;
 				default:
 
@@ -530,7 +530,7 @@ class OrganiseController extends AlbumContentBaseController {
 					return "success";
 			}
 
-			Collection<AlbumContent> content2 = this.albumContent.findByAlbumAndSortOrder(albumId, otherIndex);
+			Collection<AlbumContent> content2 = this.albumContent.findByAlbumIdAndSortOrder(albumId, otherIndex);
 
 			if (!content2.isEmpty()) {
 
