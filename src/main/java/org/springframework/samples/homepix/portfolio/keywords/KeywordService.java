@@ -97,8 +97,8 @@ public class KeywordService {
 	}
 
 	@Cacheable(value = "keywordRelationshipsCache")
-	public Collection<KeywordRelationships> findByPictureIds(Set<Integer> pictureIds) {
-		return keywordRelationshipsRepository.findByPictureIds(pictureIds);
+	public List<Object[]> findKeywordsByPictureIds(Set<Integer> pictureIds) {
+		return keywordRelationshipsRepository.findKeywordsByPictureIds(pictureIds);
 	}
 
 	@Cacheable(value = "fetchKeywordMapByFilesList")

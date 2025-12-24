@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.album;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -52,4 +53,6 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 	@Query("SELECT DISTINCT album FROM Album album WHERE album.user_id.id = :user")
 	@Transactional(readOnly = true)
 	Collection<Album> findByUserId(@Param("user") long user);
+
+	Optional<Object> findOneByName(String slides);
 }

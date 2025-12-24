@@ -114,24 +114,17 @@ public class AlbumService {
 	}
 
 	@Cacheable("slides")
-	public Collection<PictureFile> geSlides() {
+	public List<PictureFile> getSlides() {
 
-		long id = 0;
+		Album album = (Album) albumRepository
+			.findOneByName("Slides")
+			.orElseThrow();
 
-		Collection<Album> results = this.albumRepository.findByName("Slides");
-		Album album = results.iterator().next();
-
-		id = album.getId();
-
-		Collection<AlbumContent> contents = this.albumContentRepository.findByAlbumId(id);
-
-		final Comparator<PictureFile> defaultSort = (item1, item2 ) -> { return
-			getSortOrder(this.albumContentRepository, album, item1) - getSortOrder(this.albumContentRepository, album, item2);
-		};
-
-		return contents.stream().map(AlbumContent::getPictureFile)
-			.sorted(defaultSort)
-			.collect(Collectors.toList());
+		return albumContentRepository
+			.findByAlbumIdAndSortOrder(album.getId(), 1)
+			.stream()
+			.map(AlbumContent::getPictureFile)
+			.toList();
 	}
 
 	@Cacheable("slidesThumbnails")
@@ -182,7 +175,7 @@ public class AlbumService {
 		Collection<AlbumContent> content = albumContent.findByAlbumIdAndEntryId(albumId, pictureId);
 
 		if (!content.isEmpty()) {
-			return content.iterator().next().getSort_order();
+			return content.iterator().next().getSortOrder();
 		}
 
 		return -1;

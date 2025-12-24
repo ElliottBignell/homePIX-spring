@@ -495,7 +495,7 @@ class OrganiseController extends AlbumContentBaseController {
 			switch (index) {
 				case 0:
 
-					while (entry1.getSort_order() > 1) {
+					while (entry1.getSortOrder() > 1) {
 
 						movePicture(albumId, pictureId, -1);
 
@@ -508,16 +508,16 @@ class OrganiseController extends AlbumContentBaseController {
 					return "success";
 
 				case -1:
-					otherIndex = (long) (entry1.getSort_order() - 1);
+					otherIndex = (long) (entry1.getSortOrder() - 1);
 					break;
 				case 1:
-					otherIndex = (long) (entry1.getSort_order() + 1);
+					otherIndex = (long) (entry1.getSortOrder() + 1);
 					break;
 				default:
 
 					Collection<PictureFile> wholeAlbum = this.albumContent.findPictures(albumId);
 
-					while (entry1.getSort_order() < wholeAlbum.size()) {
+					while (entry1.getSortOrder() < wholeAlbum.size()) {
 
 						movePicture(albumId, pictureId, +1);
 
@@ -536,10 +536,10 @@ class OrganiseController extends AlbumContentBaseController {
 
 				AlbumContent entry2 = content2.iterator().next();
 
-				int cacheOrder = entry2.getSort_order();
+				int cacheOrder = entry2.getSortOrder();
 
-				entry2.setSort_order(entry1.getSort_order());
-				entry1.setSort_order(cacheOrder);
+				entry2.setSortOrder(entry1.getSortOrder());
+				entry1.setSortOrder(cacheOrder);
 
 				this.albumContent.save(entry1);
 				this.albumContent.save(entry2);

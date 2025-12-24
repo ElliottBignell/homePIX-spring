@@ -1175,23 +1175,25 @@ public abstract class PaginationController implements AutoCloseable {
 
 		Set<Integer> pictureIds = new HashSet<>(thumbnailsMap.keySet());
 
-		Collection<KeywordRelationships> relations = this.keywordService.findByPictureIds(pictureIds);
+		List<Object[]> relations = this.keywordService.findKeywordsByPictureIds(pictureIds);
 
-		Map<Integer, String> pictureIdToKeywords = relations.stream()
-			.collect(Collectors.groupingBy(
-				KeywordRelationships::getPictureId, // Group by PictureID
-				Collectors.mapping(
-					relationship -> relationship.getKeyword().getWord(), // Map each relationship to its keyword word
-					Collectors.joining(", ") // Join keywords with a comma and space
-				)
-			));
+		Map<Integer, String> pictureIdToKeywords =
+			relations.stream()
+				.collect(Collectors.groupingBy(
+					row -> (Integer) row[0],
+					Collectors.mapping(
+						row -> (String) row[1],
+						Collectors.joining(", ")
+					)
+				));
 		model.put("keyword_lists", pictureIdToKeywords);
-
-		model.put("keywords", relations.stream()
-			.map(relationship -> relationship.getKeyword().getWord())
-			.distinct()
-			.sorted()
-			.collect(Collectors.joining(",")));
+		model.put("keywords",
+			relations.stream()
+				.map(row -> (String) row[1])
+				.distinct()
+				.sorted()
+				.collect(Collectors.joining(","))
+		);
 		model.put("keyword_list", pictureIdToKeywords);
 		model.put("thumbnails", thumbnailsMap);
 

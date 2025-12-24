@@ -22,9 +22,26 @@ public interface KeywordRelationshipsRepository extends CrudRepository<KeywordRe
 	@Transactional(readOnly = true)
 	Collection<KeywordRelationships> findByPictureId(@Param("picture_id") Integer picture_id);
 
-	@Query("SELECT kw FROM KeywordRelationships kw WHERE kw.pictureFile.id IN :pictureIds")
+	@Query("""
+		select kr
+		from KeywordRelationships kr
+		join fetch kr.keyword
+		where kr.pictureFile.id in :pictureIds
+	""")
 	@Transactional(readOnly = true)
-	Collection<KeywordRelationships> findByPictureIds(@Param("pictureIds") Set<Integer> pictureIds);
+	List<KeywordRelationships> findByPictureIds(
+		@Param("pictureIds") Set<Integer> pictureIds
+	);
+
+	@Query("""
+		select kr.pictureFile.id, k.word
+		from KeywordRelationships kr
+		join kr.keyword k
+		where kr.pictureFile.id in :pictureIds
+	""")
+	List<Object[]> findKeywordsByPictureIds(
+		@Param("pictureIds") Set<Integer> pictureIds
+	);
 
 	@Query("SELECT kw FROM KeywordRelationships kw left join fetch kw.pictureFile left join fetch kw.keyword WHERE kw.pictureFile.id =:picture_id AND kw.keyword.id =:keyword_id")
 	@Transactional(readOnly = true)

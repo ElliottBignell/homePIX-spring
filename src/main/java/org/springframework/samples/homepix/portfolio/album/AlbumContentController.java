@@ -133,7 +133,7 @@ public class AlbumContentController extends AlbumContentBaseController {
 
 			for (AlbumContent content : albumContent) {
 
-				content.setSort_order(index++);
+				content.setSortOrder(index++);
 				this.albumContent.save(content);
 			}
 		}

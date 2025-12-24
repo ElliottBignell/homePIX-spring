@@ -16,6 +16,7 @@
 package org.springframework.samples.homepix.portfolio.album;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -62,13 +63,16 @@ public interface AlbumContentRepository extends CrudRepository<AlbumContent, Lon
 
 	/**
 	 * Retrieve an {@link AlbumContent} from the data store by sort_order.
-	 * @param sort_order the sort_order to search for
+	 * @param sortOrder the sort_order to search for
 	 * @return the {@link AlbumContent} if found
 	 */
-	@Query("SELECT albumcontent FROM AlbumContent albumcontent WHERE albumcontent.album.id=:album_id AND albumcontent.sort_order =:sort_order")
+	@Query("SELECT albumcontent FROM AlbumContent albumcontent WHERE albumcontent.album.id=:album_id AND albumcontent.sortOrder =:sortOrder")
 	@Transactional(readOnly = true)
-	Collection<AlbumContent> findByAlbumAndSortOrder(@Param("album_id") Long album_id, @Param("sort_order") Long sort_order);
+	Collection<AlbumContent> findByAlbumAndSortOrder(@Param("album_id") Long album_id, @Param("sortOrder") Long sortOrder);
 
 	@Query("SELECT pictureFile FROM AlbumContent albumcontent WHERE albumcontent.album.id =:album_id")
 	@Transactional(readOnly = true)
-	Collection<PictureFile> findPictures(@Param("album_id") Long album_id);}
+	Collection<PictureFile> findPictures(@Param("album_id") Long album_id);
+
+	Collection<AlbumContent> findByAlbumIdAndSortOrder(Long albumId, Integer sortOrder);
+}

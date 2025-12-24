@@ -140,7 +140,7 @@ class WelcomeController extends PaginationController {
 			albumService.getSortOrder(this.albumContents, album, item1) - albumService.getSortOrder(this.albumContents, album, item2);
 		};
 
-		Collection<PictureFile> slides = albumService.geSlides();
+		List<PictureFile> slides = albumService.getSlides();
 
 		loadThumbnailsAndKeywords(thumbnailsMap, model);
 

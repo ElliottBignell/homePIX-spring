@@ -43,7 +43,7 @@ public class AlbumContent extends BaseEntity {
 	private PictureFile pictureFile;
 
 	@Column(name = "sort_order")
-	private Integer sort_order;
+	private Integer sortOrder;
 
 	@Override
 	public String toString() {

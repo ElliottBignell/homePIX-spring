@@ -29,7 +29,7 @@ public class AlbumContentService {
 
 				Collection<AlbumContent> allContent = albumContent.findByAlbumId(albumId);
 
-				content.setSort_order(allContent.size() + 1);
+				content.setSortOrder(allContent.size() + 1);
 				content.setPictureFile(picture.get());
 				content.setAlbum(album.get());
 
