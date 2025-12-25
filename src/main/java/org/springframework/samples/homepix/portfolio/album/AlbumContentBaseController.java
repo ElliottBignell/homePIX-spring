@@ -89,20 +89,13 @@ public class AlbumContentBaseController extends PaginationController {
 
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO, defaultSort);
 
-		Collection<PictureFile> content = this.albumContent.findByAlbumId(id).stream()
-			.filter( item -> item.getPictureFile().getTitle().contains(requestDTO.getSearch()))
-			.sorted( (item1, item2 ) -> orderBy.compare(item1.getPictureFile(), item2.getPictureFile()) )
-			.map(AlbumContent::getPictureFile)
-			.collect(Collectors.toList());
+		Collection<PictureFile> content = pictureFiles.findPicturesForAlbum(id, requestDTO.getSearch());
 
 		mav.addObject(album);
 
 		// Convert the collection to a map with picture IDs as keys and Picture objects as values
 		Map<Integer, PictureFile> pictureMap = content.stream()
-			.collect(Collectors.toMap(
-				PictureFile::getId,
-				picture -> picture
-			));
+				.collect(Collectors.toMap(PictureFile::getId, pf -> pf));
 
 		loadThumbnailsAndKeywords(pictureMap, model);
 
@@ -116,33 +109,35 @@ public class AlbumContentBaseController extends PaginationController {
 				"homePIX, photo, landscape, travel, macro, nature, photo, sharing, portfolio, elliott, bignell, collection, folder, album"
 		);
 
-		// Fetch the KeywordRelationships for the PictureFiles.
-		// This would be a method on your repository that fetches the relationships based on a collection of PictureFile IDs.
-		Collection<KeywordRelationships> keywordRelationships = this.keywordRelationships.findByPictureIds(
-			content.stream()
-				.map(PictureFile::getId)
-				.collect(Collectors.toSet())
-		);
+		List<KeywordRelationships> relations =
+			keywordRelationships.findByPictureIds(
+				content.stream()
+					.map(PictureFile::getId)
+					.collect(Collectors.toSet())
+			);
 
 		// Now create a Map<Integer, List<Keyword>> from the KeywordRelationships.
-		Map<Integer, List<Keyword>> pictureKeywordsMap = content.stream()
-			.collect(Collectors.toMap(
-				PictureFile::getId,
-				pf -> this.keywordRelationships.findByPictureId(pf.getId())
-					.stream()
-					.map(KeywordRelationships::getKeyword) // Assuming getKeyword() gives you the Keyword object
-					.collect(Collectors.toList()),
-				(existing, replacement) -> existing, // Merge function in case of duplicates
-				HashMap::new // Supplier for the map
-			));
+		Map<Integer, List<Keyword>> pictureKeywordsMap =
+			relations.stream()
+				.collect(Collectors.groupingBy(
+					kr -> kr.getPictureFile().getId(),
+					Collectors.mapping(
+						KeywordRelationships::getKeyword,
+						Collectors.toList()
+					)
+				));
 
-		Map<Integer, String> pictureKeywordsStringMap = pictureKeywordsMap.entrySet().stream()
-			.collect(Collectors.toMap(
-				Map.Entry::getKey,
-				entry -> entry.getValue().stream()
-					.map(Keyword::getWord) // Assuming you have a method getKeywordText() to get the keyword string
-					.collect(Collectors.joining(", "))
-			));
+		List<Object[]> keywordRows = keywordRelationships.findKeywordsByPictureIds(pictureMap.keySet());
+
+		Map<Integer, String> pictureKeywordsStringMap =
+			keywordRows.stream()
+				.collect(Collectors.groupingBy(
+					row -> (Integer) row[0],
+					Collectors.mapping(
+						row -> (String) row[1],
+						Collectors.joining(", ")
+					)
+				));
 
 		// Now, ensure every picture ID has an entry in the map, even if it's an empty list
 		content.forEach(pf -> pictureKeywordsMap.putIfAbsent(pf.getId(), new ArrayList<>()));

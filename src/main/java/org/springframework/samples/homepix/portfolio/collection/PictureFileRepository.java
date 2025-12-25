@@ -514,6 +514,19 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		@Param("end") Long end
 	);
 
+	@Query("""
+			select pf
+			from AlbumContent ac
+			join ac.pictureFile pf
+			where ac.album.id = :albumId
+			  and (:search is null or pf.title like concat('%', :search, '%'))
+			order by pf.title
+		""")
+	List<PictureFile> findPicturesForAlbum(
+		@Param("albumId") Long albumId,
+		@Param("search") String search
+	);
+
 	default Map<LocalDate, Long> getCountByTakenOn(int year) {
 
 		List<Object[]> result = countByTakenOnForYear(year);
