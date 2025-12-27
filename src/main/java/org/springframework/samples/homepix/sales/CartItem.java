@@ -74,4 +74,13 @@ public class CartItem {
 			(long)(picture.getHeight() * ratio)
 		);
 	}
+
+	public BigDecimal getPriceForSize(PricingTier pricingTier) {
+
+		double ratio = pricingTier.getHeight() == -1 ? 1.0 : (double)pricingTier.getHeight() / (double)picture.getHeight();
+		return pricingTier.calculatePrice(
+			(long)(picture.getWidth() * ratio),
+			(long)(picture.getHeight() * ratio)
+		);
+	}
 }

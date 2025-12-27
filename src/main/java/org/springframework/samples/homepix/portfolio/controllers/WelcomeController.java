@@ -188,14 +188,23 @@ class WelcomeController extends PaginationController {
 
 	@GetMapping("/prelogin")
 	public String showPrelogin(@RequestParam(required = false) String redirectTo,
+							   @RequestParam(required = false) String principal,
 							   HttpSession session,
 							   Model model) {
 
 		Object currentUrl = session.getAttribute("currentUrl");
+		Object username = session.getAttribute("username");
+
 		if (currentUrl != null) {
 			model.addAttribute("currentUrl", currentUrl);
 		} else if (redirectTo != null) {
 			session.setAttribute("currentUrl", redirectTo);
+		}
+
+		if (username != null) {
+			model.addAttribute("principal", username);
+		} else if (redirectTo != null) {
+			model.addAttribute("principal", principal);
 		}
 
 		return "login"; // your login page

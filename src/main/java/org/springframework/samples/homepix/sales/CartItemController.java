@@ -27,7 +27,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
-@Secured({"ROLE_ADMIN", "ROLE_USER"})
 public class CartItemController extends PaginationController
 {
 	@Autowired
@@ -52,7 +51,45 @@ public class CartItemController extends PaginationController
 		super(albums, keyword, keywordsRelationships, folderService);
 	}
 
+	@GetMapping("/cart/choose/{pictureId}")
+	@PermitAll
+	public String choosePicture(@PathVariable("pictureId") int pictureId,
+								Map<String, Object> model,
+								Principal principal
+	)
+	{
+		Optional<PictureFile> file =  pictureFileRepository.findById(pictureId);
+
+		if (file.isEmpty()) {
+			return "redirect:/error-404";
+		}
+
+		String filename = "jpegs/" + file.get().getFolderName() + "/" + file.get().getFilename();
+		boolean available = archiveService.s3ObjectExists(filename);
+
+		if (!available) {
+			return "redirect:/error-404";
+		}
+
+		model.put("picture", file.get());
+		model.put("resolutions", PricingTier.values());
+
+		CartItem cartItem = new CartItem();
+		Optional<User> user = userRepository.findByUsername(principal.getName());
+
+		user.ifPresent(cartItem::setUser);
+		cartItem.setPricingTier(PricingTier.ORIGINAL); // TODO Get appropriate tier
+		cartItem.setPicture(file.get());
+
+		cartItemRepository.save(cartItem);
+
+		model.put("item", cartItem);
+
+		return "/cart/addToCart.html";
+	}
+
 	@PostMapping("/cart/choose/{pictureId}")
+	@PermitAll
 	public String choosePicture(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
 								Map<String, Object> model,
@@ -72,6 +109,10 @@ public class CartItemController extends PaginationController
 			return "redirect:/error-404";
 		}
 
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/choose/" + pictureId;
+		}
+
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 
 		if (user.isPresent()) {
@@ -80,11 +121,15 @@ public class CartItemController extends PaginationController
 			model.put("currentUrl", redirectTo);
 			model.put("resolutions", PricingTier.values());
 		}
+		else {
+			return "redirect:/login";
+		}
 
 		return "/cart/addToCart.html";
 	}
 
 	@PostMapping("/cart/delete")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	public String showCart(@RequestParam(required = false) String redirectTo,
 						   @RequestParam(required = true) Long orderNo,
 						   Map<String, Object> model,
@@ -100,13 +145,49 @@ public class CartItemController extends PaginationController
 		return "redirect:/cart";
 	}
 
+	@GetMapping("/cart/addToCart/{pictureId}")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
+	public String showAddToCart(
+		@PathVariable int pictureId,
+		@RequestParam(required = false) String redirectTo,
+		Map<String, Object> model,
+		Principal principal
+	) {
+		Optional<User> user = userRepository.findByUsername(principal.getName());
+		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
+
+		if (user.isPresent() && pictureFile.isPresent()) {
+
+			CartItem cartItem = new CartItem();
+
+			cartItem.setPricingTier(PricingTier.ORIGINAL);
+			cartItem.setPicture(pictureFile.get());
+			cartItem.setUser(user.get());
+
+			cartItemRepository.save(cartItem);
+
+			model.put("item", cartItem);
+			model.put("picture", pictureFile.get());
+			model.put("resolutions", PricingTier.values());
+		}
+
+		model.put("currentUrl", redirectTo);
+		return "cart/addToCart";
+	}
+
+
 	@PostMapping("/cart/addToCart/{pictureId}")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	public String showAddToCart(@PathVariable("pictureId") int pictureId,
 								@RequestParam("redirectTo") String redirectTo,
 								@RequestParam("tier") PricingTier tier,
 								Map<String, Object> model,
 								Principal principal)
 	{
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/addToCart/" + pictureId;
+		}
+
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
 
@@ -119,6 +200,8 @@ public class CartItemController extends PaginationController
 			cartItem.setUser(user.get());
 
 			cartItemRepository.save(cartItem);
+
+			model.put("item", cartItem);
 		}
 
 		model.put("currentUrl", redirectTo);
@@ -127,6 +210,7 @@ public class CartItemController extends PaginationController
 	}
 
 	@PostMapping("/cart/buy")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	public String buyFromCart(ImageResolution resolution,
 							  Map<String, Object> model,
 							  Principal principal)
@@ -163,6 +247,7 @@ public class CartItemController extends PaginationController
 	}
 
 	@GetMapping("/cart")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
 	public String showCart(Map<String, Object> model,
 						   @NonNull Principal principal)
 	{
@@ -216,6 +301,7 @@ public class CartItemController extends PaginationController
 	}
 
     @GetMapping("/test-mail")
+	@Secured({"ROLE_ADMIN", "ROLE_USER"})
     public String testMail() {
         emailService.sendEmail("elliott.bignell@gmail.com",
                 "Test from HomePIX",

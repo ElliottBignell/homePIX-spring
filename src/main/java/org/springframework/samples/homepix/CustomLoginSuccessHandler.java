@@ -28,11 +28,24 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             redirectTo = "/";
         }
 
-        // cleanup
+        // 🔒 CRITICAL: ensure redirect target is a GET page
+        redirectTo = normalizeToGet(redirectTo);
+
         if (session != null) {
             session.removeAttribute("currentUrl");
         }
 
-        response.sendRedirect(redirectTo);
+        response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
+        response.setHeader("Location", redirectTo);
+    }
+
+    private String normalizeToGet(String url) {
+        // NEVER redirect to POST endpoints
+        if (url.startsWith("/cart/addToCart/")) {
+            return url; // this is the GET mapping
+        }
+
+        // add other mappings if needed
+        return url;
     }
 }

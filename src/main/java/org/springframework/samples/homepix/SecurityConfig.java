@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
@@ -23,6 +24,9 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -35,6 +39,9 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 
     private final RedirectLogoutSuccessHandler logoutSuccessHandler;
 	private final CustomLoginSuccessHandler customLoginSuccessHandler;
+
+	@Autowired
+	CsrfAccessDeniedHandler csrfAccessDeniedHandler;
 
 	@Autowired
 	SecurityConfig(UserRepository userRepository,
@@ -144,11 +151,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/admin/**",
 					"/words",
 					"/prelogin",
-					"/cart/buy",
 					"/cart",
-					"/cart/delete",
 					"/cart/choose/*",
-					"/cart/add/*",
 					"/payment/success/*",
 					"/webhooks/stripe",
 					"/webhooks/paypal",
@@ -165,6 +169,7 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 				.loginPage("/login")  // Ensure login page is registered
 				.loginProcessingUrl("/login")
 				.successHandler(customLoginSuccessHandler)
+				.failureUrl("/prelogin?error")
 				.permitAll()
 			)
             .logout(logout -> logout
@@ -180,15 +185,11 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.logout()
 			.permitAll()
 			.and()
-			.exceptionHandling()
-				// Handle 403 Forbidden errors
-				.accessDeniedHandler((request, response, accessDeniedException) -> {
-					response.sendRedirect("/error-404");
-				})
-				// Handle 404 Not Found errors by directing to the error page
-				.authenticationEntryPoint((request, response, authException) -> {
-					response.sendRedirect("/error-403"); // Redirect all errors to your custom 404 page
-				});
+			.exceptionHandling(ex -> ex
+				.accessDeniedHandler(new CsrfAccessDeniedHandler())
+				.authenticationEntryPoint((req, res, e) -> res.sendRedirect("/prelogin?redirectTo=" +
+					UriUtils.encode(req.getRequestURI(), StandardCharsets.UTF_8)))
+			);
 
 		logger.info("Form login configured with custom login page at /login");
 		logger.info("Default success URL after login is set to /api/keywords");
@@ -198,11 +199,8 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 			.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 			.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler())
 			.ignoringRequestMatchers("/prelogin", "/logout")
-		);
-
-		http.formLogin().failureHandler((request, response, exception) -> {
-			logger.warn("Authentication failed: {}", exception.getMessage());
-		});
+		)
+        .requestCache(RequestCacheConfigurer::disable) ;
 
 		http.headers().frameOptions().sameOrigin();
 

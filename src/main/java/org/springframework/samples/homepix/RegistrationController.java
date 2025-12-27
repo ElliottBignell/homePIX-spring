@@ -1,5 +1,6 @@
 package org.springframework.samples.homepix;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,17 @@ public class RegistrationController {
 	}
 
 	@GetMapping("/register")
-	public String showRegistrationForm() {
+	public String showRegistrationForm(@RequestParam(required = false) String redirectTo,
+									   HttpSession session,
+									   Model model) {
+
+		Object currentUrl = session.getAttribute("currentUrl");
+		if (currentUrl != null) {
+			model.addAttribute("currentUrl", currentUrl);
+		} else if (redirectTo != null) {
+			session.setAttribute("currentUrl", redirectTo);
+		}
+
 		return "register";
 	}
 
@@ -28,11 +39,12 @@ public class RegistrationController {
             @RequestParam String password,
             @RequestParam String confirmPassword,
 			@RequestParam String email,
+			@RequestParam(required = false) String redirectTo,
             Model model
 	) {
 
-		   if (!password.equals(confirmPassword)) {
-				model.addAttribute("error", "Passwords do not match.");
+	   if (!password.equals(confirmPassword)) {
+			model.addAttribute("error", "Passwords do not match.");
             return "register";
         }
 
@@ -43,6 +55,11 @@ public class RegistrationController {
 
 		registrationService.registerUser(username, email, password);
 
-        return "redirect:/login?registered"; // Optional: show a "registration successful" message
+		if (redirectTo != null) {
+			return "redirect:/prelogin?redirectTo=" + redirectTo + "&principal=" + username; // Optional: show a "registration successful" message
+		}
+		else {
+			return "redirect:/login"; // Optional: show a "registration successful" message
+		}
 	}
 }
