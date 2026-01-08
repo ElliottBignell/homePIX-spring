@@ -44,7 +44,7 @@ import org.springframework.samples.homepix.portfolio.calendar.Calendar;
  * @author Elliott Bignell
  */
 @Controller
-class CalendarController extends PaginationController {
+public class CalendarController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "calendar/createOrUpdateOwnerForm";
 

@@ -43,7 +43,7 @@ import org.springframework.samples.homepix.User;
  * @author Elliott Bignell
  */
 @Controller
-class AlbumController extends PaginationController {
+public class AlbumController extends PaginationController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "album/createOrUpdateOwnerForm";
 

@@ -1,0 +1,80 @@
+package org.springframework.samples.homepix.sales;
+
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.samples.homepix.CartStatus;
+import org.springframework.samples.homepix.UserRepository;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class StripePaymentService implements PaymentService {
+
+	@Value("${stripe.secret-key}")
+	private String stripeSecretKey;
+
+	@Value("${homepix.url}")
+	String baseUrl;
+
+	@Autowired
+	CartItemRepository cartItemRepository;
+
+	@Autowired
+	UserRepository userRepository;
+
+	@Override
+    public String createCheckoutSession(String username, String userEmail) throws StripeException {
+
+		BigDecimal price = BigDecimal.valueOf(10);
+		List<CartItem> items = new ArrayList<>();
+
+		List<CartItem> order = cartItemRepository.findByUserAndStatus(username, CartStatus.IN_CART);
+
+		price = order.stream()
+			.map(CartItem::getTotalPrice)
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		long amountInCents = price
+			.movePointRight(2)                // CHF → cents
+			.setScale(0, RoundingMode.HALF_UP)
+			.longValueExact();
+
+		Stripe.apiKey = stripeSecretKey;
+
+		SessionCreateParams params =
+			SessionCreateParams.builder()
+				.setMode(SessionCreateParams.Mode.PAYMENT)
+				.setSuccessUrl(baseUrl + "payment/success?session_id={CHECKOUT_SESSION_ID}")
+				.setCancelUrl(baseUrl + "payment/failure")
+				.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+				.addLineItem(
+					SessionCreateParams.LineItem.builder()
+						.setQuantity(1L)
+						.setPriceData(
+							SessionCreateParams.LineItem.PriceData.builder()
+								.setCurrency("chf")
+								.setUnitAmount(amountInCents) // CHF 10.00
+								.setProductData(
+									SessionCreateParams.LineItem.PriceData.ProductData.builder()
+										.setName("HomePIX Photo Package")
+										.build()
+								)
+								.build()
+						)
+						.build()
+				)
+				.build();
+
+		Session session = Session.create(params);
+
+        return session.getUrl();
+    }
+}

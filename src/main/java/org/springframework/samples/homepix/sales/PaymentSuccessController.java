@@ -18,6 +18,7 @@ import com.stripe.model.checkout.Session;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -131,5 +132,13 @@ public class PaymentSuccessController {
 		// 4) Redirect the user back to /cart
 		// ====================================
 		return "redirect:/cart?success";
+	}
+
+	@GetMapping("/payment/failure")
+	@PermitAll
+	public String paymentFailure(Map<String, Object> model,
+								 Principal principal
+	) {
+		return "/cart/paymentFailure.html";
 	}
 }

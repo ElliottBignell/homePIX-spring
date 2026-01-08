@@ -154,12 +154,13 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 					"/cart",
 					"/cart/choose/*",
 					"/payment/success/*",
+					"/payment/failure/*",
 					"/webhooks/stripe",
 					"/webhooks/paypal",
 					"/test-mail",
 					"/create-checkout-session",
-				"/debug-config",
-				"/check-resources",
+					"/debug-config",
+					"/check-resources",
 					"/debug/mappings"
 				)
 				.permitAll()

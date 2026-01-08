@@ -228,7 +228,7 @@ public class CartItemController extends PaginationController
 				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
 
-			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(principal.getName(), CartStatus.IN_CART);
 
 			price = order.stream()
 				.map(CartItem::getTotalPrice)
@@ -259,7 +259,7 @@ public class CartItemController extends PaginationController
 
 			long id = user.get().getUserId();
 
-			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(principal.getName(), CartStatus.IN_CART);
 
 			items = order.stream()
 				.filter(item -> item.getUser().getUserId() == id)

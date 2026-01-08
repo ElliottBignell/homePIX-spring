@@ -35,19 +35,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class PictureFileService {
 
-	protected final PictureFileRepository pictureFileRepository;
+	@Autowired
+	protected PictureFileRepository pictureFileRepository;
 
 	@Autowired
-	protected final FolderRepository folderRepository;
+	protected FolderRepository folderRepository;
 
 	@Autowired
 	private KeywordRelationshipsRepository keywordRelationshipRepository;
-
-	@Autowired
-    public PictureFileService(PictureFileRepository pictureFiles, FolderRepository folderRepository) {
-        this.pictureFileRepository = pictureFiles;
-		this.folderRepository = folderRepository;
-	}
 
     public List<PictureFile> getPhotos(Date startDate, Date endDate, String searchText, SortDirection sortDirection) {
 

@@ -1,0 +1,28 @@
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'albums')}">
+
+<head>
+</head>
+<body>
+
+<div class="album-main">
+
+  <div class="centerstage">
+    <div class="techfont stage" id="div_centrestage">
+      <div class="row" style="display:flex; justify-content:center; vertical-align:middle;">
+        <div class="col-md-6">
+          <a th:href="${currentUrl}" style="color:blue;">
+            <h3><- Return to shopping</h3>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <h1>Payment did not succeed</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+</html>

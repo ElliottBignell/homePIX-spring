@@ -7,10 +7,12 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.CartStatus;
 import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
+import org.springframework.samples.homepix.portfolio.UserNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,7 +35,7 @@ public class StripePaymentController {
 	CartItemRepository cartItemRepository;
 
 	@Autowired
-	ArchiveService archiveService;
+	StripePaymentService paymentService;
 
 	@Autowired
 	UserRepository userRepository;
@@ -44,72 +46,32 @@ public class StripePaymentController {
 	@Value("${homepix.url}")
 	String baseUrl;
 
-    @PostMapping("/create-checkout-session")
-    @ResponseBody
-    public ResponseEntity<String> createCheckoutSession(Principal principal) throws StripeException, IOException {
+	@PostMapping("/create-checkout-session")
+	@ResponseBody
+	public ResponseEntity<Void> createCheckoutSession(Principal principal) {
 
-		Optional<User> user = userRepository.findByUsername(principal.getName());
-		List<CartItem> items = new ArrayList<>();
-		BigDecimal price = BigDecimal.valueOf(10);
+		try {
+			String redirectUrl = paymentService.createCheckoutSession(principal.getName(), "fred@fred.ch");
 
-		if (user.isEmpty()) {
-			// If no user, redirect to /cart
 			return ResponseEntity
-				.status(303)
+				.status(HttpStatus.SEE_OTHER)
+				.header(HttpHeaders.LOCATION, redirectUrl)
+				.build();
+
+		} catch (UserNotFoundException ex) {
+
+			return ResponseEntity
+				.status(HttpStatus.SEE_OTHER)
+				.header(HttpHeaders.LOCATION, "/cart")
+				.build();
+
+		} catch (StripeException ex) {
+
+			return ResponseEntity
+				.status(HttpStatus.SEE_OTHER)
 				.header(HttpHeaders.LOCATION, "/cart")
 				.build();
 		}
-
-		long id = user.get().getUserId();
-
-
-		List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
-
-		items = order.stream()
-			.filter(item -> item.getUser().getUserId() == id)
-			.toList();
-
-		price = order.stream()
-			.map(CartItem::getTotalPrice)
-			.reduce(BigDecimal.ZERO, BigDecimal::add);
-
-		long amountInCents = price
-			.movePointRight(2)                // CHF → cents
-			.setScale(0, RoundingMode.HALF_UP)
-			.longValueExact();
-
-		Stripe.apiKey = stripeSecretKey;
-
-		SessionCreateParams params =
-			SessionCreateParams.builder()
-				.setMode(SessionCreateParams.Mode.PAYMENT)
-				.setSuccessUrl(baseUrl + "payment/success?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl(baseUrl + "cart")
-				.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-				.addLineItem(
-					SessionCreateParams.LineItem.builder()
-						.setQuantity(1L)
-						.setPriceData(
-							SessionCreateParams.LineItem.PriceData.builder()
-								.setCurrency("chf")
-								.setUnitAmount(amountInCents) // CHF 10.00
-								.setProductData(
-									SessionCreateParams.LineItem.PriceData.ProductData.builder()
-										.setName("HomePIX Photo Package")
-										.build()
-								)
-								.build()
-						)
-						.build()
-				)
-				.build();
-
-		Session session = Session.create(params);
-
-		return ResponseEntity
-			.status(303)
-			.header(HttpHeaders.LOCATION, session.getUrl())
-			.build();
 	}
 }
 
