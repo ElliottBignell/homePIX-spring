@@ -90,8 +90,7 @@
 
             <figure th:each="pictureFile,iterStat : ${collection}"
                     th:class="${pictureFile.getIsScary() ? 'tt_base droppable draggable fixed scary' : 'tt_base droppable fixed draggable'}"
-                    th:width="${pictureFile.displayWidth}"
-                    th:height="${pictureFile.displayHeight}"
+                    th:style="'aspect-ratio:' + ${pictureFile.width} + '/' + ${pictureFile.height}"
                     th:id="@{div__${pictureFile.id}__}"
             >
               <a th:id="@{picture__${pictureFile.id}__}"
@@ -101,8 +100,6 @@
                   <span class="tt_subject">
                     <img th:id="@{picture__${pictureFile.id}__}"
                          class="lazyload imageinlist folder"
-                         th:width="${pictureFile.displayWidth}"
-                         th:height="${pictureFile.displayHeight}"
                          th:src="${pictureFile.mediumFilename}"
                          th:data-src="${pictureFile.mediumFilename}"
                          th:alt="${pictureFile.title + (keyword_lists[pictureFile.id] != '' ? ', ' + keyword_lists[pictureFile.id] : '')}"
