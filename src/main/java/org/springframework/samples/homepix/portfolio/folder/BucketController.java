@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,7 @@ import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshi
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRepository;
 import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.samples.homepix.sales.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -858,12 +860,53 @@ public class BucketController extends PaginationController {
 
 	@GetMapping(value = "/web-images/{directory}/200px/{file}_200px.webp")
 	@Cacheable("getCompressedImageAsBytes")
-	public ResponseEntity<byte[]> getSmallFileFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
-		return getSmallCompressedFileFromBucket(directory, file);
+	public ResponseEntity<byte[]> getSmallFile200pxFromBucket(@PathVariable("directory") String directory,
+														 @PathVariable("file") String file) {
+		return getSmallCompressedFileFromBucket(directory, file, 200);
 	}
 
-	private byte[] getCompressedImageAsBytes(String compressedPath, String directory, String file) {
+	@GetMapping(value = "/web-images/{directory}/400px/{file}_400px.webp")
+	@Cacheable("getCompressedImage400pxAsBytes")
+	public ResponseEntity<byte[]> getSmallFile400pxFromBucket(@PathVariable("directory") String directory,
+														 @PathVariable("file") String file) {
+		return getSmallCompressedFileFromBucket(directory, file, 400);
+	}
+
+	@GetMapping(value = "/web-images/{directory}/800px/{file}_800px.webp")
+	@Cacheable("getCompressedImage800pxAsBytes")
+	public ResponseEntity<byte[]> getSmallFile800pxFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+		return getSmallCompressedFileFromBucket(directory, file, 800);
+	}
+
+	@GetMapping(value = "/web-images/{directory}/1600px/{file}_1600px.webp")
+	@Cacheable("getCompressedImage1600pxAsBytes")
+	public ResponseEntity<byte[]> getSmallFile1600pxFromBucket(@PathVariable("directory") String directory,
+														 @PathVariable("file") String file) {
+		return getSmallCompressedFileFromBucket(directory, file, 1600);
+	}
+
+	@CacheEvict(value = { "getCompressedImageAsBytes" }, allEntries = true)
+	@Scheduled(cron = "0 0 4 * * *") // every day at 3 AM
+	public void resetCache200() {
+	}
+
+	@CacheEvict(value = { "getCompressedImage400pxAsBytes" }, allEntries = true)
+	@Scheduled(cron = "0 0 4 * * *") // every day at 3 AM
+	public void resetCache400() {
+	}
+
+	@CacheEvict(value = { "getCompressedImage800pxAsBytes" }, allEntries = true)
+	@Scheduled(cron = "0 0 4 * * *") // every day at 3 AM
+	public void resetCache800() {
+	}
+
+	@CacheEvict(value = { "getCompressedImage1600pxAsBytes" }, allEntries = true)
+	@Scheduled(cron = "0 0 4 * * *") // every day at 3 AM
+	public void resetCache1600() {
+	}
+
+	private byte[] getCompressedImageAsBytes(String compressedPath, String directory, String file, int height) {
 
 		byte[] compressedImage = null;
 
@@ -887,7 +930,7 @@ public class BucketController extends PaginationController {
 
 				try {
 					byte[] data = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
-					byte[] compressedBytes = convertToSmallWebP200px(data, 1f);
+					byte[] compressedBytes = convertToSmallWebPFixedHeight(height, data, 1f);
 					return compressedBytes;
 				} catch (Exception e) {
 					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
@@ -913,14 +956,15 @@ public class BucketController extends PaginationController {
 		return compressedImage;
 	}
 
-	@GetMapping(value = "/web-images/{directory}/{file}_200px.webp")
+	@GetMapping(value = "/web-images/{directory}/{file}_{size}px.webp")
 	public ResponseEntity<byte[]> getSmallCompressedFileFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
-
+															       @PathVariable("file") String file,
+																   @PathVariable("size") Integer size
+	) {
 		String filepath = directory + '/' + file;
-		String compressedPath = directory + "/200px/" + file + "_200px";
+		String compressedPath = directory + "/" + String.valueOf(size) + "px/" + file + "_" + String.valueOf(size) + "px";
 
-		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file);
+		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file, size);
 
 		if (compressedImage != null) {
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(compressedImage);
@@ -1249,16 +1293,16 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-	public static byte[] convertToSmallWebP200px(byte[] originalImageBytes, float quality) throws Exception
+	public static byte[] convertToSmallWebPFixedHeight(int height, byte[] originalImageBytes, float quality) throws Exception
 	{
 		// Convert byte array to BufferedImage
 		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
 		BufferedImage originalImage = ImageIO.read(in);
 
 		// Calculate new width while maintaining aspect ratio
-		int newHeight = 200;
 		int originalWidth = originalImage.getWidth();
 		int originalHeight = originalImage.getHeight();
+		int newHeight = height;
 		int newWidth = (int) ((double) originalWidth / originalHeight * newHeight);
 
 		// Create a resized image
@@ -1276,7 +1320,7 @@ public class BucketController extends PaginationController {
 		File tempWebP = File.createTempFile("output", ".webp");
 		ProcessBuilder pb = new ProcessBuilder(
 			"cwebp", "-q", String.valueOf(quality * 100),
-			"-resize", String.valueOf(newWidth), "200", // Ensure exact 200px height
+			"-resize", String.valueOf(newWidth), String.valueOf(newHeight), // Ensure exact 200px height
 			tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
 		);
 		pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");

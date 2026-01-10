@@ -199,23 +199,40 @@ public class PictureFile extends BaseEntity {
 	}
 
 	public String getMediumFilename() {
+		return getSizedFilename(200);
+	}
+
+	public String getMediumFilename400() {
+		return getSizedFilename(400);
+	}
+
+	public String getMediumFilename800() {
+		return getSizedFilename(800);
+	}
+
+	public String getMediumFilename1600() {
+		return getSizedFilename(1600);
+	}
+
+	public String getSizedFilename(int size) {
 
 		try {
 
 			String[] parts = this.filename.replace("jpg", "webp").split("/");
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
+			String suffix = "px";
 
 			int length = bodyAndExtension.length;
 
 			if (length > 1) {
 
-				bodyAndExtension[length - 2] = bodyAndExtension[length - 2] + "_200px";
+				bodyAndExtension[length - 2] = bodyAndExtension[length - 2] + "_" + String.valueOf(size) + suffix;
 
 				filename = String.join(".", bodyAndExtension);
 
 				if (null != this.folder) {
-					return "/web-images/" + this.folder.getName() + "/200px/" + filename;
+					return "/web-images/" + this.folder.getName() + "/" + String.valueOf(size) + suffix + "/" + filename;
 				}
 				else {
 
@@ -225,7 +242,7 @@ public class PictureFile extends BaseEntity {
 
 						String folderName = this.filename.substring(1, slashIndex);
 
-						return "/web-images/" + folderName + "/200px/" + filename;
+						return "/web-images/" + folderName + "/" + String.valueOf(size) + suffix + "/" + filename;
 					}
 				}
 			}
