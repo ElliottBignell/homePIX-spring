@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.sales;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +56,18 @@ public class CartItemController extends PaginationController
 	@PermitAll
 	public String choosePicture(@PathVariable("pictureId") int pictureId,
 								Map<String, Object> model,
+								HttpServletRequest request,
 								Principal principal
 	)
 	{
+		String userAgent = request.getHeader("User-Agent");
+
+		logger.info("Request from User-Agent to choosePicture(/cart/choose/" + String.valueOf(pictureId) + "): " + userAgent);
+
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/choose/" + pictureId;
+		}
+
 		Optional<PictureFile> file =  pictureFileRepository.findById(pictureId);
 
 		if (file.isEmpty()) {
