@@ -99,17 +99,17 @@
                 <section class="wrapper" th:id=" @{file-number__${pictureFile.id}__}">
                   <span class="tt_subject">
                     <img th:id="@{picture__${pictureFile.id}__}"
-                         class="lazyload imageinlist folder"
+                         class="imageinlist folder"
                          th:src="${pictureFile.mediumFilename}"
                          th:srcset="|
                            ${pictureFile.mediumFilename400} 400w,
-                           ${pictureFile.mediumFilename800} 800w
+                           ${pictureFile.mediumFilename800} 800w,
                            ${pictureFile.mediumFilename1600} 1600w
                          |"
                          th:sizes="|
                           (max-width: 768px) 96vw,
                           (max-width: 1200px) 45vw,
-                          calc(45vw * ${pictureFile.width} / ${pictureFile.height})
+                          45vw
                          |"
                          th:alt="${pictureFile.title + (keyword_lists[pictureFile.id] != '' ? ', ' + keyword_lists[pictureFile.id] : '')}"
                     >

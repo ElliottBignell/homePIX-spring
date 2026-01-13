@@ -163,6 +163,10 @@ public class CartItemController extends PaginationController
 		Map<String, Object> model,
 		Principal principal
 	) {
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/choose/" + pictureId;
+		}
+
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		Optional<PictureFile> pictureFile =  pictureFileRepository.findById(pictureId);
 
@@ -226,6 +230,10 @@ public class CartItemController extends PaginationController
 							  Principal principal)
 		throws IOException
 	{
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/choose/" + -1;
+		}
+
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
 		BigDecimal price = BigDecimal.valueOf(10);
@@ -261,6 +269,10 @@ public class CartItemController extends PaginationController
 	public String showCart(Map<String, Object> model,
 						   @NonNull Principal principal)
 	{
+		if (principal == null) {
+			return "redirect:/prelogin?redirectTo=/cart/choose/" + -1;
+		}
+
 		Optional<User> user = userRepository.findByUsername(principal.getName());
 		List<CartItem> items = new ArrayList<>();
 		BigDecimal price = BigDecimal.valueOf(10);

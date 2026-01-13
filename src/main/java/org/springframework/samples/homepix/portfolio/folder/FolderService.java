@@ -1,6 +1,7 @@
 package org.springframework.samples.homepix.portfolio.folder;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -20,27 +21,17 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 @Getter
 public class FolderService {
 
-	// Assuming you have a PictureFileRepository to fetch PictureFiles
-	@Autowired
-	private PictureFileRepository pictureFileRepository;
-
-	@Autowired
-	private FolderRepository folderRepository;
-
-	@Autowired
-	private PictureFileRepository pictureFiles;
+	private final PictureFileRepository pictureFileRepository;
+	private final FolderRepository folderRepository;
+	private final PictureFileRepository pictureFiles;
+	private final S3Client s3Client;
 
 	protected static final String bucketName = "picture-files";
-
-	protected S3Client s3Client = null;
-	private AwsCredentials awsCredentials;
-
-	protected static final String region = "ch-dk-2";
-	protected static final String endpoint = "https://sos-ch-dk-2.exo.io";
 
 	@Cacheable(value = "thumbnails for folders", key = "#folders.![thumbnailId].stream().sorted().toList()")
 	public Map<Integer, PictureFile> getThumbnailsMap(List<Folder> folders) {
@@ -162,37 +153,6 @@ public class FolderService {
 		// This will clear the "folders" cache.
 		// Optionally re-fetch or do nothing here;
 		// next call to getSortedFolders() will reload.
-	}
-
-	public void close() throws Exception {
-
-		if (s3Client != null) {
-
-			s3Client.close();
-			s3Client = null;
-		}
-	}
-
-	public S3Client getS3Client() {
-
-		if (null == s3Client){
-			initialiseS3Client();
-		}
-
-		return s3Client;
-	}
-
-	public void initialiseS3Client() {
-
-		if (s3Client == null) {
-
-			awsCredentials = AwsBasicCredentials.create(CredentialsRunner.getAccessKeyId(),
-				CredentialsRunner.getSecretKey());
-
-			s3Client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-				.region(Region.of(region)).endpointOverride(URI.create(endpoint)).build();
-
-		}
 	}
 }
 

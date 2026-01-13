@@ -83,8 +83,6 @@ public class ArchiveService {
                 .key(key)
                 .build();
 
-		folderService.initialiseS3Client();
-
 		S3Client s3Client = folderService.getS3Client();
 
 		ResponseBytes<GetObjectResponse> bytes =

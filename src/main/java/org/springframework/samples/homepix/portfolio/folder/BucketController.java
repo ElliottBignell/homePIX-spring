@@ -333,9 +333,6 @@ public class BucketController extends PaginationController {
 		Page<PictureFile> results;
 
 		if (reload) {
-
-			folderService.initialiseS3Client();
-
 			results = listFilteredFilesPaged(listFiles(folderService.getS3Client(), "jpegs/" + name), requestDTO, authentication, pageable);
 		}
 		else {
@@ -429,8 +426,6 @@ public class BucketController extends PaginationController {
 		String userAgent = request.getHeader("User-Agent");
 		logger.info("Request from User-Agent to showFolderSlideshow: " + userAgent);
 
-		folderService.initialiseS3Client();
-
 		Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
 		List<PictureFile> results = listFilteredFiles(
@@ -504,8 +499,6 @@ public class BucketController extends PaginationController {
 	@Transactional
 	public String importPicturesFromBucket(@Valid Folder folder, @PathVariable("name") String name,
 										   Map<String, Object> model) {
-
-		folderService.initialiseS3Client();
 
 		List<PictureFile> files = listFiles(folderService.getS3Client(), "jpegs/" + name);
 
@@ -614,7 +607,13 @@ public class BucketController extends PaginationController {
 			return "error/429"; // a simple error template (or null to skip rendering)
 		}
 
-		logger.info("Request from User-Agent to showPictureFile(/buckets/" + name + "/item/"+ id + "): " + userAgent);
+		String ip = request.getRemoteAddr();
+		String ua = request.getHeader("User-Agent");
+		logger.info("Request from User-Agent to showPictureFile(/buckets/" + name + "/item/"+ id + "): " +
+			userAgent
+			+ "IP=" + ip
+			+ "UA=" + ua
+		);
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
@@ -750,8 +749,6 @@ public class BucketController extends PaginationController {
 
 	public String movePictureToFolder(String sourceFolder, String targetFolder, PictureFile file) {
 
-		folderService.initialiseS3Client();
-
 		String sourcePrefix = "jpegs/" + (sourceFolder.endsWith("/") ? sourceFolder : sourceFolder + "/");
 		String targetPrefix = "jpegs/" + (targetFolder.endsWith("/") ? targetFolder : targetFolder + "/");
 		String filename = file.getFilename();
@@ -844,8 +841,6 @@ public class BucketController extends PaginationController {
 
 	private byte[] hitBucket(BucketOp<S3Client, String, String, byte[]> op, String arg1, String arg2) {
 
-		folderService.initialiseS3Client();
-
 		// Now you can use s3Client to interact with the Exoscale S3-compatible
 		// service
 		try {
@@ -865,21 +860,21 @@ public class BucketController extends PaginationController {
 		return getSmallCompressedFileFromBucket(directory, file, 200);
 	}
 
-	@GetMapping(value = "/web-images/{directory}/400px/{file}_400px.webp")
+	@GetMapping(value = "/web-images/{directory}/400px/{file}_400px_y.webp")
 	@Cacheable("getCompressedImage400pxAsBytes")
 	public ResponseEntity<byte[]> getSmallFile400pxFromBucket(@PathVariable("directory") String directory,
 														 @PathVariable("file") String file) {
 		return getSmallCompressedFileFromBucket(directory, file, 400);
 	}
 
-	@GetMapping(value = "/web-images/{directory}/800px/{file}_800px.webp")
+	@GetMapping(value = "/web-images/{directory}/800px/{file}_800px_y.webp")
 	@Cacheable("getCompressedImage800pxAsBytes")
 	public ResponseEntity<byte[]> getSmallFile800pxFromBucket(@PathVariable("directory") String directory,
 															  @PathVariable("file") String file) {
 		return getSmallCompressedFileFromBucket(directory, file, 800);
 	}
 
-	@GetMapping(value = "/web-images/{directory}/1600px/{file}_1600px.webp")
+	@GetMapping(value = "/web-images/{directory}/1600px/{file}_1600px_y.webp")
 	@Cacheable("getCompressedImage1600pxAsBytes")
 	public ResponseEntity<byte[]> getSmallFile1600pxFromBucket(@PathVariable("directory") String directory,
 														 @PathVariable("file") String file) {
@@ -906,7 +901,7 @@ public class BucketController extends PaginationController {
 	public void resetCache1600() {
 	}
 
-	private byte[] getCompressedImageAsBytes(String compressedPath, String directory, String file, int height) {
+	private byte[] getCompressedImageAsBytes(String compressedPath, String directory, String file, int height, boolean portrait) {
 
 		byte[] compressedImage = null;
 
@@ -930,7 +925,7 @@ public class BucketController extends PaginationController {
 
 				try {
 					byte[] data = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
-					byte[] compressedBytes = convertToSmallWebPFixedHeight(height, data, 1f);
+					byte[] compressedBytes = convertToSmallWebPFixedHeight(height, portrait, data, 1f);
 					return compressedBytes;
 				} catch (Exception e) {
 					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
@@ -963,8 +958,9 @@ public class BucketController extends PaginationController {
 	) {
 		String filepath = directory + '/' + file;
 		String compressedPath = directory + "/" + String.valueOf(size) + "px/" + file + "_" + String.valueOf(size) + "px";
+		boolean portrait = size != 200;
 
-		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file, size);
+		byte[] compressedImage = getCompressedImageAsBytes(compressedPath, directory, file, size, portrait);
 
 		if (compressedImage != null) {
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(compressedImage);
@@ -1110,10 +1106,10 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-
-	@GetMapping(value = "web-images/{directory}/{file}.webp")
-	public ResponseEntity<byte[]> getWebPFileFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
+	@Secured("ROLE_ADMIN")
+	@GetMapping(value = "web-images/{directory}/watermarked/{file}.webp")
+	public ResponseEntity<byte[]> getWebPFileFromBucketWithWatermarking(@PathVariable("directory") String directory,
+														@PathVariable("file") String file) {
 
 		String filepath = directory + '/' + file;
 		String watermarkedPath = directory + "/watermark/" + file + ".webp";
@@ -1160,11 +1156,48 @@ public class BucketController extends PaginationController {
 		}
 	}
 
+	@GetMapping(value = "web-images/{directory}/{file}.webp")
+	public ResponseEntity<byte[]> getWebPFileFromBucket(@PathVariable("directory") String directory,
+															  @PathVariable("file") String file) {
+
+		String filepath = directory + '/' + file;
+		String watermarkedPath = directory + "/watermark/" + file + ".webp";
+
+		byte[] watermarkedImage = null;
+
+		try {
+			watermarkedImage = downloadFile("webp/" + directory + "/watermark/" + file + ".webp");
+		} catch (NoSuchKeyException ex) {
+			return getWebPFileFromBucket("Berschis", "dsc_217114.webp"); //Placeholder
+		} catch (IOException ex) {
+			logger.info("Error accessing WebP file " + directory + '/' + file);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+
+		if (watermarkedImage == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+
+		if (watermarkedImage != null) {
+			return ResponseEntity.ok().contentType(MediaType.valueOf("image/webp")).body(watermarkedImage);
+		} else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
 	public static byte[] applyWatermarkToWebP(byte[] originalImageBytes, float quality) throws Exception
 	{
 		// Convert byte array to BufferedImage
 		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
 		BufferedImage originalImage = ImageIO.read(in);
+
+		if (originalImage != null) {
+			logger.info("Watermarking image " + originalImage.getWidth() + "x" + originalImage.getHeight());
+		}
+		else {
+			throw new RuntimeException("Can't watermark because originalImage is null");
+		}
 
 		String watermarkText = "Copyright ©Elliott Bignell 2025";
 		float targetWidthRatio = 0.5f; // Target width ratio of the image width
@@ -1293,7 +1326,7 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-	public static byte[] convertToSmallWebPFixedHeight(int height, byte[] originalImageBytes, float quality) throws Exception
+	public static byte[] convertToSmallWebPFixedHeight(int height, boolean portrait, byte[] originalImageBytes, float quality) throws Exception
 	{
 		// Convert byte array to BufferedImage
 		ByteArrayInputStream in = new ByteArrayInputStream(originalImageBytes);
@@ -1302,8 +1335,17 @@ public class BucketController extends PaginationController {
 		// Calculate new width while maintaining aspect ratio
 		int originalWidth = originalImage.getWidth();
 		int originalHeight = originalImage.getHeight();
-		int newHeight = height;
-		int newWidth = (int) ((double) originalWidth / originalHeight * newHeight);
+		int newHeight;
+		int newWidth;
+
+		if (portrait) {
+			newWidth = height;
+			newHeight = (int) ((double) originalHeight / originalWidth * newWidth);
+		}
+		else {
+			newHeight = height;
+			newWidth = (int) ((double) originalWidth / originalHeight * newHeight);
+		}
 
 		// Create a resized image
 		BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
@@ -1726,7 +1768,6 @@ public class BucketController extends PaginationController {
 	@PostMapping("/moveFile")
 	public ResponseEntity<?> moveFile(@RequestBody MoveFileRequest request) {
 
-		folderService.initialiseS3Client();
 		S3FileMover s3FileMover = new S3FileMover(folderService.getS3Client());
 
 		String[] idStrings = request.getFileName().split(",");

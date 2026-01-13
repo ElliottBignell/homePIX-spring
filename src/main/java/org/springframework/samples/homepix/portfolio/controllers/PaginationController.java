@@ -135,11 +135,6 @@ public abstract class PaginationController implements AutoCloseable {
 		pagination = new Pagination();
 	}
 
-	@Override
-	public void close() throws Exception {
-		folderService.close();;
-	}
-
 	protected void addParams(int pictureId, String filename, Iterable<PictureFile> pictureFiles,
 			Map<String, Object> model, boolean byID) {
 
@@ -202,6 +197,10 @@ public abstract class PaginationController implements AutoCloseable {
 			model.put("previousFile", previous.getFilename());
 		}
 		model.put("description", pageDescription);
+	}
+
+	@Override
+	public void close() throws Exception {
 	}
 
 	@ModelAttribute(name = "pagination")
@@ -278,8 +277,6 @@ public abstract class PaginationController implements AutoCloseable {
 	protected String loadBuckets(Folder folder, BindingResult result, Map<String, Object> model) {
 
 		try {
-
-			folderService.initialiseS3Client();
 
 			// Now you can use s3Client to interact with the Exoscale S3-compatible
 			// service
@@ -1063,8 +1060,6 @@ public abstract class PaginationController implements AutoCloseable {
 	}
 
 	protected byte[] downloadFile(String objectKey) throws IOException {
-
-		folderService.initialiseS3Client();
 
 		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 

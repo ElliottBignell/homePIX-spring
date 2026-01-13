@@ -199,29 +199,34 @@ public class PictureFile extends BaseEntity {
 	}
 
 	public String getMediumFilename() {
-		return getSizedFilename(200);
+		return getSizedFilename(200, false);
+	}
+
+	public String getMediumFilename200() {
+		return getSizedFilename(200, true);
 	}
 
 	public String getMediumFilename400() {
-		return getSizedFilename(400);
+		return getSizedFilename(400, true);
 	}
 
 	public String getMediumFilename800() {
-		return getSizedFilename(800);
+		return getSizedFilename(800, true);
 	}
 
 	public String getMediumFilename1600() {
-		return getSizedFilename(1600);
+		return getSizedFilename(1600, true);
 	}
 
-	public String getSizedFilename(int size) {
+	public String getSizedFilename(int size, boolean portrait) {
 
 		try {
 
 			String[] parts = this.filename.replace("jpg", "webp").split("/");
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
-			String suffix = "px";
+			String pixels = "px";
+			String suffix = pixels + (portrait ? "_y" : "");
 
 			int length = bodyAndExtension.length;
 
@@ -232,7 +237,7 @@ public class PictureFile extends BaseEntity {
 				filename = String.join(".", bodyAndExtension);
 
 				if (null != this.folder) {
-					return "/web-images/" + this.folder.getName() + "/" + String.valueOf(size) + suffix + "/" + filename;
+					return "/web-images/" + this.folder.getName() + "/" + String.valueOf(size) + pixels + "/" + filename;
 				}
 				else {
 
@@ -242,7 +247,7 @@ public class PictureFile extends BaseEntity {
 
 						String folderName = this.filename.substring(1, slashIndex);
 
-						return "/web-images/" + folderName + "/" + String.valueOf(size) + suffix + "/" + filename;
+						return "/web-images/" + folderName + "/" + String.valueOf(size) + pixels + "/" + filename;
 					}
 				}
 			}
