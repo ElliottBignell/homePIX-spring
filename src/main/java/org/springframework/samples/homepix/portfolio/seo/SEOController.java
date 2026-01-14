@@ -66,9 +66,18 @@ public class SEOController extends PaginationController {
 	@GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> robots() {
 
-		String text = "User-agent: *\n" +
-			"Allow: /\n" +
-			"Sitemap: https://www.homepix.ch/sitemap.xml";
+		String text = """
+			User-agent: *
+			Allow: /
+			Disallow: /collection/delete/
+			Disallow: /collection/move/
+			Disallow: /admin/
+			Disallow: /login/
+			Disallow: /actuator/
+			Disallow: /api/
+			Disallow: /logout/
+			Sitemap: https://www.homepix.ch/sitemap.xml
+			""";
 		return ResponseEntity.ok(text);
 	}
 
