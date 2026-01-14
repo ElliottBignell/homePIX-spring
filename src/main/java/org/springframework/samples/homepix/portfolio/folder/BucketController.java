@@ -324,7 +324,16 @@ public class BucketController extends PaginationController {
 
 		name = name.replace("-", "_");
 
-		name = folders.findByNameCaseInsensitive(name).iterator().next().getName();
+		Collection<Folder> folder = folders.findByNameCaseInsensitive(name);
+
+		if (folder.isEmpty()) {
+			logger.info("Folder not found: " + name);
+			response.setStatus(404); // 429
+			model.clear(); // clear any data you're preparing
+			return "error/404"; // a simple error template (or null to skip rendering)
+		}
+
+		name = folder.iterator().next().getName();
 
 		logger.info("Request from User-Agent to showFolder: " + userAgent);
 
@@ -606,14 +615,6 @@ public class BucketController extends PaginationController {
 			model.clear(); // clear any data you're preparing
 			return "error/429"; // a simple error template (or null to skip rendering)
 		}
-
-		String ip = request.getRemoteAddr();
-		String ua = request.getHeader("User-Agent");
-		logger.info("Request from User-Agent to showPictureFile(/buckets/" + name + "/item/"+ id + "): " +
-			userAgent
-			+ "IP=" + ip
-			+ "UA=" + ua
-		);
 
 		final String imagePath = System.getProperty("user.dir") + "/images/";
 
