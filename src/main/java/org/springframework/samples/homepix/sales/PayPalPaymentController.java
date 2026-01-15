@@ -36,7 +36,7 @@ public class PayPalPaymentController {
         OrdersCreateRequest request = new OrdersCreateRequest()
                 .requestBody(order);
 
-        HttpResponse<Order> response = client.execute(request);
+        HttpResponse<com.paypal.orders.Order> response = client.execute(request);
 
         return Map.of("id", response.result().id());
     }

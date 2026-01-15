@@ -7,6 +7,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.homepix.CartStatus;
+import org.springframework.samples.homepix.User;
 import org.springframework.samples.homepix.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StripePaymentService implements PaymentService {
@@ -36,7 +38,13 @@ public class StripePaymentService implements PaymentService {
 		BigDecimal price = BigDecimal.valueOf(10);
 		List<CartItem> items = new ArrayList<>();
 
-		List<CartItem> order = cartItemRepository.findByUserAndStatus(username, CartStatus.IN_CART);
+		Optional<User> user = userRepository.findByUsername(username);
+
+		if (user.isEmpty()) {
+			return "redirect:/error-403";
+		}
+
+		List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
 
 		price = order.stream()
 			.map(CartItem::getTotalPrice)

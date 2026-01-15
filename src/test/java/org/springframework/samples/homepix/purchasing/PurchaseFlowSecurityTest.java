@@ -80,7 +80,7 @@ class PurchaseFlowSecurityTest {
 				.param("tier", "THUMBNAIL")
 		)
 		.andExpect(status().is3xxRedirection())
-		.andExpect(header().string("Location", containsString("/cart")));
+		.andExpect(header().string("Location", containsString("/checkout")));
 	}
 
 	@Test
@@ -101,7 +101,7 @@ class PurchaseFlowSecurityTest {
         given(paymentService.createCheckoutSession("alice", "fred@fred.ch"))
             .willReturn("https://checkout.stripe.com/test-session");
 
-        mockMvc.perform(post("/create-checkout-session").with(csrf()))
+        mockMvc.perform(post("/payments/stripe/session").with(csrf()))
                .andExpect(status().is3xxRedirection())
                .andExpect(header().string(
                    "Location",

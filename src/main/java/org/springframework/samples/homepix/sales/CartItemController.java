@@ -246,7 +246,7 @@ public class CartItemController extends PaginationController
 				.filter(item -> item.getUser().getUserId() == id)
 				.collect(Collectors.toList());
 
-			List<CartItem> order = cartItemRepository.findByUserAndStatus(principal.getName(), CartStatus.IN_CART);
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
 
 			price = order.stream()
 				.map(CartItem::getTotalPrice)
@@ -281,7 +281,7 @@ public class CartItemController extends PaginationController
 
 			long id = user.get().getUserId();
 
-			List<CartItem> order = cartItemRepository.findByUserAndStatus(principal.getName(), CartStatus.IN_CART);
+			List<CartItem> order = cartItemRepository.findByUserAndStatus(user.get(), CartStatus.IN_CART);
 
 			items = order.stream()
 				.filter(item -> item.getUser().getUserId() == id)
@@ -330,15 +330,6 @@ public class CartItemController extends PaginationController
                 "If you see this, email sending works.");
 		return "cart/cart.html";
     }
-
-	@PostMapping("/webhooks/stripe")
-	@PermitAll
-	public ResponseEntity<String> stripeWebhook(@RequestBody String payload,
-												@RequestHeader("Stripe-Signature") String sigHeader) {
-		// verify signature
-		// update order status
-		return ResponseEntity.ok("success");
-	}
 
 	@PostMapping("/webhooks/paypal")
 	@PermitAll

@@ -49,7 +49,8 @@ public class CsrfAccessDeniedHandler implements AccessDeniedHandler {
 			if (safeReturn.startsWith("/cart")) {
 
 				System.out.println("CSRF token expired for authenticated user, redirecting to cart");
-				response.sendRedirect("/cart");
+				response.sendRedirect("/checkout");
+				response.flushBuffer();
 				return;
 			}
 		}

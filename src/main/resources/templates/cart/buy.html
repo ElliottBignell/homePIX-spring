@@ -22,8 +22,7 @@
                 <a th:href="@{/collection/__${item.picture.id}__}">
                   <img th:id="@{item.picture${picture.id}__}"
                        class="lazyload imageinlist album"
-                       th:width="${item.picture.displayWidth / 2}"
-                       th:height="${item.picture.displayHeight / 2}"
+                       th:style="@{width:__${item.picture.displayWidth}__px;height:__${item.picture.displayHeight}__px;}"
                        th:src="${item.picture.mediumFilename}"
                        th:data-src="${item.picture.mediumFilename}"
                        th:alt="${item.picture.title}"
@@ -61,7 +60,7 @@
             </tr>
             <tr>
               <td style="padding:5px;">
-                <form action="/create-checkout-session" method="POST">
+                <form action="/payments/stripe/session" method="POST" th:action="@{/payments/stripe/session}">
                   <button type="submit" class="btn btn-primary">Buy with Stripe</button>
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 </form>

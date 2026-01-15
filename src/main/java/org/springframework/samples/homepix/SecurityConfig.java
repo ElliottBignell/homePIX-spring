@@ -28,6 +28,9 @@ import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
 
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
+
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
@@ -80,136 +83,121 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
 		return handler;
 	}
 
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    CookieCsrfTokenRepository repo =
+        CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-		http
-			// Redirect to HTTPS
-			.requiresChannel()
-			.requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
-			.requiresSecure()
-			.and()
-				// Authorization and Authentication configuration
-				.authorizeRequests()
-					.requestMatchers(new RequestMatcher() {
-						@Override
-						public boolean matches(HttpServletRequest request) {
-							// Check if the request URI ends with .xml
-							return request.getRequestURI().endsWith(".xml");
-						}
-					}).permitAll()
-			.requestMatchers(
-					"/",
-					"/error",
-					"/error-404",
-					"/error-403",
-					"/error/**",
-					"/index.xml",
-					"/licence.html",
-					"/about/",
-					"/buckets/**",
-					"/location/**",
-					"/albums/**",
-					"/album/**",
-					"/collection/**",
-					"/calendar/**",
-					"/web-images/**",
-					"/downloads/*/*.tar.gz",
-					"/resources/**",
-					"/fonts/**",
-					"/css/**",
-					"/js/**",
-					"/dist/**",
-					"/static/**",
-					"/register",
-					"/ads.txt",
-					"/sitemap.xml",
-					"/allPictures.txt",
-					"/robots.txt",
-					"/album*.xml",
-					"/folder*.xml",
-					"/api/pictures",
-					"/api/pictures/**",
-					"/api/keywords",
-					"/api/keywords/**",
-					"/api/albums",
-					"/api/albums/**",
-					"/api/folders",
-					"/api/folders/**",
-					"/api/chart-data/**",
-					"/api/folders/**",
-					"/api/locations/",
-					"/api/locations/**",
-					"/api/config-check",
-					"/logs/docker/homepix",
-					"/containers/**",
-					"/actuator",
-					"/actuator/**",
-					"/maps/**",
-					"/chart/**",
-					"/admin/**",
-					"/words",
-					"/prelogin",
-					"/cart",
-					"/cart/choose/*",
-					"/payment/success/*",
-					"/payment/failure/*",
-					"/webhooks/stripe",
-					"/webhooks/paypal",
-					"/test-mail",
-					"/create-checkout-session",
-					"/debug-config",
-					"/check-resources",
-					"/debug/mappings"
-				)
-				.permitAll()
-				.anyRequest().authenticated()
-			.and()
-			.formLogin(form -> form
-				.loginPage("/login")  // Ensure login page is registered
-				.loginProcessingUrl("/login")
-				.successHandler(customLoginSuccessHandler)
-				.failureUrl("/prelogin?error")
-				.permitAll()
-			)
-            .logout(logout -> logout
-                .logoutUrl("/logout")   // must match your form POST
-                .logoutSuccessHandler(logoutSuccessHandler)
-                .permitAll()
+    repo.setCookieCustomizer(cookie ->
+        cookie.sameSite("None").secure(true)
+    );
+
+    http
+        // HTTPS behind proxy
+        .requiresChannel(channel -> channel
+            .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+            .requiresSecure()
+        )
+
+        // CSRF
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(repo)
+            .ignoringRequestMatchers("/webhooks/**")
+        )
+
+        // AUTHORIZATION — ONE BLOCK ONLY
+        .authorizeHttpRequests(auth -> auth
+            // Stripe
+            .requestMatchers("/webhooks/**").permitAll()
+
+            // Public resources
+            .requestMatchers(
+                "/",
+                "/error",
+                "/error/**",
+                "/index.xml",
+                "/licence.html",
+                "/about/",
+                "/web-images/**",
+                "/downloads/*/*.tar.gz",
+                "/resources/**",
+                "/fonts/**",
+                "/css/**",
+                "/js/**",
+                "/dist/**",
+                "/static/**",
+                "/register",
+                "/ads.txt",
+                "/sitemap.xml",
+                "/robots.txt",
+                "/api/**",
+                "/maps/**",
+                "/chart/**",
+                "/actuator/**",
+                "/prelogin",
+                "/cart",
+                "/cart/choose/*",
+                "/payment/success/*",
+                "/payment/failure/*",
+                "/payments/stripe/**"
+            ).permitAll()
+
+            // EVERYTHING ELSE
+            .anyRequest().authenticated()
+        )
+
+        // LOGIN
+        .formLogin(form -> form
+            .loginPage("/login")
+            .loginProcessingUrl("/login")
+            .successHandler(customLoginSuccessHandler)
+            .failureUrl("/prelogin?error")
+            .permitAll()
+        )
+
+        // LOGOUT — ONCE
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessHandler(logoutSuccessHandler)
+            .permitAll()
+        )
+
+        // REMEMBER ME
+        .rememberMe(remember -> remember
+            .key("aSecureAndPrivateKey")
+            .tokenValiditySeconds(7 * 24 * 60 * 60)
+            .userDetailsService(userDetailsService)
+        )
+
+        // EXCEPTIONS
+        .exceptionHandling(ex -> ex
+            .accessDeniedHandler(new CsrfAccessDeniedHandler())
+            .authenticationEntryPoint((req, res, e) ->
+                res.sendRedirect("/prelogin?redirectTo=" +
+                    UriUtils.encode(req.getRequestURI(), StandardCharsets.UTF_8))
             )
-            .rememberMe(remember -> remember
-                .key("aSecureAndPrivateKey")
-                .tokenValiditySeconds(7 * 24 * 60 * 60)
-                .userDetailsService(userDetailsService) // ✅ CRUCIAL
-            )
-			.logout()
-			.permitAll()
-			.and()
-			.exceptionHandling(ex -> ex
-				.accessDeniedHandler(new CsrfAccessDeniedHandler())
-				.authenticationEntryPoint((req, res, e) -> res.sendRedirect("/prelogin?redirectTo=" +
-					UriUtils.encode(req.getRequestURI(), StandardCharsets.UTF_8)))
-			);
+        )
 
-		logger.info("Form login configured with custom login page at /login");
-		logger.info("Default success URL after login is set to /api/keywords");
-		logger.info("Logout URL configured at /logout");
+        // HEADERS
+        .headers(headers -> headers
+            .frameOptions(frame -> frame.sameOrigin())
+        );
 
-		http.csrf(csrf -> csrf
-			.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-			.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler())
-			.ignoringRequestMatchers("/prelogin", "/logout")
-		)
-        .requestCache(RequestCacheConfigurer::disable) ;
-
-		http.headers().frameOptions().sameOrigin();
-
-		return http.build();
-	}
+    return http.build();
+}
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return (web) -> web.ignoring().requestMatchers("/images/**", "/js/**", "/webjars/**", "/dist/**", "/static/**");
+	}
+
+	@Bean
+	public CookieSerializer cookieSerializer() {
+		DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+		serializer.setSameSite("None");
+		serializer.setUseSecureCookie(true);
+		serializer.setCookiePath("/");
+		return serializer;
 	}
 }
