@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
+import org.springframework.samples.homepix.portfolio.controllers.PaginationController;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.springframework.samples.homepix.sales.Order;
 
@@ -36,7 +38,12 @@ public class StripeWebhookController {
 	@Autowired
 	EmailService mailService;
 
-    @PostMapping
+	@Autowired
+	CartItemDownloadRepository cartItemDownloadRepository;
+
+	protected static final Logger logger = Logger.getLogger(PaginationController.class.getName());
+
+	@PostMapping
     public ResponseEntity<Void> handleWebhook(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader) throws IOException {
@@ -50,8 +57,11 @@ public class StripeWebhookController {
                 webhookSecret
             );
         } catch (SignatureVerificationException e) {
+			e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+
+		logger.info("Stripe webhook event type: " + event.getType());
 
         switch (event.getType()) {
 
@@ -62,7 +72,7 @@ public class StripeWebhookController {
             case "checkout.session.async_payment_failed" -> handlePaymentFailed(event);
 
             default -> {
-                // ignore
+				logger.fine("Ignoring Stripe event " + event.getType());
             }
         }
 
@@ -101,20 +111,22 @@ public class StripeWebhookController {
 
 	private void fulfilOrder(Order order) throws IOException {
 
-		String username = order.getUser().getUsername();
-
 		List<PictureFile> pictures =
 			order.getItems().stream()
-				.map(OrderItem::getPictureFile)
+				.map(OrderItem::getPicture)
 				.toList();
 
 		String s3Key = archiveService.createAndUploadArchive(
-			username,
+			order.getDownloadLink(),
 			pictures
 		);
 
 		order.setDownloadLink(s3Key);
 		orderRepository.save(order);
+
+		String username = order.getUser().getUsername();
+		CartItemDownload cartItemDownload = new CartItemDownload(s3Key, username);
+		cartItemDownloadRepository.save(cartItemDownload);
 
 		mailService.sendBuyerDownloadLink(
 			order.getUser().getEmail(),

@@ -138,7 +138,6 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 "/prelogin",
                 "/cart",
                 "/cart/choose/*",
-                "/payment/success/*",
                 "/payment/failure/*",
                 "/payments/stripe/**"
             ).permitAll()

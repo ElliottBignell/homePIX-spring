@@ -28,24 +28,26 @@ public class ArchiveService {
 	@Value("${homepix.s3.bucket}")
     private String bucket;
 
-    public String createAndUploadArchive(String username, List<PictureFile> pictures) throws IOException {
+	public String createAndUploadArchive(String key, List<PictureFile> pictures) throws IOException {
 
-        String key = "downloads/" + username + "/" + System.currentTimeMillis() + ".tar.gz";
+		byte[] tarGzBytes = createTarGzArchive(pictures);
 
-        byte[] tarGzBytes = createTarGzArchive(pictures);
-
-        // Upload to S3
-        PutObjectRequest put = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .contentType("application/gzip")
-                .build();
+		// Upload to S3
+		PutObjectRequest put = PutObjectRequest.builder()
+			.bucket(bucket)
+			.key(key)
+			.contentType("application/gzip")
+			.build();
 
 		S3Client s3Client = folderService.getS3Client();
 
 		s3Client.putObject(put, RequestBody.fromBytes(tarGzBytes));
 
-        return key; // caller converts to a download URL
+		return key; // caller converts to a download URL
+	}
+
+	public String getArchiveName(String username) {
+        return "downloads/" + username + "/" + System.currentTimeMillis() + ".tar.gz"; // caller converts to a download URL
     }
 
     private byte[] createTarGzArchive(List<PictureFile> pictures) throws IOException

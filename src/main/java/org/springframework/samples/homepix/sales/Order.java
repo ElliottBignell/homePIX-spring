@@ -1,10 +1,10 @@
 package org.springframework.samples.homepix.sales;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.samples.homepix.User;
 
 import java.math.BigDecimal;
@@ -24,8 +24,9 @@ public class Order {
 	@Column(name = "id")
 	private long id;
 
-	@Column(name = "user_id")
-	@NotBlank(message = "User ID is mandatory")
+	@NotNull(message = "User is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@Column(name = "stripe_session_id")
@@ -33,19 +34,18 @@ public class Order {
 	@NotEmpty
 	private String stripeSessionId;
 
-	@Column(name = "status")
-	@NotBlank(message = "Status ID is mandatory")
-	@NotEmpty
+	@NotNull
+	@Enumerated(EnumType.STRING) // recommended, so DB stores "PENDING" not 0/1/2
 	private OrderStatus status;
 
-	@Column(name = "total_amount")
-	@NotBlank(message = "Amount ID is mandatory")
-	@NotEmpty
+	@NotNull
+	@Positive
+	@Digits(integer = 10, fraction = 2) // optional but recommended
+	@Column(name="total_amount", nullable = false, precision = 12, scale = 2)
 	private BigDecimal amount;
 
-	@Column(name = "created_at")
-	@NotBlank(message = "Createed-at date is mandatory")
-	@NotEmpty
+	@CreationTimestamp
+	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
 	@Column(name = "paid_at")
