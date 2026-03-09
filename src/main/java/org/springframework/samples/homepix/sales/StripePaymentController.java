@@ -41,9 +41,10 @@ public class StripePaymentController {
 
 		} catch (StripeException ex) {
 
+			// TODO: Set error message in model for GUI
 			return ResponseEntity
 				.status(HttpStatus.SEE_OTHER)
-				.header(HttpHeaders.LOCATION, "/checkout")
+				.header(HttpHeaders.LOCATION, "/cart")
 				.build();
 		}
 	}

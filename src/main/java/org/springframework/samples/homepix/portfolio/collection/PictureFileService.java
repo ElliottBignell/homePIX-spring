@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -408,16 +409,19 @@ public class PictureFileService {
 
 	public void setDate(PictureFile picture, Map<String, String> properties) {
 
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-			"yyyy:MM:dd HH:mm:ss",
-			Locale.ENGLISH
-		);
+		final DateTimeFormatter formatter =
+			new DateTimeFormatterBuilder()
+				.appendPattern("yyyy:MM:dd HH:mm")
+				.optionalStart()
+				.appendPattern(":ss")
+				.optionalEnd()
+				.toFormatter(Locale.ENGLISH);
 
 		try {
 
 			String dateTimeString = properties.get("ProfileDateTime");
 
-			if (null != dateTimeString || dateTimeString.equals("0000:00:00 00:00:00")) {
+			if (null == dateTimeString || dateTimeString.equals("0000:00:00 00:00:00")) {
 				dateTimeString = properties.get("DateTimeOriginal");
 			}
 

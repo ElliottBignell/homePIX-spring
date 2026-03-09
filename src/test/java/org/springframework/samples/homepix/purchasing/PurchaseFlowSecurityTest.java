@@ -80,7 +80,7 @@ class PurchaseFlowSecurityTest {
 				.param("tier", "THUMBNAIL")
 		)
 		.andExpect(status().is3xxRedirection())
-		.andExpect(header().string("Location", containsString("/checkout")));
+		.andExpect(header().string("Location", containsString("/cart")));
 	}
 
 	@Test

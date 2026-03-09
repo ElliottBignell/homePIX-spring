@@ -6,6 +6,7 @@ import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 
 import org.springframework.samples.homepix.sales.Order;
 
+@Profile("!test")
 @RestController
 @RequestMapping("/webhooks/stripe")
 public class StripeWebhookController {
