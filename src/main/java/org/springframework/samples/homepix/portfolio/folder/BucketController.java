@@ -523,8 +523,8 @@ public class BucketController extends PaginationController {
 		}
 
 		// Fetch existing filenames from the database
-		List<PictureFile> existingFiles = pictureFiles.findByFilenames(
-			files.stream().map(PictureFile::getFilename).collect(Collectors.toList())
+		Set<PictureFile> existingFiles = pictureFiles.findByFilenames(
+			files.stream().map(PictureFile::getFilename).collect(Collectors.toSet())
 		);
 
 		final Folder newFolder = folder;

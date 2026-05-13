@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -445,13 +446,37 @@ public class PictureFileService {
 
 				if (null != dateTimeString && !dateTimeString.equals("0000:00:00 00:00:00")) {
 
-					LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+					LocalDateTime dateTime = null;
 
 					try {
-						picture.setTaken_on(dateTime);
+						// Strategy 1: Try parsing as-is
+						dateTime = LocalDateTime.parse(dateTimeString, formatter);
 					}
-					catch (Exception ex) {
-						System.out.println(ex);
+					catch (DateTimeParseException e) {
+						// Strategy 2: Remove timezone offset (hyphen or plus followed by time)
+						String cleaned = dateTimeString.replaceAll("[-+][0-9]{2}:[0-9]{2}$", "");
+
+						try {
+							dateTime = LocalDateTime.parse(cleaned, formatter);
+						}
+						catch (DateTimeParseException e2) {
+							// Strategy 3: Try a more aggressive cleanup - remove anything after space
+							String[] parts = dateTimeString.split("\\s+");
+							if (parts.length >= 2) {
+								cleaned = parts[0] + " " + parts[1].replaceAll("[-+].*$", "");
+								try {
+									dateTime = LocalDateTime.parse(cleaned, formatter);
+								}
+								catch (DateTimeParseException e3) {
+									System.err.println("All parsing strategies failed for: " + dateTimeString);
+									throw e3; // Re-throw if you want to handle it higher up
+								}
+							}
+						}
+					}
+
+					if (dateTime != null) {
+						picture.setTaken_on(dateTime);
 					}
 				}
 			}

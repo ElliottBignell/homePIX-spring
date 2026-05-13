@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -71,7 +72,7 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 	List<String> findFilenamesByFilenames(@Param("filenames") List<String> filenames);
 
 	@Query("SELECT pf FROM PictureFile pf WHERE pf.filename IN :filenames")
-	List<PictureFile> findByFilenames(@Param("filenames") List<String> filenames);
+	Set<PictureFile> findByFilenames(@Param("filenames") Set<String> filenames);
 
 	@Query("SELECT pf FROM PictureFile pf JOIN pf.folder f WHERE f.name = :filename")
 	@Transactional(readOnly = true)
@@ -538,7 +539,6 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 				entry -> ((Number) entry[1]).longValue() // Handle any potential type variations for the count
 			));
 	}
-
 
 	List<PictureFile> findAll(Specification<PictureFile> spec, Sort sort);
 }

@@ -32,6 +32,7 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -49,6 +50,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -529,7 +531,232 @@ public abstract class PaginationController implements AutoCloseable {
 
 	}
 
+	private Set<String> fetchAllObjectKeys(S3Client s3Client, String prefix) {
+
+		Set<String> keys = new HashSet<>();
+
+		ListObjectsV2Request request = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+
+		// Use the paginator - it handles continuation tokens automatically
+		ListObjectsV2Iterable responses = s3Client.listObjectsV2Paginator(request);
+
+		responses.stream()
+			.flatMap(response -> response.contents().stream())
+			.filter(object -> object.key().endsWith(".jpg"))
+			.filter(object -> !object.key().startsWith(prefix + "200px/"))
+			.filter(object -> !object.key().startsWith(prefix + "watermark/"))
+			.map(S3Object::key)
+			.forEach(keys::add);
+
+		return keys;
+	}
+
 	protected List<PictureFile> listFiles(S3Client s3Client, String subFolder) {
+		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
+		List<PictureFile> results = new ArrayList<>();
+
+		// Batch collect S3 objects
+		List<S3Object> filteredObjects = fetchAndFilterS3Objects(s3Client, prefix);
+		if (filteredObjects.isEmpty()) {
+			return results;
+		}
+
+		// Batch fetch existing files from database (ONE query instead of N)
+		Set<String> allFilenames = filteredObjects.stream()
+			.map(obj -> extractFilename(obj.key()))
+			.collect(Collectors.toSet());
+
+		// Handle duplicate filenames gracefully - keep the most recent one
+		Map<String, PictureFile> existingFilesMap = this.pictureFiles.findByFilenames(allFilenames)
+			.stream()
+			.collect(Collectors.toMap(
+				PictureFile::getFilename,
+				Function.identity(),
+				(existing, replacement) -> {
+					// Keep the one with more complete data, or the most recent
+					if (replacement.getAdded_on() != null && existing.getAdded_on() != null) {
+						return replacement.getAdded_on().isAfter(existing.getAdded_on()) ? replacement : existing;
+					}
+					// If one has a real title (not "Untitled"), prefer that
+					if (!"Untitled".equals(replacement.getTitle()) && "Untitled".equals(existing.getTitle())) {
+						return replacement;
+					}
+					return existing; // Keep existing by default
+				}
+			));
+
+		List<S3Object> newObjects = filteredObjects.stream()
+			.filter(obj -> !existingFilesMap.containsKey(extractFilename(obj.key())))
+			.toList();
+
+		// Batch process all files
+		List<PictureFile> toSave = new ArrayList<>();
+		for (S3Object s3Object : newObjects) {
+			try {
+				String name = s3Object.key();
+				String filename = extractFilename(name);
+				String exifName = "jpegs" + name.substring(5);
+
+				// Get EXIF once
+				Map<String, String> properties = getExifEntries(exifName);
+
+				PictureFile picture = existingFilesMap.get(filename);
+				boolean isNew = (picture == null);
+
+				if (isNew) {
+					picture = new PictureFile();
+					picture.setFilename(filename);
+					picture.setAdded_on(java.time.LocalDate.now());
+				}
+
+				// Common processing (EXIF data population)
+				populatePictureFromExif(picture, properties, subFolder);
+
+				if (picture.getRoles() == null || picture.getRoles().equals("")) {
+					picture.setRoles("ROLE_USER");
+				}
+
+				toSave.add(picture);
+				results.add(picture);
+
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "Error processing: " + s3Object.key(), ex);
+			}
+		}
+
+		// Batch save everything (ONE database operation)
+		this.pictureFiles.saveAll(toSave);
+
+		// Update folder count
+		updateFolderCount(subFolder, filteredObjects.size());
+
+		return results;
+	}
+
+	private List<S3Object> fetchAndFilterS3Objects(S3Client s3Client, String prefix) {
+		List<S3Object> filteredObjects = new ArrayList<>();
+		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+
+		ListObjectsV2Response listObjectsResponse;
+		do {
+			listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+
+			// Stream filtering is fine, but could be optimized further
+			filteredObjects.addAll(listObjectsResponse.contents().stream()
+				.filter(object -> object.key().endsWith(".jpg"))
+				.filter(object -> !object.key().startsWith(prefix + "200px/"))
+				.filter(object -> !object.key().startsWith(prefix + "watermark/"))
+				.collect(Collectors.toList())
+			);
+
+			if (listObjectsResponse.isTruncated()) {
+				listObjectsRequest = ListObjectsV2Request.builder()
+					.bucket(bucketName)
+					.prefix(prefix)
+					.continuationToken(listObjectsResponse.nextContinuationToken())
+					.build();
+			}
+		} while (listObjectsResponse.isTruncated());
+
+		return filteredObjects;
+	}
+
+	private String extractFilename(String fullPath) {
+		String name = fullPath.substring(5); // Remove "jpegs" prefix
+		int firstSlash = name.indexOf('/', 1);
+		String folderName = name.substring(1, firstSlash);
+		return name.substring(folderName.length() + 2);
+	}
+
+	private void populatePictureFromExif(PictureFile picture, Map<String, String> properties, String subFolder) {
+		try {
+			pictureFileService.setDate(picture, properties);
+		} catch (DateTimeParseException dtex) {
+			System.out.println(dtex);
+		}
+
+		picture.setTitle(properties.get("title"));
+
+		Optional.ofNullable(properties.get("ImageWidth"))
+			.map(Integer::valueOf)
+			.ifPresent(picture::setWidth);
+		Optional.ofNullable(properties.get("ImageHeight"))
+			.map(Integer::valueOf)
+			.ifPresent(picture::setHeight);
+
+		picture.setCameraModel(properties.get("CameraModel"));
+		picture.setExposureTime(properties.get("ExposureTime"));
+		picture.setFNumber(properties.get("FNumber"));
+		picture.setExposureProgram(properties.get("ExposureProgram"));
+		picture.setMeteringMode(properties.get("MeteringMode"));
+		picture.setLightSource(properties.get("LightSource"));
+		picture.setFocalLength(properties.get("FocalLength"));
+
+		// GPS processing
+		String gpsValue = properties.get("GPSPosition");
+		if (gpsValue != null) {
+			String cleanedValue = gpsValue.replace(" deg", "�");
+			picture.setGps(cleanedValue);
+			parseAndSetGpsCoordinates(picture, cleanedValue);
+		}
+
+		// TODO: Keywords - save instnce of PictureFile first!
+		//String iptcKeywords = properties.get("IPTC:Keywords");
+		//if (iptcKeywords == null && picture.getFilename() != null) {
+			//iptcKeywords = subFolder.substring(6);
+			//addKeywordAndRelationship(picture, iptcKeywords);
+		//}
+	}
+
+	private void parseAndSetGpsCoordinates(PictureFile picture, String gpsString) {
+		Pattern pattern = Pattern.compile("(\\d+)� (\\d+)' ([\\d.]+)\" ([NS]), (\\d+)� (\\d+)' ([\\d.]+)\" ([EW])");
+		Matcher matcher = pattern.matcher(gpsString);
+
+		if (matcher.find()) {
+			double latDeg = Double.parseDouble(matcher.group(1));
+			double latMin = Double.parseDouble(matcher.group(2));
+			double latSec = Double.parseDouble(matcher.group(3));
+			String latDir = matcher.group(4);
+
+			double lonDeg = Double.parseDouble(matcher.group(5));
+			double lonMin = Double.parseDouble(matcher.group(6));
+			double lonSec = Double.parseDouble(matcher.group(7));
+			String lonDir = matcher.group(8);
+
+			float latitude = (float)(latDeg + (latMin / 60.0) + (latSec / 3600.0));
+			if (latDir.equals("S")) latitude *= -1;
+
+			float longitude = (float)(lonDeg + (lonMin / 60.0) + (lonSec / 3600.0));
+			if (lonDir.equals("W")) longitude *= -1;
+
+			picture.setLatitude(latitude);
+			picture.setLongitude(longitude);
+		}
+	}
+
+	private void updateFolderCount(String subFolder, int count) {
+		try {
+			String folderName = subFolder.substring(6);
+			Collection<Folder> folders = this.folders.findByName(folderName);
+
+			if (!folders.isEmpty()) {
+				Folder folder = folders.iterator().next();
+				folder.setPicture_count(count);
+				this.folders.save(folder);
+				folderCache = null;
+			}
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error updating folder count: " + e.getMessage(), e);
+		}
+	}
+
+	protected List<PictureFile> _listFiles(S3Client s3Client, String subFolder) {
 
 		String prefix = subFolder.endsWith("/") ? subFolder : subFolder + "/";
 

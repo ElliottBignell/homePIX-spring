@@ -225,13 +225,13 @@ public class PictureService {
 	public void patchLocationsAsBatch(List<Map<String, Object>> locations) {
 
 		// Extract all filenames in the list for a single fetch query
-		List<String> filenames = locations.stream()
+		Set<String> filenames = locations.stream()
 			.map(loc -> (String) loc.get("filename"))
 			.filter(Objects::nonNull)
-			.collect(Collectors.toList());
+			.collect(Collectors.toSet());
 
 		// Fetch all relevant PictureFiles in a single query
-		List<PictureFile> pictures = pictureFileRepository.findByFilenames(filenames);
+		Set<PictureFile> pictures = pictureFileRepository.findByFilenames(filenames);
 
 		// Create a map for fast lookup by filename
 		Map<String, List<PictureFile>> pictureMap = pictures.stream()

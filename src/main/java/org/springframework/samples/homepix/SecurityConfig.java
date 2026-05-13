@@ -154,6 +154,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 				"/api/folders/**",
 				"/api/locations/",
 				"/api/locations/**",
+				"/api/svg/wing",
 				"/api/config-check",
 				"/logs/docker/homepix",
 				"/containers/**",
