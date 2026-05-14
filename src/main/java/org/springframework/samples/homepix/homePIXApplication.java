@@ -22,6 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.samples.homepix.sales.PricingProperties;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.samples.homepix.sales.PricingProperties;
 @EnableJpaRepositories(basePackages = "org.springframework.samples.homepix")
 @EnableConfigurationProperties(PricingProperties.class)
 @EnableCaching
+@EnableRetry
 @ConfigurationPropertiesScan
 public class homePIXApplication {
 

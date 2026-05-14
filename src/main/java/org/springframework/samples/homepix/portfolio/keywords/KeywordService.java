@@ -1,25 +1,31 @@
 package org.springframework.samples.homepix.portfolio.keywords;
 
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.samples.homepix.SslConfig;
 import org.springframework.samples.homepix.portfolio.album.Album;
 import org.springframework.samples.homepix.portfolio.collection.PictureFile;
 import org.springframework.samples.homepix.portfolio.folder.Folder;
-import org.springframework.samples.homepix.portfolio.locations.Location;
-import org.springframework.samples.homepix.portfolio.locations.LocationRelationship;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.sql.SQLException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
+@Transactional(readOnly = true)
 public class KeywordService {
 
 	@Autowired
@@ -27,6 +33,18 @@ public class KeywordService {
 
 	@Autowired
 	private KeywordRelationshipsRepository keywordRelationshipsRepository;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+	private static final Logger logger = LoggerFactory.getLogger(SslConfig.class);
+
+    @PostConstruct
+    public void init() {
+        // Clear the problematic individual caches
+        Objects.requireNonNull(cacheManager.getCache("keywordsByPictureId")).clear();
+        Objects.requireNonNull(cacheManager.getCache("fetchKeywordMapByFilesList")).clear();
+    }
 
 	public List<Keyword> findAll() {
 		// CrudRepository's findAll() returns an Iterable, convert to List
@@ -101,23 +119,55 @@ public class KeywordService {
 		return keywordRelationshipsRepository.findKeywordsByPictureIds(pictureIds);
 	}
 
-	@Cacheable(value = "fetchKeywordMapByFilesList")
-	public Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
-
-		Set<Integer> fileIds = files.stream().map(PictureFile::getId).collect(Collectors.toSet());
-
-		// Fetch all keyword relationships for the given picture files
-		Collection<KeywordRelationships> keywordRelationshipsList = keywordRelationshipsRepository.findByPictureIds(fileIds);
-
-		// Build a map of file IDs to associated keywords
-		return keywordRelationshipsList.stream()
-			.collect(Collectors.groupingBy(
-				KeywordRelationships::getPictureId,
-				Collectors.mapping(relationship -> relationship.getKeyword().getWord(), Collectors.toSet())
-			));
+	// Cache individual picture file keyword lookups
+	@Cacheable(value = "keywordsByPictureId")
+	public Set<String> getKeywordsForPicture(Integer pictureId) {
+		return keywordRelationshipsRepository.findByPictureId(pictureId)
+			.stream()
+			.map(kr -> kr.getKeyword().getWord())
+			.collect(Collectors.toSet());
 	}
 
-	@CacheEvict(value = { "keywordRelationshipsCache", "fetchKeywordMapByFilesList" }, allEntries = true)
+	@Retryable(value = {SQLException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+	@Cacheable(value = "fetchKeywordMapByFilesList", unless = "#result == null || #result.isEmpty()")
+    public Map<Integer, Set<String>> fetchKeywordMap(List<PictureFile> files) {
+
+		try {
+			if (files == null || files.isEmpty()) {
+				return Collections.emptyMap();
+			}
+
+			Set<Integer> fileIds = files.stream()
+				.map(PictureFile::getId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+			if (fileIds.isEmpty()) {
+				return Collections.emptyMap();
+			}
+
+			// ONE query to rule them all - no N+1!
+			// Modify your repository to accept a collection
+			List<KeywordRelationships> relationships =
+				keywordRelationshipsRepository.findByPictureIdIn(fileIds);
+
+			// Build the map in memory
+			return relationships.stream()
+				.collect(Collectors.groupingBy(
+					KeywordRelationships::getPictureId,
+					Collectors.mapping(rel -> rel.getKeyword().getWord(),
+						Collectors.toSet())
+				));
+		}
+		catch (OutOfMemoryError e) {
+			logger.error("❌ OOM in fetchKeywordMap for {} files", files.size(), e);
+			// Clear cache and return empty
+			cacheManager.getCache("fetchKeywordMapByFilesList").clear();
+			return Collections.emptyMap();
+		}
+    }
+
+	@CacheEvict(value = { "keywordRelationshipsCache", "keywordsByPictureId" }, allEntries = true)
 	@Scheduled(cron = "0 0 3 * * *") // every day at 3 AM
 	public void resetCache() {
 		// This will clear the "folders" cache.
