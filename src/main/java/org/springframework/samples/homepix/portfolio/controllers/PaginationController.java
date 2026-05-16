@@ -1152,149 +1152,171 @@ public abstract class PaginationController implements AutoCloseable {
 
 		try {
 
-			byte[] data = null;
+	        // Use streaming instead of loading entire file
+			try (InputStream s3Stream = downloadFileStream(path + ".exif")) {
 
-			try {
-				data = downloadFile(path + ".exif");
-			}
-			catch (NoSuchKeyException noKey) {
-				System.out.println("No EXIF data for " + path);
-				return results;
-			}
+				// Use StAX parser which streams through XML without loading everything
+				XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+				// Prevent XXE attacks and reduce memory usage
+				xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+				xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 
-			InputStream targetStream = new ByteArrayInputStream(data);
+				XMLEventReader reader = xmlInputFactory.createXMLEventReader(s3Stream);
 
-			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-			XMLEventReader reader = xmlInputFactory.createXMLEventReader(targetStream);
+				while (reader.hasNext()) {
 
-			while (reader.hasNext()) {
+					XMLEvent nextEvent = reader.nextEvent();
 
-				XMLEvent nextEvent = reader.nextEvent();
+					if (nextEvent.isStartElement()) {
 
-				if (nextEvent.isStartElement()) {
+						StartElement startElement = nextEvent.asStartElement();
 
-					StartElement startElement = nextEvent.asStartElement();
+						String key = startElement.getName().getLocalPart();
+						String parent = startElement.getName().getPrefix();
 
-					String key = startElement.getName().getLocalPart();
-					String parent = startElement.getName().getPrefix();
+						if (key.equals("ImageDescription") && !results.containsKey("title")) {
 
-					if (key.equals("ImageDescription") && !results.containsKey("title")) {
+							nextEvent = reader.nextEvent();
+							results.put("title", nextEvent.asCharacters().getData());
+						} else if (key.equals("Comment")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("title", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("Comment")) {
+							nextEvent = reader.nextEvent();
+							results.put("title", nextEvent.asCharacters().getData());
+						} else if (key.equals("ImageWidth") && parent.equals("File")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("title", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("ImageWidth") && parent.equals("File")) {
+							nextEvent = reader.nextEvent();
+							results.put("ImageWidth", nextEvent.asCharacters().getData());
+						} else if (key.equals("ImageHeight") && parent.equals("File")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("ImageWidth", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("ImageHeight") && parent.equals("File")) {
+							nextEvent = reader.nextEvent();
+							results.put("ImageHeight", nextEvent.asCharacters().getData());
+						} else if (key.equals("DateTimeOriginal")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("ImageHeight", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("DateTimeOriginal")) {
+							nextEvent = reader.nextEvent();
+							results.put("DateTimeOriginal", nextEvent.asCharacters().getData());
+						} else if (key.equals("ProfileDateTime")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("DateTimeOriginal", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("ProfileDateTime")) {
+							nextEvent = reader.nextEvent();
+							results.put("ProfileDateTime", nextEvent.asCharacters().getData());
+						} else if (key.equals("IPTC:Keywords")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("ProfileDateTime", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("IPTC:Keywords")) {
+							nextEvent = reader.nextEvent();
+							results.put("IPTC:Keywords", nextEvent.asCharacters().getData());
+						} else if (key.equals("Model") && parent.equals("IFD0")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("IPTC:Keywords", nextEvent.asCharacters().getData());
-					}
-					else if (key.equals("Model") && parent.equals("IFD0")) {
+							nextEvent = reader.nextEvent();
+							results.put("CameraModel", nextEvent.asCharacters().getData());
+						} else if (parent.equals("Composite")) {
 
-						nextEvent = reader.nextEvent();
-						results.put("CameraModel", nextEvent.asCharacters().getData());
-					}
-					else if (parent.equals("Composite")) {
+							if (key.equals("GPSPosition")) {
 
-						if (key.equals("GPSPosition")) {
+								StringBuilder gpsValue = new StringBuilder();
 
-							StringBuilder gpsValue = new StringBuilder();
+								while (reader.hasNext()) {
+									XMLEvent innerEvent = reader.nextEvent();
 
-							while (reader.hasNext()) {
-								XMLEvent innerEvent = reader.nextEvent();
-
-								if (innerEvent.isCharacters()) {
-									gpsValue.append(innerEvent.asCharacters().getData());
-								} else if (innerEvent.isEndElement()) {
-									EndElement endElement = innerEvent.asEndElement();
-									if (endElement.getName().getLocalPart().equals("GPSPosition")) {
-										break; // Stop when end of GPSPosition tag is reached
+									if (innerEvent.isCharacters()) {
+										gpsValue.append(innerEvent.asCharacters().getData());
+									} else if (innerEvent.isEndElement()) {
+										EndElement endElement = innerEvent.asEndElement();
+										if (endElement.getName().getLocalPart().equals("GPSPosition")) {
+											break; // Stop when end of GPSPosition tag is reached
+										}
 									}
 								}
+
+								String cleanedValue = gpsValue.toString().replace(" deg", "°");
+								results.put("GPSPosition", cleanedValue);
 							}
+						} else if (parent.equals("ExifIFD")) {
 
-							String cleanedValue = gpsValue.toString().replace(" deg", "°");
-							results.put("GPSPosition", cleanedValue);
-						}
-					}
-					else if (parent.equals("ExifIFD")) {
-
-						if (key.equals("ExposureTime")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("ExposureTime", nextEvent.asCharacters().getData());
-						}
-						else if (key.equals("FNumber")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("FNumber", nextEvent.asCharacters().getData());
-						}
-						else if (key.equals("ExposureProgram")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("ExposureProgram", nextEvent.asCharacters().getData());
-						}
-						else if (key.equals("MeteringMode")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("MeteringMode", nextEvent.asCharacters().getData());
-						}
-						else if (key.equals("LightSource")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("LightSource", nextEvent.asCharacters().getData());
-						}
-						else if (key.equals("FocalLength")) {
-
-							nextEvent = reader.nextEvent();
-							results.put("FocalLength", nextEvent.asCharacters().getData());
+							switch (key) {
+								case "ExposureTime":
+								case "FNumber":
+								case "ExposureProgram":
+								case "MeteringMode":
+								case "LightSource":
+								case "FocalLength":
+									nextEvent = reader.nextEvent();
+									if (nextEvent.isCharacters()) {
+										results.put(key, nextEvent.asCharacters().getData());
+									}
+									break;
+							}
 						}
 					}
 				}
+
+				reader.close();
 			}
 		}
+		catch (NoSuchKeyException e) {
+			// EXIF file doesn't exist - this is normal, not an error
+			logger.log(Level.FINE, "No EXIF data for " + path);
+			return results;
+		}
+		catch (OutOfMemoryError e) {
+			// Catch JVM level errors
+			logger.log(Level.SEVERE, "Out of memory while processing EXIF for " + path, e);
+			results.put("title", "Memory error processing EXIF");
+			// Clear some memory if possible
+			System.gc();
+		}
 		catch (Exception e) {
-
+			// Catch regular exceptions
+			logger.log(Level.SEVERE, "Error processing EXIF for " + path + ": " + e.getMessage(), e);
 			results.put("title", "Error getting EXIF data");
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+		}
+		catch (Throwable t) {
+			// Catch absolutely everything (last resort)
+			logger.log(Level.SEVERE, "Unexpected error processing EXIF for " + path, t);
+			results.put("title", "Unexpected error");
 		}
 
 		return results;
 	}
 
+	/**
+	 * @deprecated Use {@link #downloadFileStream(String)} instead to avoid OOM errors.
+	 * This method loads entire files into memory and will be removed in future versions.
+	 */
+	@Deprecated
 	protected byte[] downloadFile(String objectKey) throws IOException {
+		// Emergency brake - prevent OOM
+		HeadObjectRequest headRequest = HeadObjectRequest.builder()
+			.bucket(bucketName)
+			.key(objectKey)
+			.build();
 
-		GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
+		long size = folderService.getS3Client().headObject(headRequest).contentLength();
 
-		ResponseBytes<GetObjectResponse> responseResponseBytes = folderService.getS3Client().getObjectAsBytes(objectRequest);
+		if (size > 1000_000_000) { // 100MB limit
+			throw new IOException(
+				String.format("File %s is %d bytes - too large for legacy download. Use streaming API.",
+					objectKey, size));
+		}
 
-		byte[] data = responseResponseBytes.asByteArray();
+		// Original implementation
+		GetObjectRequest objectRequest = GetObjectRequest.builder()
+			.bucket(bucketName)
+			.key(objectKey)
+			.build();
 
-		return data;
+		ResponseBytes<GetObjectResponse> responseResponseBytes =
+			folderService.getS3Client().getObjectAsBytes(objectRequest);
+
+		return responseResponseBytes.asByteArray();
+	}
+
+	protected InputStream downloadFileStream(String objectKey) throws IOException {
+
+		GetObjectRequest objectRequest = GetObjectRequest.builder()
+			.bucket(bucketName)
+			.key(objectKey)
+			.build();
+
+		// This returns a streaming response - doesn't load into memory!
+		return folderService.getS3Client().getObject(objectRequest);
 	}
 
 	protected Comparator<PictureFile> getOrderComparator(
