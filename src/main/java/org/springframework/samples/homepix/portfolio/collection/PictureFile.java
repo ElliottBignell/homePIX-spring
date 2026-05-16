@@ -222,7 +222,7 @@ public class PictureFile extends BaseEntity {
 
 		try {
 
-			String[] parts = this.filename.replace("jpg", "webp").split("/");
+			String[] parts = this.filename.replace(".jpg", ".webp").split("/");
 			String filename = parts[parts.length - 1];
 			String[] bodyAndExtension = filename.split("[\\.]");
 			String pixels = "px";
@@ -270,7 +270,7 @@ public class PictureFile extends BaseEntity {
 			//filename = bodyAndExtension[0] + "." + bodyAndExtension[1];
 
 			String result = "/web-images/" + this.folder.getName() + "/" + filename;
-			return result.replace("jpg", "webp");
+			return result.replace(".jpg", ".webp");
 		}
 		catch (Exception e) {
 			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
