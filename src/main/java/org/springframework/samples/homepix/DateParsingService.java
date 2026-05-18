@@ -1,5 +1,7 @@
 package org.springframework.samples.homepix;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -11,6 +13,7 @@ import java.util.function.Supplier;
 @Service
 public class DateParsingService {
 
+	private static final Logger logger = LoggerFactory.getLogger(SslConfig.class);
 	static final String format = "yyyy-M-d";
 
 	static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
@@ -39,6 +42,7 @@ public class DateParsingService {
 			startDate = LocalDate.parse(start, formatter);
 		}
 		catch (Exception ex) {
+			logger.error("❌ Unparseble starte date in DateParsingService.parseDateRange: {}", start);
 			startDate = LocalDate.of(1970, 1, 1);
 		}
 
@@ -46,6 +50,7 @@ public class DateParsingService {
 			endDate = LocalDate.parse(end, formatter);
 		}
 		catch (Exception ex) {
+			logger.error("❌ Unparseble starte date in DateParsingService.parseDateRange: {}", end);
 			endDate = LocalDate.now();
 		}
 
