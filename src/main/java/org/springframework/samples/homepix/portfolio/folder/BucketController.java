@@ -16,8 +16,11 @@
 package org.springframework.samples.homepix.portfolio.folder;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.apache.catalina.connector.ClientAbortException;
+import org.apache.coyote.CloseNowException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -858,30 +861,42 @@ public class BucketController extends PaginationController {
 
 	@GetMapping(value = "/web-images/{directory}/200px/{file}_200px.webp")
 	@Cacheable("getCompressedImageAsBytes")
-	public ResponseEntity<StreamingResponseBody> getSmallFile200pxFromBucket(@PathVariable("directory") String directory,
-														 @PathVariable("file") String file) {
-		return getSmallCompressedFileFromBucket(directory, file, 200);
+	public void getSmallFile200pxFromBucket(@PathVariable("directory") String directory,
+	                                                                         @PathVariable("file") String file,
+	                                                                         HttpServletResponse response,
+	                                                                         HttpServletRequest request) throws IOException
+	{
+		getSmallCompressedFileFromBucket(directory, file, 200, response, request);
 	}
 
 	@GetMapping(value = "/web-images/{directory}/400px/{file}_400px_y.webp")
 	@Cacheable("getCompressedImage400pxAsBytes")
-	public ResponseEntity<StreamingResponseBody> getSmallFile400pxFromBucket(@PathVariable("directory") String directory,
-														 @PathVariable("file") String file) {
-		return getSmallCompressedFileFromBucket(directory, file, 400);
+	public void getSmallFile400pxFromBucket(@PathVariable("directory") String directory,
+	                                                                         @PathVariable("file") String file,
+	                                                                         HttpServletResponse response,
+	                                                                         HttpServletRequest request) throws IOException
+	{
+		getSmallCompressedFileFromBucket(directory, file, 400, response, request);
 	}
 
 	@GetMapping(value = "/web-images/{directory}/800px/{file}_800px_y.webp")
 	@Cacheable("getCompressedImage800pxAsBytes")
-	public ResponseEntity<StreamingResponseBody> getSmallFile800pxFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
-		return getSmallCompressedFileFromBucket(directory, file, 800);
+	public void getSmallFile800pxFromBucket(@PathVariable("directory") String directory,
+	                                                                         @PathVariable("file") String file,
+	                                                                         HttpServletResponse response,
+	                                                                         HttpServletRequest request) throws IOException
+	{
+		getSmallCompressedFileFromBucket(directory, file, 800, response, request);
 	}
 
 	@GetMapping(value = "/web-images/{directory}/1600px/{file}_1600px_y.webp")
 	@Cacheable("getCompressedImage1600pxAsBytes")
-	public ResponseEntity<StreamingResponseBody> getSmallFile1600pxFromBucket(@PathVariable("directory") String directory,
-														 @PathVariable("file") String file) {
-		return getSmallCompressedFileFromBucket(directory, file, 1600);
+	public void getSmallFile1600pxFromBucket(@PathVariable("directory") String directory,
+	                                                                          @PathVariable("file") String file,
+	                                                                          HttpServletResponse response,
+	                                                                          HttpServletRequest request) throws IOException
+	{
+		getSmallCompressedFileFromBucket(directory, file, 1600, response, request);
 	}
 
 	@CacheEvict(value = { "getCompressedImageAsBytes" }, allEntries = true)
@@ -912,7 +927,7 @@ public class BucketController extends PaginationController {
 			compressedImage = downloadFile("jpegs/" + compressedPath + ".webp");
 		}
 		catch (NoSuchKeyException ex) {
-			logger.info("Compressed file missing; creating " + directory + '/' + file);
+			logger.info("Compressed file missing; creating " + directory + '/' + file + "_1600PX");
 		}
 		catch (IOException ex) {
 			logger.info("Error accessing compressed file \" + directory + '/' + file");
@@ -955,10 +970,12 @@ public class BucketController extends PaginationController {
 	}
 
 	@GetMapping(value = "/web-images/{directory}/{file}_{size}px.webp", produces = "image/webp")
-	public ResponseEntity<StreamingResponseBody> getSmallCompressedFileFromBucket(
+	public void getSmallCompressedFileFromBucket(
 		@PathVariable("directory") String directory,
 		@PathVariable("file") String file,
-		@PathVariable("size") Integer size) {
+		@PathVariable("size") Integer size,
+		HttpServletResponse response,
+        HttpServletRequest request) throws IOException {
 
 		String compressedPath = directory + "/" + size + "px/" + file + "_" + size + "px";
 		boolean portrait = size != 200;
@@ -967,51 +984,35 @@ public class BucketController extends PaginationController {
 			String key = "jpegs/" + compressedPath + ".webp";
 
 			if (objectExists(key)) {
-				StreamingResponseBody body = outputStream -> {
 
-					// Catch ALL exceptions inside the lambda
-					try (InputStream s3Stream = downloadFileStream(key)) {
-						s3Stream.transferTo(outputStream);
-						outputStream.flush();
-					} catch (NoSuchKeyException e) {
-						logger.warning("File disappeared: " + key);
-					} catch (org.apache.coyote.CloseNowException |
-					         org.apache.catalina.connector.ClientAbortException e) {
-						// Client disconnected - this is normal, don't log as error
-						logger.fine("Client disconnected during streaming: " + key);
-					} catch (IOException e) {
-						logger.log(Level.WARNING, "IO error streaming file: " + key, e);
-					} catch (Exception e) {
-						logger.log(Level.SEVERE, "Unexpected error streaming file: " + key, e);
-					}
-				};
-
-				// Set ALL headers explicitly to prevent Spring Security from trying to modify them
-				return ResponseEntity.ok()
-					.contentType(MediaType.parseMediaType("image/webp"))
-					.header("Cache-Control", "max-age=3600")
-					.header("X-Content-Type-Options", "nosniff")
-					.header("X-Frame-Options", "DENY")
-					.header("X-XSS-Protection", "0")  // Disable XSS protection to avoid the bug
-					.body(body);
+				// Stream directly - no async, no lambda
+				try (InputStream s3Stream = downloadFileStream(key);
+				     OutputStream out = response.getOutputStream()) {
+					s3Stream.transferTo(out);
+					out.flush();
+				}
+				return;
 			}
 
 			// Generate image
-			logger.info("Compressed file missing; creating " + directory + '/' + file);
+			logger.info("Compressed file missing; creating " + directory + '/' + file + "_" + size + "px");
 			byte[] compressedImage = generateAndSaveCompressedImage(directory, file, size, portrait, compressedPath);
 
 			if (compressedImage != null) {
-				return ResponseEntity.ok()
-					.contentType(MediaType.parseMediaType("image/webp"))
-					.header("Cache-Control", "max-age=3600")
-					.body(outputStream -> outputStream.write(compressedImage));
+				response.getOutputStream().write(compressedImage);
+				response.getOutputStream().flush();
+			} else {
+				response.setStatus(HttpStatus.NOT_FOUND.value());
 			}
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-
+		} catch (NoSuchKeyException e) {
+			// Source file missing
+			logger.info("Source image not found: " + directory + '/' + file);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+		} catch (ClientAbortException | CloseNowException e) {
+			// Client disconnected - normal, don't log as error
+			logger.info("Client disconnected during image streaming");
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error processing image: " + directory + '/' + file, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
@@ -1209,7 +1210,7 @@ public class BucketController extends PaginationController {
 			compressedImage = downloadFile("jpegs/" + compressedPath + ".webp");
 		}
 		catch (NoSuchKeyException ex) {
-			logger.info("Compressed file missing; creating " + directory + '/' + file);
+			logger.info("Compressed file missing; creating " + directory + '/' + file + "_max");
 		}
 		catch (IOException ex) {
 			logger.info("Error accessing compressed file \" + directory + '/' + file");
@@ -1303,33 +1304,41 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-	@GetMapping(value = "web-images/{directory}/{file}.webp")
-	public ResponseEntity<byte[]> getWebPFileFromBucket(@PathVariable("directory") String directory,
-															  @PathVariable("file") String file) {
+	@GetMapping(value = "web-images/{directory}/{file}.webp", produces = "image/webp")
+	public void getWebPFileFromBucket(@PathVariable("directory") String directory,
+	                                  @PathVariable("file") String file,
+	                                  HttpServletResponse response) throws IOException {
 
-		String filepath = directory + '/' + file;
-		String watermarkedPath = directory + "/watermark/" + file + ".webp";
+		String watermarkedPath = "webp/" + directory + "/watermark/" + file + ".webp";
 
-		byte[] watermarkedImage = null;
+		response.setContentType("image/webp");
+		response.setHeader("Cache-Control", "max-age=3600");
 
 		try {
-			watermarkedImage = downloadFile("webp/" + directory + "/watermark/" + file + ".webp");
-		} catch (NoSuchKeyException ex) {
-			return getWebPFileFromBucket("Berschis", "dsc_217114.webp"); //Placeholder
-		} catch (IOException ex) {
-			logger.info("Error accessing WebP file " + directory + '/' + file);
+			// Check if file exists first (cheap HEAD request)
+			if (objectExists(watermarkedPath)) {
+				// Stream the file directly to client
+				try (InputStream s3Stream = downloadFileStream(watermarkedPath);
+				     OutputStream out = response.getOutputStream()) {
+					s3Stream.transferTo(out);
+					out.flush();
+				}
+				return;
+			}
+
+			// File not found
+			logger.info("WebP file not found: " + directory + "/" + file);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+
+		} catch (NoSuchKeyException e) {
+			logger.info("WebP file not found: " + directory + "/" + file);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+		} catch (ClientAbortException | CloseNowException e) {
+			// Client disconnected - normal, don't log as error
+			logger.info("Client disconnected during WebP streaming: " + directory + "/" + file);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
-		}
-
-		if (watermarkedImage == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		}
-
-		if (watermarkedImage != null) {
-			return ResponseEntity.ok().contentType(MediaType.valueOf("image/webp")).body(watermarkedImage);
-		} else {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			logger.log(Level.SEVERE, "Error streaming WebP file: " + directory + "/" + file, e);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 	}
 
