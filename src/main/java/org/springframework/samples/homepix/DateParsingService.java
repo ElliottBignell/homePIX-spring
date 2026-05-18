@@ -32,8 +32,22 @@ public class DateParsingService {
 			end = supplier.get();
 		}
 
-		LocalDate startDate = LocalDate.parse(start, formatter);
-		LocalDate endDate = LocalDate.parse(end, formatter);
+		LocalDate startDate = null;
+		LocalDate endDate = null;
+
+		try {
+			startDate = LocalDate.parse(start, formatter);
+		}
+		catch (Exception ex) {
+			startDate = LocalDate.of(1970, 1, 1);
+		}
+
+		try {
+			endDate = LocalDate.parse(end, formatter);
+		}
+		catch (Exception ex) {
+			endDate = LocalDate.now();
+		}
 
 		return new DateRange(startDate, endDate);
 	}
