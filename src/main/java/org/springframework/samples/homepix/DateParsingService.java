@@ -42,7 +42,7 @@ public class DateParsingService {
 			startDate = LocalDate.parse(start, formatter);
 		}
 		catch (Exception ex) {
-			logger.error("❌ Unparseble starte date in DateParsingService.parseDateRange: {}", start);
+			logger.error("❌ Unparseble start date in DateParsingService.parseDateRange: {}", start);
 			startDate = LocalDate.of(1970, 1, 1);
 		}
 
@@ -50,7 +50,7 @@ public class DateParsingService {
 			endDate = LocalDate.parse(end, formatter);
 		}
 		catch (Exception ex) {
-			logger.error("❌ Unparseble starte date in DateParsingService.parseDateRange: {}", end);
+			logger.error("❌ Unparseble end date in DateParsingService.parseDateRange: {}", end);
 			endDate = LocalDate.now();
 		}
 
