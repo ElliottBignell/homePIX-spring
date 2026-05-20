@@ -1,10 +1,11 @@
 package org.springframework.samples.homepix.portfolio.controllers;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.samples.homepix.CollectionRequestDTO;
-import org.springframework.samples.homepix.CredentialsRunner;
+import org.springframework.samples.homepix.DateParsingService;
 import org.springframework.samples.homepix.portfolio.Pagination;
 import org.springframework.samples.homepix.portfolio.album.*;
 import org.springframework.samples.homepix.portfolio.calendar.Calendar;
@@ -25,11 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
@@ -62,7 +59,7 @@ import java.util.logging.Logger;
 @Controller
 public abstract class PaginationController implements AutoCloseable {
 
-	protected static final Logger logger = Logger.getLogger(PaginationController.class.getName());
+	protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(PaginationController.class);
 
 	protected Pagination pagination;
 
@@ -87,6 +84,9 @@ public abstract class PaginationController implements AutoCloseable {
 
 	@Autowired
 	ArchiveService archiveService;
+
+	@Autowired
+	DateParsingService dateParsingService;
 
 	protected final KeywordRepository keyword;
 
@@ -272,7 +272,7 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 	}
 
@@ -308,7 +308,7 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 		return "folders/folderList";
 	}
@@ -451,6 +451,10 @@ public abstract class PaginationController implements AutoCloseable {
 		String fromDate = requestDTO.getFromDate();
 		String toDate = requestDTO.getToDate();
 
+		// Trim and remove any stray quotes
+		fromDate = dateParsingService.cleanDateString(fromDate);
+		toDate = dateParsingService.cleanDateString(toDate);
+
 		if (fromDate.equals("null") || fromDate.equals("")) {
 			fromDate = "1970-01-01";
 		}
@@ -466,11 +470,24 @@ public abstract class PaginationController implements AutoCloseable {
 			toDate = supplier.get();
 		}
 
-		LocalDate startDate = LocalDate.parse(fromDate, formatter);
-		LocalDate endDate = LocalDate.parse(toDate, formatter);
+		LocalDate startDate = null;
+		LocalDate endDate = null;
 
-		fromDate = startDate.toString();
-		toDate = endDate.toString();
+		try {
+			startDate = LocalDate.parse(fromDate, formatter);
+		}
+		catch (Exception ex) {
+			logger.error("❌ Unparseable start date in PaginationController.getDateRange: {}", fromDate);
+			startDate = LocalDate.of(1970, 1, 1);
+		}
+
+		try {
+			endDate = LocalDate.parse(toDate, formatter);
+		}
+		catch (Exception ex) {
+			logger.error("❌ Unparseable end date in PaginationController.getDateRange: {}", toDate);
+			endDate = LocalDate.now();
+		}
 
 		pictureFileService.applyArguments(model, requestDTO);
 
@@ -513,7 +530,7 @@ public abstract class PaginationController implements AutoCloseable {
 					// Process metadata and create/update PictureFile objects
 					processMetadata(properties, name, subFolder, results);
 				} catch (Exception e) {
-					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+					logger.error("An error occurred: " + e.getMessage(), e);
 				}
 			}
 
@@ -623,7 +640,7 @@ public abstract class PaginationController implements AutoCloseable {
 				results.add(picture);
 
 			} catch (Exception ex) {
-				logger.log(Level.SEVERE, "Error processing: " + s3Object.key(), ex);
+				logger.error("Error processing: " + s3Object.key(), ex);
 			}
 		}
 
@@ -752,7 +769,7 @@ public abstract class PaginationController implements AutoCloseable {
 				folderCache = null;
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error updating folder count: " + e.getMessage(), e);
+			logger.error("Error updating folder count: " + e.getMessage(), e);
 		}
 	}
 
@@ -938,7 +955,7 @@ public abstract class PaginationController implements AutoCloseable {
 			catch (Exception ex) {
 				System.out.println(ex);
 				ex.printStackTrace();
-				logger.log(Level.SEVERE, "An error occurred: " + ex.getMessage(), ex);
+				logger.error("An error occurred: " + ex.getMessage(), ex);
 			}
 		}
 
@@ -958,7 +975,7 @@ public abstract class PaginationController implements AutoCloseable {
 			}
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		return results;
@@ -1252,24 +1269,24 @@ public abstract class PaginationController implements AutoCloseable {
 		}
 		catch (NoSuchKeyException e) {
 			// EXIF file doesn't exist - this is normal, not an error
-			logger.log(Level.FINE, "No EXIF data for " + path);
+			logger.info("No EXIF data for " + path);
 			return results;
 		}
 		catch (OutOfMemoryError e) {
 			// Catch JVM level errors
-			logger.log(Level.SEVERE, "Out of memory while processing EXIF for " + path, e);
+			logger.error("Out of memory while processing EXIF for " + path, e);
 			results.put("title", "Memory error processing EXIF");
 			// Clear some memory if possible
 			System.gc();
 		}
 		catch (Exception e) {
 			// Catch regular exceptions
-			logger.log(Level.SEVERE, "Error processing EXIF for " + path + ": " + e.getMessage(), e);
+			logger.error("Error processing EXIF for " + path + ": " + e.getMessage(), e);
 			results.put("title", "Error getting EXIF data");
 		}
 		catch (Throwable t) {
 			// Catch absolutely everything (last resort)
-			logger.log(Level.SEVERE, "Unexpected error processing EXIF for " + path, t);
+			logger.error("Unexpected error processing EXIF for " + path, t);
 			results.put("title", "Unexpected error");
 		}
 

@@ -67,6 +67,15 @@ public class SEOController extends PaginationController {
 	public ResponseEntity<String> robots() {
 
 		String text = """
+			User-agent: GPTBot
+			Disallow: /
+
+			User-agent: ChatGPT-User
+			Disallow: /
+
+			User-agent: Google-Extended
+			Disallow: /
+
 			User-agent: *
 			Allow: /
 			Disallow: /collection/delete/
@@ -76,6 +85,7 @@ public class SEOController extends PaginationController {
 			Disallow: /actuator/
 			Disallow: /api/
 			Disallow: /logout/
+			Disallow: /cart/*
 			Sitemap: https://www.homepix.ch/sitemap.xml
 			""";
 		return ResponseEntity.ok(text);

@@ -182,14 +182,14 @@ public class FolderController extends PaginationController {
 				item.setTitle(Folder.getExifTitle(filename + "/" + name));
 			}
 			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+				logger.error("An error occurred: " + e.getMessage(), e);
 			}
 
 			try {
 				pictureFiles.save(item);
 			}
 			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+				logger.error("An error occurred: " + e.getMessage(), e);
 			}
 
 			pictures.add(item);
@@ -309,7 +309,7 @@ public class FolderController extends PaginationController {
 		}
 		catch (IOException e) {
 
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 			return null;
 		}
 	}

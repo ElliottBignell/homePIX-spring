@@ -62,18 +62,18 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
+import javax.imageio.*;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -109,6 +109,10 @@ public class BucketController extends PaginationController {
 
 	@Autowired
 	EmailService emailService;
+
+	// Allow only 1 conversion at a time to prevent OOM
+	private final Semaphore conversionSemaphore = new Semaphore(1);
+	private final Map<String, CompletableFuture<byte[]>> pendingConversions = new ConcurrentHashMap<>();
 
 	private final PictureFileService pictureFileService;
 
@@ -555,7 +559,7 @@ public class BucketController extends PaginationController {
 				}
 			}
 			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+				logger.error("An error occurred: " + e.getMessage(), e);
 			}
 		}
 
@@ -662,10 +666,10 @@ public class BucketController extends PaginationController {
 
 			if (id < 0 || id >= pictureFiles.size()) {
 
-				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
+				logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
 				// Optionally, you can log the value of 'id' as well
-				logger.severe("                                    Attempted bucket: " + name);
-				logger.severe("                                    Attempted index: " + id);
+				logger.error("                                    Attempted bucket: " + name);
+				logger.error("                                    Attempted index: " + id);
 
 				model.put("errorMessage", "Failed to retrieve picture; index number outside bounds of collection");
 				return "error-404";
@@ -678,10 +682,10 @@ public class BucketController extends PaginationController {
 			catch (IndexOutOfBoundsException e) {
 
 				// Log the size of the pictureFiles list
-				logger.severe("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
+				logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
 				// Optionally, you can log the value of 'id' as well
-				logger.severe("                                    Attempted bucket: " + name);
-				logger.severe("                                    Attempted index: " + id);
+				logger.error("                                    Attempted bucket: " + name);
+				logger.error("                                    Attempted index: " + id);
 
 				if (count > 0) {
 
@@ -933,7 +937,7 @@ public class BucketController extends PaginationController {
 			logger.info("Error accessing compressed file \" + directory + '/' + file");
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		if (null == compressedImage) {
@@ -946,7 +950,7 @@ public class BucketController extends PaginationController {
 					byte[] compressedBytes = convertToSmallWebPFixedHeight(height, portrait, data, 1f);
 					return compressedBytes;
 				} catch (Exception e) {
-					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
+					logger.error("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
 					return null;
 				}
 			}, directory, file);
@@ -1010,9 +1014,9 @@ public class BucketController extends PaginationController {
 			response.setStatus(HttpStatus.NOT_FOUND.value());
 		} catch (ClientAbortException | CloseNowException e) {
 			// Client disconnected - normal, don't log as error
-			logger.info("Client disconnected during image streaming");
+			logger.info("Client disconnected during image streaming" + directory + '/' + file);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error processing image: " + directory + '/' + file, e);
+			logger.error("Error processing image: " + directory + '/' + file, e);
 		}
 	}
 
@@ -1027,53 +1031,9 @@ public class BucketController extends PaginationController {
 		} catch (NoSuchKeyException e) {
 			return false;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error checking existence of " + key, e);
+			logger.warn("Error checking existence of " + key, e);
 			return false;
 		}
-	}
-
-	private Optional<StreamingResponseBody> getCompressedImageStream(String compressedPath, String directory, String file, int height, boolean portrait) {
-
-		try {
-			// Check if file exists first (cheap HEAD request)
-			if (doesFileExist("jpegs/" + compressedPath + ".webp")) {
-				// Create streaming body that opens the stream when needed
-				StreamingResponseBody body = outputStream -> {
-					// Open stream INSIDE the lambda
-					try (InputStream s3Stream = downloadFileStream("jpegs/" + compressedPath + ".webp")) {
-						s3Stream.transferTo(outputStream);
-					} catch (NoSuchKeyException e) {
-						logger.warning("File disappeared between check and download: " + compressedPath);
-						throw new IOException("File not found", e);
-					}
-				};
-				return Optional.of(body);
-			}
-
-			// File doesn't exist, need to generate it
-			logger.info("Compressed file missing; creating " + directory + '/' + file);
-
-		} catch (IOException ex) {
-			logger.info("Error checking compressed file " + directory + '/' + file + ": " + ex.getMessage());
-			return Optional.empty();
-		}
-
-		// Generate the compressed image on-demand
-		try {
-			byte[] compressedImage = generateAndSaveCompressedImage(directory, file, height, portrait, compressedPath);
-
-			if (compressedImage != null) {
-				// Create streaming body from the generated bytes
-				StreamingResponseBody body = outputStream -> {
-					outputStream.write(compressedImage);
-				};
-				return Optional.of(body);
-			}
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error generating compressed image for " + directory + '/' + file, e);
-		}
-
-		return Optional.empty();
 	}
 
 	// Helper method to check if file exists without downloading
@@ -1091,31 +1051,160 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-	private byte[] generateAndSaveCompressedImage(String directory, String file, int height, boolean portrait, String compressedPath)
-		throws Exception {
+	private byte[] convertToSmallWebPFixedHeightStreaming(int height, boolean portrait, InputStream imageStream, float quality) throws Exception {
 
-		// Download original image (this still loads into memory, but it's necessary for processing)
-		byte[] data = downloadFile("jpegs/" + directory + "/" + file + ".jpg");
-
-		// Convert to WebP (memory intensive but unavoidable)
-		byte[] compressedBytes = convertToSmallWebPFixedHeight(height, portrait, data, 1f);
-
-		// Save to S3 asynchronously (don't wait for it)
-		CompletableFuture.runAsync(() -> {
-			try {
-				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-					.bucket(bucketName)
-					.key("jpegs/" + compressedPath + ".webp")
-					.build();
-
-				folderService.getS3Client().putObject(putObjectRequest,
-					software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedBytes));
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "Failed to cache compressed image: " + compressedPath, e);
+		// Use ImageIO with streaming to avoid loading full image twice
+		try (ImageInputStream iis = ImageIO.createImageInputStream(imageStream)) {
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+			if (!readers.hasNext()) {
+				throw new IOException("No image reader found");
 			}
-		});
 
-		return compressedBytes;
+			ImageReader reader = readers.next();
+			reader.setInput(iis);
+
+			// Get dimensions without loading full image
+			int originalWidth = reader.getWidth(0);
+			int originalHeight = reader.getHeight(0);
+
+			// Calculate target dimensions
+			int targetHeight;
+			int targetWidth;
+
+			if (portrait) {
+				targetWidth = height;
+				targetHeight = (int) ((double) originalHeight / originalWidth * targetWidth);
+			} else {
+				targetHeight = height;
+				targetWidth = (int) ((double) originalWidth / originalHeight * targetHeight);
+			}
+
+			// If image is already small enough, we can't return original here
+			// because we don't have the original bytes. Just process it anyway.
+			// (Small images won't cause OOM)
+
+			// Read only what we need with subsampling for large images
+			ImageReadParam param = reader.getDefaultReadParam();
+			if (originalWidth > 3000 || originalHeight > 3000) {
+				int subsampling = Math.max(2, originalWidth / 2000);
+				param.setSourceSubsampling(subsampling, subsampling, 0, 0);
+			}
+
+			BufferedImage original = reader.read(0, param);
+
+			// Scale down
+			BufferedImage scaled = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g2d = scaled.createGraphics();
+			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2d.drawImage(original, 0, 0, targetWidth, targetHeight, null);
+			g2d.dispose();
+
+			// Convert to WebP using streaming
+			ByteArrayOutputStream webpOutputStream = new ByteArrayOutputStream();
+
+			// Use Java's built-in WebP writer if available, otherwise use cwebp
+			if (hasWebPWriter()) {
+				ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+				writer.setOutput(ImageIO.createImageOutputStream(webpOutputStream));
+				writer.write(scaled);
+			} else {
+				// Fall back to cwebp process
+				webpOutputStream.write(convertToWebPWithProcess(scaled, quality));
+			}
+
+			return webpOutputStream.toByteArray();
+		}
+	}
+
+	private boolean hasWebPWriter() {
+		return ImageIO.getImageWritersByMIMEType("image/webp").hasNext();
+	}
+
+	private byte[] convertToWebPWithProcess(BufferedImage image, float quality) throws Exception {
+		// Write to temp JPEG with streaming
+		File tempJpeg = File.createTempFile("resized", ".jpg");
+		try {
+			ImageIO.write(image, "jpg", tempJpeg);
+
+			// Convert to WebP
+			File tempWebP = File.createTempFile("output", ".webp");
+			try {
+				ProcessBuilder pb = new ProcessBuilder(
+					"cwebp", "-q", String.valueOf((int)(quality * 100)),
+					tempJpeg.getAbsolutePath(), "-o", tempWebP.getAbsolutePath()
+				);
+				pb.environment().put("PATH", "/usr/local/bin:/usr/bin:/bin");
+				pb.redirectErrorStream(true);
+				Process process = pb.start();
+				int exitCode = process.waitFor();
+
+				if (exitCode != 0) {
+					throw new IOException("cwebp failed with exit code: " + exitCode);
+				}
+
+				// Read result
+				byte[] result = Files.readAllBytes(tempWebP.toPath());
+				return result;
+
+			} finally {
+				tempWebP.delete();
+			}
+		} finally {
+			tempJpeg.delete();
+		}
+	}
+
+	private byte[] generateAndSaveCompressedImage(String directory, String file, int height, boolean portrait, String compressedPath) throws InterruptedException {
+
+		// Use semaphore to limit concurrent conversions
+		if (!conversionSemaphore.tryAcquire(30, TimeUnit.SECONDS)) {
+			logger.warn("Conversion queue full, skipping: " + directory + '/' + file);
+			return null;
+		}
+
+		try {
+			// Stream original image directly from S3 - NO byte array loading!
+			try (InputStream imageStream = downloadFileStream("jpegs/" + directory + "/" + file + ".jpg")) {
+
+				// Convert using streaming - passes the InputStream directly
+				byte[] compressedBytes = convertToSmallWebPFixedHeightStreaming(height, portrait, imageStream, 1f);
+
+				if (compressedBytes == null) {
+					return null;
+				}
+
+				// Save to S3 asynchronously
+				CompletableFuture.runAsync(() -> {
+					try {
+						PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+							.bucket(bucketName)
+							.key("jpegs/" + compressedPath + ".webp")
+							.build();
+
+						folderService.getS3Client().putObject(putObjectRequest,
+							software.amazon.awssdk.core.sync.RequestBody.fromBytes(compressedBytes));
+						logger.debug("Cached thumbnail: " + compressedPath);
+					} catch (Exception e) {
+						logger.warn("Failed to cache compressed image: " + compressedPath, e);
+					}
+				});
+
+				return compressedBytes;
+			}
+
+		} catch (NoSuchKeyException e) {
+			logger.info("Source image not found: " + directory + '/' + file);
+			return null;
+		} catch (OutOfMemoryError e) {
+			logger.error("OOM during conversion: " + directory + '/' + file);
+			System.gc(); // Attempt cleanup
+			return null;
+		} catch (Exception e) {
+			logger.error("Error generating thumbnail: " + directory + '/' + file, e);
+			return null;
+		} finally {
+			conversionSemaphore.release();
+		}
 	}
 
 	@GetMapping("/downloads/{user}/{filename:.+}")
@@ -1196,7 +1285,6 @@ public class BucketController extends PaginationController {
 			.collect(Collectors.toList());
 	}
 
-
 	@GetMapping(value = "web-images/{directory}/200px/{file}_max.webp")
 	public ResponseEntity<byte[]> getCompressedFileFromBucket(@PathVariable("directory") String directory,
 															  @PathVariable("file") String file) {
@@ -1216,7 +1304,7 @@ public class BucketController extends PaginationController {
 			logger.info("Error accessing compressed file \" + directory + '/' + file");
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		if (null == compressedImage) {
@@ -1229,7 +1317,7 @@ public class BucketController extends PaginationController {
 					byte[] compressedBytes = convertToWebP200px(data, 0.1f);
 					return compressedBytes;
 				} catch (Exception e) {
-					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
+					logger.error("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
 					return null;
 				}
 			}, directory, file);
@@ -1271,7 +1359,7 @@ public class BucketController extends PaginationController {
 		} catch (IOException ex) {
 			logger.info("Error accessing WebP file " + directory + '/' + file);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		if (watermarkedImage == null) {
@@ -1280,7 +1368,7 @@ public class BucketController extends PaginationController {
 					byte[] jpegBytes = downloadFile("jpegs/" + arg1 + "/" + arg2 + ".jpg");
 					return applyWatermarkToWebP(jpegBytes, 0.1f); // Convert to WebP with watermark
 				} catch (Exception e) {
-					logger.severe("Error downloading file: " + directory + '/' + file + " " + e.getMessage());
+					logger.error("Error downloading file: " + directory + '/' + file + " " + e.getMessage());
 					return null;
 				}
 			}, directory, file);
@@ -1337,7 +1425,7 @@ public class BucketController extends PaginationController {
 			// Client disconnected - normal, don't log as error
 			logger.info("Client disconnected during WebP streaming: " + directory + "/" + file);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error streaming WebP file: " + directory + "/" + file, e);
+			logger.error("Error streaming WebP file: " + directory + "/" + file, e);
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 	}
@@ -1447,7 +1535,7 @@ public class BucketController extends PaginationController {
 			logger.info("Error accessing watermarked file \" + directory + '/' + file");
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		if (null == watermarkedImage) {
@@ -1457,7 +1545,7 @@ public class BucketController extends PaginationController {
 				try {
 					return applyWatermark(downloadFile("jpegs/" + arg1 + "/" + arg2));
 				} catch (IOException e) {
-					logger.severe("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
+					logger.error("Error downloading file: " + directory + '/' + file + "    " + e.getMessage());
 					return null;
 				}
 			}, directory, file);
@@ -1687,7 +1775,7 @@ public class BucketController extends PaginationController {
 				return downloadFile("jpegs/" + arg1 + "/200px/" + arg2);
 			}
 			catch (IOException e) {
-				logger.log(Level.SEVERE, "Error downloading file: " + e.getMessage(), e);
+				logger.error("Error downloading file: " + e.getMessage(), e);
 				return null;
 			}
 		}, directory, filename);
@@ -1770,12 +1858,12 @@ public class BucketController extends PaginationController {
 		}
 		catch (OutOfMemoryError oome) {
 
-			logger.log(Level.SEVERE, "An error occurred: " + oome.getMessage(), oome);
-			logger.severe("Clearing image chaches");
+			logger.error("An error occurred: " + oome.getMessage(), oome);
+			logger.error("Clearing image chaches");
 			image200pxCacheMap.clear();
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		return null;
@@ -1845,12 +1933,12 @@ public class BucketController extends PaginationController {
 		}
 		catch (OutOfMemoryError oome) {
 
-			logger.log(Level.SEVERE, "An error occurred: " + oome.getMessage(), oome);
-			logger.severe("Clearing image chaches");
+			logger.error("An error occurred: " + oome.getMessage(), oome);
+			logger.error("Clearing image chaches");
 			image200pxCacheMap.clear();
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		return null;
@@ -1879,7 +1967,7 @@ public class BucketController extends PaginationController {
 				item.setTitle(getExifEntries(filename).get("title"));
 			}
 			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+				logger.error("An error occurred: " + e.getMessage(), e);
 			}
 
 			this.addKeywordAndRelationship(item, name);
@@ -1911,7 +1999,7 @@ public class BucketController extends PaginationController {
 			item.setTitle(getExifEntries(filename).get("title"));
 		}
 		catch (Exception e) {
-			logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+			logger.error("An error occurred: " + e.getMessage(), e);
 		}
 
 		this.addKeywordAndRelationship(item, name);
@@ -1991,7 +2079,7 @@ public class BucketController extends PaginationController {
 				}
 				catch (Exception e) {
 
-					logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+					logger.error("An error occurred: " + e.getMessage(), e);
 
 					// Log the exception
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error moving file and thumbnail: " + e.getMessage());

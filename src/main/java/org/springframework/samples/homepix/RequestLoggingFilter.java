@@ -36,7 +36,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 		Level level = isBotLike(request) ? Level.FINE : Level.INFO;
 		boolean botLike = isBotLike(request);
 
-		log.log(level, String.format(
+		log.finest(String.format(
 			"event=http_request bot=%s method=%s path=%s status=%d ip=%s duration_ms=%d ua=\"%s\"",
 			botLike,
 			request.getMethod(),

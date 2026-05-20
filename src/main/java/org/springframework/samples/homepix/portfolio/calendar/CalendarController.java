@@ -128,7 +128,7 @@ public class CalendarController extends PaginationController {
 				}
 			}
 			catch (Exception e) {
-				logger.log(Level.SEVERE, "An error occurred: " + e.getMessage(), e);
+				logger.error("An error occurred: " + e.getMessage(), e);
 			}
 		}
 
