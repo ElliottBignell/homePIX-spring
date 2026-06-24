@@ -70,6 +70,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
+import java.sql.SQLTransientConnectionException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
@@ -616,144 +617,161 @@ public class BucketController extends PaginationController {
 								  HttpServletRequest request,
 								  jakarta.servlet.http.HttpServletResponse response
 	) {
-		String userAgent = request.getHeader("User-Agent");
+		try {
 
-		// TODO: Maake this AOP
-		if (userAgent != null && userAgent.matches("(?i).*\\b(SemrushBot|AmazonBot|AhrefsBot|DotBot)\\b.*")) {
-			response.setStatus(429); // 429
-			model.clear(); // clear any data you're preparing
-			return "error/429"; // a simple error template (or null to skip rendering)
-		}
+			String userAgent = request.getHeader("User-Agent");
 
-		final String imagePath = System.getProperty("user.dir") + "/images/";
+			// TODO: Maake this AOP
+			if (userAgent != null && userAgent.matches("(?i).*\\b(SemrushBot|AmazonBot|AhrefsBot|DotBot)\\b.*")) {
+				response.setStatus(429); // 429
+				model.clear(); // clear any data you're preparing
+				return "error/429"; // a simple error template (or null to skip rendering)
+			}
 
-		Collection<Folder> buckets = this.folders.findByName(name);
+			final String imagePath = System.getProperty("user.dir") + "/images/";
 
-		if (buckets.isEmpty()) {
-			return "folders/folderList.html";
-		}
-		else {
+			Collection<Folder> buckets = this.folders.findByName(name);
 
-			ModelAndView mav = new ModelAndView("albums/albumDetails");
-			Folder folder = buckets.iterator().next();
-
-			Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
-
-			String search = requestDTO.getSearch();
-			List<PictureFile> pictureFiles;
-
-			if (search.equals(":!*")) {
-
-				DateRange dateRange = dateParsingService.parseDateRange(requestDTO.getFromDate(), requestDTO.getToDate());
-
-				List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, dateRange.getStartDate(), dateRange.getEndDate());
-				pictureFiles = listFiles(
-					files,
-					requestDTO,
-					authentication
-				);
+			if (buckets.isEmpty()) {
+				return "folders/folderList.html";
 			}
 			else {
-				pictureFiles = listFilteredFiles(pictureFileService.findByFolderName(name), requestDTO, authentication, model);
-			}
 
-			int count = pictureFiles.size();
+				ModelAndView mav = new ModelAndView("albums/albumDetails");
+				Folder folder = buckets.iterator().next();
 
-			mav.addObject(pictureFiles);
-			model.put("link_params", "");
+				Comparator<PictureFile> orderBy = getOrderComparator(requestDTO);
 
-			PictureFile file = null;
+				String search = requestDTO.getSearch();
+				List<PictureFile> pictureFiles;
 
-			if (id < 0 || id >= pictureFiles.size()) {
+				if (search.equals(":!*")) {
 
-				logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
-				// Optionally, you can log the value of 'id' as well
-				logger.error("                                    Attempted bucket: " + name);
-				logger.error("                                    Attempted index: " + id);
+					DateRange dateRange = dateParsingService.parseDateRange(requestDTO.getFromDate(), requestDTO.getToDate());
 
-				model.put("errorMessage", "Failed to retrieve picture; index number outside bounds of collection");
-				return "error-404";
-			}
+					List<PictureFile> files = this.pictureFiles.findByFolderNameAndNoKeywords(name, dateRange.getStartDate(), dateRange.getEndDate());
+					pictureFiles = listFiles(
+						files,
+						requestDTO,
+						authentication
+					);
+				}
+				else {
+					pictureFiles = listFilteredFiles(pictureFileService.findByFolderName(name), requestDTO, authentication, model);
+				}
 
-			try {
-				// Attempt to access the element at index 'id'
-				file = pictureFiles.get(id);
-			}
-			catch (IndexOutOfBoundsException e) {
+				int count = pictureFiles.size();
 
-				// Log the size of the pictureFiles list
-				logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
-				// Optionally, you can log the value of 'id' as well
-				logger.error("                                    Attempted bucket: " + name);
-				logger.error("                                    Attempted index: " + id);
+				mav.addObject(pictureFiles);
+				model.put("link_params", "");
 
-				if (count > 0) {
+				PictureFile file = null;
 
-					try {
-						// Attempt to access the element at index 'id' modulus 'size'
-						file = pictureFiles.get(id % pictureFiles.size());
+				if (id < 0 || id >= pictureFiles.size()) {
+
+					logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
+					// Optionally, you can log the value of 'id' as well
+					logger.error("                                    Attempted bucket: " + name);
+					logger.error("                                    Attempted index: " + id);
+
+					model.put("errorMessage", "Failed to retrieve picture; index number outside bounds of collection");
+					return "error-404";
+				}
+
+				try {
+					// Attempt to access the element at index 'id'
+					file = pictureFiles.get(id);
+				}
+				catch (IndexOutOfBoundsException e) {
+
+					// Log the size of the pictureFiles list
+					logger.error("IndexOutOfBoundsException occurred. Size of pictureFiles list: " + count);
+					// Optionally, you can log the value of 'id' as well
+					logger.error("                                    Attempted bucket: " + name);
+					logger.error("                                    Attempted index: " + id);
+
+					if (count > 0) {
+
+						try {
+							// Attempt to access the element at index 'id' modulus 'size'
+							file = pictureFiles.get(id % pictureFiles.size());
+						}
+						catch (IndexOutOfBoundsException e2) {
+
+							model.put("errorMessage", "Failed to retrieve picture using backup wrap; index number overflowed end of collection");
+							return "error-404";
+						}
 					}
-					catch (IndexOutOfBoundsException e2) {
+					else {
 
-						model.put("errorMessage", "Failed to retrieve picture using backup wrap; index number overflowed end of collection");
+						model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
 						return "error-404";
 					}
 				}
-				else {
 
-					model.put("errorMessage", "Failed to retrieve picture; index number overflowed end of collection");
-					return "error-404";
-				}
-			}
+				int pictureID = file.getId();
+				boolean available = archiveService.s3ObjectExists("jpegs/" + file.getFolderName() + "/" + file.getFilename());
 
-			int pictureID = file.getId();
-			boolean available = archiveService.s3ObjectExists("jpegs/" + file.getFolderName() + "/" + file.getFilename());
+				model.put("availableForPurchase", available);
+				model.put("picture", file);
+				model.put("current", id);
+				model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
+				model.put("description", "This description");
+				model.put("baseLink", "/buckets/" + name);
+				model.put("id", id);
+				model.put("next", (id + 1) % count);
+				model.put("previous", (id + count - 1) % count);
+				model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
+					.map(KeywordRelationships::getKeyword)
+					.collect(Collectors.toList()));
+				model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
+					.map(KeywordRelationships::getKeyword)
+					.collect(Collectors.toList()));
+				model.put("location_list", this.locationRelationships.findByPictureId(pictureID).stream()
+					.map(LocationRelationship::getLocation)
+					.collect(Collectors.toList()));
 
-			model.put("availableForPurchase", available);
-			model.put("picture", file);
-			model.put("current", id);
-			model.put("image", "https://www.homepix.ch/web-images/Aletschgletscher/dsc_229068-dsc_229082.jpg");
-			model.put("description", "This description");
-			model.put("baseLink", "/buckets/" + name);
-			model.put("id", id);
-			model.put("next", (id + 1) % count);
-			model.put("previous", (id + count - 1) % count);
-			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
-				.map(KeywordRelationships::getKeyword)
-				.collect(Collectors.toList()));
-			model.put("keyword_list", this.keywordRelationships.findByPictureId(pictureID).stream()
-				.map(KeywordRelationships::getKeyword)
-				.collect(Collectors.toList()));
-			model.put("location_list", this.locationRelationships.findByPictureId(pictureID).stream()
-				.map(LocationRelationship::getLocation)
-				.collect(Collectors.toList()));
+				model.put("fullUrl", "collection/" + pictureID);
 
-			model.put("fullUrl", "collection/" + pictureID);
+				Iterable<Album> albums = this.albums.findAll();
 
-			Iterable<Album> albums = this.albums.findAll();
-
-			String keywords = this.keywordRelationships.findByPictureId(pictureID)
+				String keywords = this.keywordRelationships.findByPictureId(pictureID)
 					.stream()
 					.map(kr -> kr.getKeyword().getWord()) // Assuming getKeyword() gets the Keyword object, and getWord() gets the String you want
 					.collect(Collectors.joining(", "));
 
-			if (keywords.length() > 0) {
-				keywords += ',';
+				if (keywords.length() > 0) {
+					keywords += ',';
+				}
+
+				keywords += "photo, sharing, portfolio, elliott, bignell";
+
+				setStructuredDataForModel(
+					requestDTO,
+					model,
+					"ImageObject",
+					file,
+					keywords
+				);
+
+				pictureFileService.addMapDetails(file, model);
+
+				return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
 			}
+		}
+		catch (org.springframework.transaction.CannotCreateTransactionException ex) {
 
-			keywords += "photo, sharing, portfolio, elliott, bignell";
-
-			setStructuredDataForModel(
-				requestDTO,
-				model,
-				"ImageObject",
-				file,
-				keywords
-			);
-
-			pictureFileService.addMapDetails(file, model);
-
-			return setModel(requestDTO, model, this.folders.findByName(name), pictureFiles, "picture/pictureFile");
+			Throwable rootCause = ex.getRootCause();
+			if (rootCause instanceof SQLTransientConnectionException) {
+				logger.warn("Database connection pool exhausted for request from {}: {}",
+					request.getRemoteAddr(), rootCause.getMessage());
+				response.setStatus(429);
+				model.put("errorMessage", "System is currently busy. Please try again later.");
+				return "error/429";
+			}
+			// Log unexpected transaction errors
+			logger.error("Unexpected transaction error", ex);
+			throw ex;
 		}
 	}
 
@@ -1342,7 +1360,7 @@ public class BucketController extends PaginationController {
 		}
 	}
 
-	@Secured("ROLE_ADMIN")
+	//@Secured("ROLE_ADMIN")
 	@GetMapping(value = "web-images/{directory}/watermarked/{file}.webp")
 	public ResponseEntity<byte[]> getWebPFileFromBucketWithWatermarking(@PathVariable("directory") String directory,
 														@PathVariable("file") String file) {
