@@ -78,7 +78,7 @@
     <meta property="og:title" th:content="${aggregateTitle}"/>
     <meta property="og:description" th:content="${aggregateTitle} + '...' + ${description}"/>
     <meta property="og:url" th:content="@{https://www.homepix.ch__${request}__}"/>
-    <meta property="og:image" th:content="@{https://www.homepix.ch__${picture?.mediumFilename}__}"/>
+    <meta property="og:image" th:content="@{https://www.homepix.ch__${picture?.largeFilename}__}"/>
     <meta property="og:image-alt" th:content="|${picture?.title}|"/>
     <meta property="og:type" content="website"/>
 
@@ -122,6 +122,7 @@
     <link th:if="${canonical != null and !#strings.isEmpty(canonical)}" rel="canonical" th:href="${canonical}" />
     <script th:utext="${inlineCriticalJs}"></script>
     <script defer src="/dist/bundle.js"></script>
+    <script th:src="@{/resources/js/navigation.js}" type="text/javascript" async=""></script>
 
 </head>
 
@@ -489,7 +490,7 @@
         </div>
 
         <div th:if="${pagination != null && totalPages > 1}" class="pagination">
-          <ul>
+          <ul class="pagination">
             <div id="panenavigate" class="navigate">
               <div id="pages" class="pages">
                 <span th:if="${pageNumber != null}">
@@ -526,24 +527,7 @@
                         </svg>
                       </a>
                     </li>
-                    <li>
-                      <div class="scroll-container">
-                        <div class="vertical-center">
-                          <div class="scroll-14">
-                            <ul class="pagination margin-0">
-                              <li id="page_no">
-                                <a class="dark-bg"
-                                   th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
-                                   th:text="@{Go to page: __${pageNumber + 1}__}"
-                                >
-                                </a>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li>
+                    <li class="slider">
                       <div class="scroll-container">
                         <div class="vertical-center">
                           <div class="range-holder">
@@ -553,6 +537,23 @@
                                 type="range" th:value="${ pageNumber + 1 }" min="1" th:max="${ totalPages }"
                                 id="slider" >
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="scroll-container">
+                        <div class="vertical-center">
+                          <div class="scroll-14">
+                            <ul class="pagination margin-0">
+                              <li id="page_no">
+                                <a class="dark-bg"
+                                   th:href="@{./?page=__${pageNumber}__&search=__${search}__&fromDate=__${startDate}__&toDate=__${endDate}__&ID=&Key=&sort=__${sort}__}"
+                                   th:text="@{P__${pageNumber + 1}__}"
+                                >
+                                </a>
+                              </li>
+                            </ul>
                           </div>
                         </div>
                       </div>

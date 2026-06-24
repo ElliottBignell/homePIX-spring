@@ -1026,8 +1026,9 @@ $('#find').on('search', function(e) {
 });
 
 $( '#slider' ).on( 'input', function( e ) {
+    console.log("Slider");
     $( '#page_no' ).html(
-        "<a href=\"?page=" + $( this ).val() + "\">" + "Go to page " + $( this ).val() + "</a>"
+        "<a href=\"?page=" + $( this ).val() + "\">" + "P" + $( this ).val() + "</a>"
     );
 });
 

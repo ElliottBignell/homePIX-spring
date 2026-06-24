@@ -11,7 +11,7 @@ var isShiftPressed = false;
 var isCtrlPressed  = false;
 var currentIndex   = -1;
 
-imgnav = new albumMover(".");
+//imgnav = new albumMover(".");
 
 //document.addEventListener( "touchstart", handleTouchStart, false);
 //document.addEventListener( "touchmove",  handleTouchMove,  false);
@@ -324,9 +324,9 @@ $("#removeClass").click(function () {
 	  $('#para1').removeClass('highlight');
 });
 
-$( "div[id^=selectable_]" ).draggable({
-    revert: 'invalid'
-});
+//$( "div[id^=selectable_]" ).draggable({
+    //revert: 'invalid'
+//});
 
 $('div[id^=selectable_]').on('dragstart', function( event ) {
 
@@ -666,17 +666,12 @@ $( '#slider' ).on( 'input', function( e ) {
     var currentPage = parseInt($(this).val(), 10);
     var newPage = currentPage - 1;
 
-    console.log($(this).val());
-    console.log(currentPage);
-
     // Use a regular expression to replace "page=n" with the new page number
     var newhtml = html.replace(/page=\d+/, 'page=' + newPage);
-    newhtml = newhtml.replace(/Go to page: \d+/, 'Go to page: ' + currentPage);
-
-    console.log(newhtml);
+    newhtml = newhtml.replace(/P\d+/, 'P' + currentPage);
 
     $( '#page_no' ).html(newhtml);
-    //$( '#page_no' ).text( "Go to page " + currentPage );
+    //$( '#page_no' ).text( "P " + currentPage );
 });
 
 function dispatchOp( value )
