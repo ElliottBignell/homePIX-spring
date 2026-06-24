@@ -1481,7 +1481,10 @@ public abstract class PaginationController implements AutoCloseable {
 		String baseURL = "https://www.homepix.ch";
 		filepath = pictures.isEmpty()
 			? baseURL + "/web-images/Stuff/200px/dsc_185760_200px.jpg"
-			: pictures.iterator().next().getFilename();
+			: baseURL + "/web-images/"
+			  + pictures.iterator().next().getFolderName()
+			  + "/"
+			  + pictures.iterator().next().getFilename().replace("jpg", "webp");
 
 		String structuredData = "{\n"
 			+ "    \"@context\": \"http://schema.org\",\n"
