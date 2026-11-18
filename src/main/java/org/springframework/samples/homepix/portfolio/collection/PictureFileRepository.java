@@ -320,6 +320,87 @@ public interface PictureFileRepository extends CrudRepository<PictureFile, Integ
 		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
 		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
 		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND pf.title = :searchText " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id " +
+		"ORDER BY pf.filename ASC",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND pf.title = :searchText " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByExactTitleAndDateRangeAndValidityAndAuthorization(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND LOWER(pf.title) REGEXP :searchText " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"GROUP BY pf.id " +
+		"ORDER BY pf.filename ASC",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+			"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND LOWER(pf.title) REGEXP :searchText " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%'))",
+		nativeQuery = true)
+	Page<PictureFile> findByRegexInTitleAndDateRangeAndValidityAndAuthorization(
+		@Param("searchText") String searchText,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+		"AND (SELECT COUNT(*) FROM keyword_relationships_new kr " +
+		"     WHERE kr.entry_id = pf.id) < :maxKeywords " +
+		"ORDER BY pf.filename ASC",
+		countQuery = "SELECT count(DISTINCT pf.id) FROM picture_file pf " +
+			"JOIN folders f ON pf.folder = f.id " +
+			"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+			"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
+			"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +
+			"AND (SELECT COUNT(*) FROM keyword_relationships_new kr " +
+			"     WHERE kr.entry_id = pf.id) < :maxKeywords",
+		nativeQuery = true)
+	Page<PictureFile> findByKeywordCountLessThanAndDateRangeAndValidityAndAuthorization(
+		@Param("maxKeywords") int maxKeywords,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDateTime endDate,
+		@Param("isAdmin") boolean isAdmin,
+		@Param("userRoles") String userRoles,
+		Pageable pageable
+	);
+
+	@Query(value = "SELECT pf.* FROM picture_file pf " +
+		"JOIN folders f ON pf.folder = f.id " +
+		"LEFT JOIN keyword_relationships_new kr ON pf.id = kr.entry_id " +
+		"LEFT JOIN keyword k ON kr.keyword_id = k.id " +
+		"WHERE pf.taken_on BETWEEN :startDate AND :endDate " +
+		"AND pf.width IS NOT NULL AND pf.height IS NOT NULL " +
 		"AND (LOWER(pf.title) REGEXP CONCAT('(^|[^0-9A-Za-zÜüÖöÄäé])', LOWER(:searchText), '([^0-9A-Za-zÜüÖöÄäé]|$)') " +
 		"OR f.name = :searchText) " +
 		"AND (:isAdmin = true OR pf.roles LIKE CONCAT('%', :userRoles, '%')) " +

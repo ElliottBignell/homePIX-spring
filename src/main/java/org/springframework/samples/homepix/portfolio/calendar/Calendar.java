@@ -120,8 +120,6 @@ public class Calendar extends BaseEntity {
 
 				for (int monthNo = 0; monthNo < 3; monthNo++) {
 
-					int monthOfYeae = quarter * 4 + monthNo;
-
 					CalendarMonth month = new CalendarMonth(monthIndex, this.monthNames[monthIndex++], monthNo + 1);
 					months.add(month);
 				}
@@ -151,8 +149,6 @@ public class Calendar extends BaseEntity {
 						for (; day <= valueOfDay(DayOfWeek.SUNDAY); day++) {
 
 							d = c.getTime();
-
-							dayOfWeek = convertToLocalDateViaInstant(d).getDayOfWeek();
 
 							CalendarDay newDay;
 
@@ -186,14 +182,18 @@ public class Calendar extends BaseEntity {
 							} else
 								newDay = new CalendarDay(this.dayNames[day], null);
 
-							dayOfMonth++;
 							days.add(newDay);
 
 							java.util.Calendar cal = java.util.Calendar.getInstance();
 							cal.setTime(d);
+							dayOfMonth++;
 						}
 
 						addWeek(days, weeks);
+
+						if (dayOfMonth > convertToLocalDateViaInstant(c.getTime()).lengthOfMonth()) {
+							break weekLoop;
+						}
 					}
 
 					months.get(monthNo).setWeeks(weeks);

@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class KeywordService {
 
 	@Autowired

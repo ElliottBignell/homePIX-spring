@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import org.springframework.samples.homepix.portfolio.keywords.KeywordRelationshipsRepository;
@@ -46,7 +47,102 @@ public class PictureFileService {
 	@Autowired
 	private KeywordRelationshipsRepository keywordRelationshipRepository;
 
-    public List<PictureFile> getPhotos(Date startDate, Date endDate, String searchText, SortDirection sortDirection) {
+	private record SearchQuery(SearchMode mode, String term) {}
+
+	private enum SearchMode {
+		NO_KEYWORDS {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+				return repo.findByNoKeywordsAndDateRangeAndValidityAndAuthorization(
+					first, last, isAdmin, userRoles, pageable);
+			}
+		},
+		KEYWORD {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+				return repo.findByWordInKeyword(term, first, last, isAdmin, userRoles, pageable);
+			}
+		},
+		WHOLE_WORD {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+				return repo.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+					term, first, last, isAdmin, userRoles, pageable);
+			}
+		},
+		REGEX_TITLE {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+
+				try {
+					Pattern.compile(term);
+				} catch (PatternSyntaxException e) {
+					throw new IllegalArgumentException("Invalid regex in search: " + e.getDescription(), e);
+				}
+
+				return repo.findByRegexInTitleAndDateRangeAndValidityAndAuthorization(
+					term, first, last, isAdmin, userRoles, pageable);
+			}
+		},
+		EXACT_TITLE {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+				return repo.findByExactTitleAndDateRangeAndValidityAndAuthorization(
+					term, first, last, isAdmin, userRoles, pageable);
+			}
+		},
+		PLAIN {
+			@Override
+			Page<PictureFile> execute(PictureFileRepository repo, String term,
+									  LocalDate first, LocalDateTime last,
+									  boolean isAdmin, String userRoles, Pageable pageable) {
+				return repo.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
+					term, first, last, isAdmin, userRoles, pageable);
+			}
+		};
+
+		abstract Page<PictureFile> execute(PictureFileRepository repo, String term,
+										   LocalDate first, LocalDateTime last,
+										   boolean isAdmin, String userRoles, Pageable pageable);
+	}
+
+	private static final Pattern KEYWORD = Pattern.compile("^:(.*)$");
+	private static final Pattern WHOLE = Pattern.compile("^\"(.*)\"$");
+	private static final Pattern EXACT = Pattern.compile("^'(.*)'$");
+	private static final Pattern REGEX = Pattern.compile("^/(.*)/$");
+
+	private static SearchQuery parse(String raw) {
+		String text = raw == null ? "" : raw.trim();
+
+		Matcher m;
+		if ((m = KEYWORD.matcher(text)).matches()) {
+			return ":!*".equals(text)
+				? new SearchQuery(SearchMode.NO_KEYWORDS, null)
+				: new SearchQuery(SearchMode.KEYWORD, m.group(1));
+		}
+		if ((m = REGEX.matcher(text)).matches()) {
+			return new SearchQuery(SearchMode.REGEX_TITLE, m.group(1));
+		}
+		if ((m = WHOLE.matcher(text)).matches()) {
+			return new SearchQuery(SearchMode.WHOLE_WORD, m.group(1));
+		}
+		if ((m = EXACT.matcher(text)).matches()) {
+			return new SearchQuery(SearchMode.EXACT_TITLE, m.group(1));
+		}
+		return new SearchQuery(SearchMode.PLAIN, text);
+	}
+
+	public List<PictureFile> getPhotos(Date startDate, Date endDate, String searchText, SortDirection sortDirection) {
 
 		// Create specifications based on input parameters
 		PictureFileSpecification dateRangeSpec = new DateRangeSpecification(startDate, endDate);
@@ -316,65 +412,19 @@ public class PictureFileService {
 	}
 
 	public Page<PictureFile> getComplexSearchPage(String searchText,
-										   LocalDate first,
-										   LocalDateTime last,
-										   boolean isAdmin,
-										   String userRoles,
-										   Pageable pageable
+												  LocalDate first,
+												  LocalDateTime last,
+												  boolean isAdmin,
+												  String userRoles,
+												  Pageable pageable
 	) {
+		SearchQuery query = parse(searchText);
 
-		Pattern keywordPattern = Pattern.compile("[:](.*)");
-		Matcher keywordMmatcher = keywordPattern.matcher(searchText);
-
-		if (keywordMmatcher.find()) {
-
-			if (searchText.equals(":!*")) {
-
-				return this.pictureFileRepository.findByNoKeywordsAndDateRangeAndValidityAndAuthorization(
-					first,
-					last,
-					isAdmin,
-					userRoles,
-					pageable
-				);
-			} else {
-
-				return this.pictureFileRepository.findByWordInKeyword(
-					keywordMmatcher.group(1),
-					first,
-					last,
-					isAdmin,
-					userRoles,
-					pageable
-				);
-			}
-		} else {
-
-			Pattern pattern = Pattern.compile("[\"'](.*)[\"']");
-			Matcher matcher = pattern.matcher(searchText);
-
-			if (matcher.find()) {
-
-				return this.pictureFileRepository.findByWholeWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-					matcher.group(1),
-					first,
-					last,
-					isAdmin,
-					userRoles,
-					pageable
-				);
-			} else {
-
-				return this.pictureFileRepository.findByWordInTitleOrFolderOrKeywordAndDateRangeAndValidityAndAuthorization(
-					searchText,
-					first,
-					last,
-					isAdmin,
-					userRoles,
-					pageable
-				);
-			}
-		}
+		return query.mode().execute(
+			pictureFileRepository,
+			query.term(),
+			first, last, isAdmin, userRoles, pageable
+		);
 	}
 
 	public void applyArguments(Map<String, Object> model, CollectionRequestDTO requestDTO)

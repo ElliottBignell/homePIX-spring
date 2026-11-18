@@ -51,6 +51,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.sql.SQLTransientConnectionException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -164,13 +165,15 @@ class PictureCollectionController extends PaginationController {
 	 */
 	@GetMapping("/collection/items/{id1}-{id2}")
 	public String showMultiFilteredCollection(CollectionRequestDTO requestDTO,
-									     @PathVariable("id1") int start,
-									     @PathVariable("id2") int end,
-										 Map<String, Object> model,
-										 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-										 Authentication authentication
+	                                          @PathVariable("id1") int start,
+	                                          @PathVariable("id2") int end,
+	                                          Map<String, Object> model,
+	                                          @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+	                                          Authentication authentication,
+	                                          HttpServletRequest request,
+	                                          jakarta.servlet.http.HttpServletResponse response
 	) {
-		showFilteredCollection(requestDTO, start, model, pageable, authentication);
+		showFilteredCollection(requestDTO, start, model, pageable, authentication, request, response);
 
 		Page<PictureFile> results;
 		List<PictureFile> files = this.pictureFiles.findAllIdRange((long)start, (long)end);
@@ -178,6 +181,18 @@ class PictureCollectionController extends PaginationController {
 		model.put("collection", files);
 
 		return "picture/pictureList.html";
+	}
+
+	@GetMapping("/collection/-1/item/{id}")
+	public String showItemInCollection(CollectionRequestDTO requestDTO,
+	                                          @PathVariable("id") int pictureId,
+	                                          Map<String, Object> model,
+	                                          @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
+	                                          Authentication authentication,
+	                                          HttpServletRequest request,
+	                                          jakarta.servlet.http.HttpServletResponse response
+	) {
+		return showFilteredCollection(requestDTO, pictureId, model, pageable, authentication, request, response);
 	}
 
 	/**
@@ -191,88 +206,107 @@ class PictureCollectionController extends PaginationController {
 										 @PathVariable("id") int pictureID,
 										 Map<String, Object> model,
 										 @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-										 Authentication authentication
+										 Authentication authentication,
+										 HttpServletRequest request,
+										 jakarta.servlet.http.HttpServletResponse response
 	) {
-		PageRequest pageRequest = PageRequest.of(
-			pageable.getPageNumber(),
-			100, // pageable.getPageSize(),
-			Sort.by(getOrderColumn(requestDTO))
-		);
+		try {
 
-		String userRoles = "ROLE_USER";
+			PageRequest pageRequest = PageRequest.of(
+				pageable.getPageNumber(),
+				100, // pageable.getPageSize(),
+				Sort.by(getOrderColumn(requestDTO))
+			);
 
-		Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
-		LocalDate endDate = dates.getSecond();
-		LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
+			String userRoles = "ROLE_USER";
 
-		ModelAndView mav = new ModelAndView("albums/albumDetails");
-		mav.addObject(this.pictures.findAll());
-		model.put("link_params", "");
+			Pair<LocalDate, LocalDate> dates = getDateRange(requestDTO, model);
+			LocalDate endDate = dates.getSecond();
+			LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
-		String searchText = requestDTO.getSearch();
-		Page<PictureFile> files = this.pictureFileService.getComplexSearchPage(
-			searchText,
-			dates.getFirst(),
-			endOfDay,
-			isAdmin(authentication),
-			userRoles,
-			pageRequest
-		);
+			ModelAndView mav = new ModelAndView("albums/albumDetails");
+			mav.addObject(this.pictures.findAll());
+			model.put("link_params", "");
 
-		addParams(pictureID, "", files.toList(), model, true);
+			String searchText = requestDTO.getSearch();
+			Page<PictureFile> files = this.pictureFileService.getComplexSearchPage(
+				searchText,
+				dates.getFirst(),
+				endOfDay,
+				isAdmin(authentication),
+				userRoles,
+				pageRequest
+			);
 
-		List<Keyword> keywords = this.keywordRelationships.findByPictureId(pictureID).stream()
-			.map(KeywordRelationships::getKeyword)
-			.collect(Collectors.toList());
+			addParams(pictureID, "", files.toList(), model, true);
 
-		model.put("collection", pictureFiles);
-		model.put("baseLink", "/collection/" + -1);
-		model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
-			.map(relationship -> relationship.getKeyword().getWord())
-			.distinct()
-			.sorted()
-			.collect(Collectors.joining(",")));
-		model.put("keyword_list", keywords);
+			List<Keyword> keywords = this.keywordRelationships.findByPictureId(pictureID).stream()
+				.map(KeywordRelationships::getKeyword)
+				.collect(Collectors.toList());
 
-		// Construct the full URL
-		model.put("fullUrl", "collection/" + pictureID);
-		model.put("focusedField", "send_description");
-		model.put("search", requestDTO.getSearch());
-		model.put("pageNumber", files.getNumber());
+			model.put("collection", pictureFiles);
+			model.put("baseLink", "/collection/" + -1);
+			model.put("keywords", this.keywordRelationships.findByPictureId(pictureID).stream()
+				.map(relationship -> relationship.getKeyword().getWord())
+				.distinct()
+				.sorted()
+				.collect(Collectors.joining(",")));
+			model.put("keyword_list", keywords);
 
-		List<Location> locations = this.locationRelationships.findByPictureId(pictureID).stream()
-			.map(LocationRelationship::getLocation)
-			.collect(Collectors.toList());
-		locations = locationService.sortLocationsByHierarchy(locations);
-		model.put("location_list", locations);
-		Optional<PictureFile> picture = pictureFiles.findById(pictureID);
+			// Construct the full URL
+			model.put("fullUrl", "collection/" + pictureID);
+			model.put("focusedField", "send_description");
+			model.put("search", requestDTO.getSearch());
+			model.put("pageNumber", files.getNumber());
 
-		if (picture.isPresent()) {
+			List<Location> locations = this.locationRelationships.findByPictureId(pictureID).stream()
+				.map(LocationRelationship::getLocation)
+				.collect(Collectors.toList());
+			locations = locationService.sortLocationsByHierarchy(locations);
+			model.put("location_list", locations);
+			Optional<PictureFile> picture = pictureFiles.findById(pictureID);
 
-			pictureFileService.addMapDetails(picture.get(), model);
-			model.put("picture", picture.get());
+			if (picture.isPresent()) {
+
+				pictureFileService.addMapDetails(picture.get(), model);
+				model.put("picture", picture.get());
+			}
+
+			List<String> tags = this.keywordRelationships.findByNameContainingOrderByUsageDesc().stream()
+				.map(obj -> (String)obj[1])
+				.collect(Collectors.toList());
+			List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false)
+				.collect(Collectors.toList());
+			List<Folder> folders = new ArrayList<>(folderService.getSortedFolders());
+
+			model.put("tags", tags);
+			model.put("album_names", albums.stream()
+				.map(Album::getName)
+				.sorted()
+				.collect(Collectors.toList())
+			);
+			model.put("folder_names", folders.stream()
+				.map(Folder::getName)
+				.sorted()
+				.collect(Collectors.toList())
+			);
+
+			return "picture/pictureFile.html";
 		}
+		catch (org.springframework.transaction.CannotCreateTransactionException ex) {
 
-		List<String> tags = this.keywordRelationships.findByNameContainingOrderByUsageDesc().stream()
-			.map(obj -> (String)obj[1])
-			.collect(Collectors.toList());
-		List<Album> albums = StreamSupport.stream(this.albums.findAll().spliterator(), false)
-			.collect(Collectors.toList());
-		List<Folder> folders = new ArrayList<>(folderService.getSortedFolders());
-
-		model.put("tags", tags);
-		model.put("album_names", albums.stream()
-			.map(Album::getName)
-			.sorted()
-			.collect(Collectors.toList())
-		);
-		model.put("folder_names", folders.stream()
-			.map(Folder::getName)
-			.sorted()
-			.collect(Collectors.toList())
-		);
-
-		return "picture/pictureFile.html";
+			Throwable rootCause = ex.getRootCause();
+			if (rootCause instanceof SQLTransientConnectionException) {
+				logger.warn("Database connection pool exhausted for request from {}: {}",
+					request.getRemoteAddr(), rootCause.getMessage());
+				response.setStatus(429);
+				model.put("errorMessage", "System is currently busy. Please try again later.");
+				return "error/429";
+			}
+			// Log unexpected transaction errors
+			logger.error("Unexpected transaction error", ex);
+			throw ex;
+		}
 	}
 
 	@GetMapping({"/collections/{dummyId}/item/{id}/", "/collections/{dummyId}/item/{id}/"})
@@ -280,9 +314,11 @@ class PictureCollectionController extends PaginationController {
 									  @PathVariable("id") int pictureID,
 									  Map<String, Object> model,
 									  @PageableDefault(size = 100, sort = "defaultSortField") Pageable pageable, // Default page size and sorting
-									  Authentication authentication
+									  Authentication authentication,
+									  HttpServletRequest request,
+									  jakarta.servlet.http.HttpServletResponse response
 	) {
-		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication);
+		return showFilteredCollection(requestDTO, pictureID, model, pageable, authentication, request, response);
 	}
 
 	@Override

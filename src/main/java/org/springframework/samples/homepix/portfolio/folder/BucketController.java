@@ -403,6 +403,7 @@ public class BucketController extends PaginationController {
 		model.put("lastIndex", lastIndex);
 		model.put("count", results.getTotalElements());
 		model.put("title", name + " picture folder");
+		model.put("currentUrl", "/buckets/" + name);
 
 		if (results != null) {
 
@@ -732,6 +733,7 @@ public class BucketController extends PaginationController {
 					.collect(Collectors.toList()));
 
 				model.put("fullUrl", "collection/" + pictureID);
+				model.put("currentUrl", "/buckets/" + name + "/item/" + id);
 
 				Iterable<Album> albums = this.albums.findAll();
 

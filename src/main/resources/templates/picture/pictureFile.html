@@ -312,6 +312,8 @@
 
           var pic_id     = $("input#pic_id").val();
           var vocabulary = $("input#vocabulary").val();
+          var token = $("meta[name='_csrf']").attr("content");
+          var header = $("meta[name='_csrf_header']").attr("content");
 
           $.ajax({
             method: 'POST',
@@ -320,6 +322,7 @@
               'vocabulary': vocabulary
             }),
             contentType: 'application/json',
+            beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
             success: function (results) {
 
               var str = reload_keyword_buttons( results, pic_id )
@@ -713,6 +716,7 @@ function remove_keyword( keyword, pic_id ) {
     data: JSON.stringify({ 'vocabulary': keyword }), // Convert data to JSON string
     success: function (results) {
       console.log(results);
+      alert("1");
       reload_keyword_buttons( results, pic_id )
     }
   });
